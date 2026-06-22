@@ -71,6 +71,15 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="cards"
+        options={{
+          title: 'Tarjetas',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="card" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="assistant"
         options={{
           title: 'Asistente',

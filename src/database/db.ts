@@ -77,6 +77,18 @@ async function initDb(database: SQLite.SQLiteDatabase) {
 
     CREATE INDEX IF NOT EXISTS idx_transactions_date
       ON transactions(date);
+      CREATE TABLE IF NOT EXISTS cards (
+      id              TEXT PRIMARY KEY NOT NULL,
+      name            TEXT NOT NULL,
+      bank            TEXT NOT NULL,
+      annualFee       REAL NOT NULL DEFAULT 0,
+      cashbackPercent REAL NOT NULL DEFAULT 0,
+      interestRate    REAL NOT NULL DEFAULT 0,
+      benefits        TEXT NOT NULL DEFAULT '[]',
+      colorHex        TEXT NOT NULL,
+      isFavorite      INTEGER NOT NULL DEFAULT 0,
+      createdAt       TEXT NOT NULL
+    );
     CREATE INDEX IF NOT EXISTS idx_transactions_account
       ON transactions(accountId);
     CREATE INDEX IF NOT EXISTS idx_transactions_category
@@ -102,7 +114,7 @@ export async function getMonthlyTotals(
 
   // Rango de fechas del mes
   const start = new Date(year, month - 1, 1).toISOString();
-  const end   = new Date(year, month, 1).toISOString();
+  const end = new Date(year, month, 1).toISOString();
 
   const incomeRow = await database.getFirstAsync<{ total: number | null }>(
     `SELECT SUM(amount) as total
@@ -119,7 +131,7 @@ export async function getMonthlyTotals(
   );
 
   return {
-    income:  incomeRow?.total  ?? 0,
+    income: incomeRow?.total ?? 0,
     expense: expenseRow?.total ?? 0,
   };
 }
@@ -165,7 +177,7 @@ export async function createAccount(
   iconName: string
 ): Promise<void> {
   const database = await getDb();
-  const id  = `acc-${Date.now()}`;
+  const id = `acc-${Date.now()}`;
   const now = new Date().toISOString();
 
   await database.runAsync(
@@ -238,7 +250,7 @@ export async function createTransaction(
   notes: string
 ): Promise<void> {
   const database = await getDb();
-  const id  = `tx-${Date.now()}`;
+  const id = `tx-${Date.now()}`;
   const now = new Date().toISOString();
 
   // Insertar la transacción
@@ -296,7 +308,7 @@ export async function createGoal(
   iconName: string
 ): Promise<void> {
   const database = await getDb();
-  const id  = `goal-${Date.now()}`;
+  const id = `goal-${Date.now()}`;
   const now = new Date().toISOString();
 
   await database.runAsync(
@@ -349,7 +361,7 @@ export async function createSubscription(
   iconName: string
 ): Promise<string> {
   const database = await getDb();
-  const id  = `sub-${Date.now()}`;
+  const id = `sub-${Date.now()}`;
   const now = new Date().toISOString();
 
   await database.runAsync(
@@ -377,7 +389,7 @@ export async function getCategoryBreakdown(
 ): Promise<{ categoryId: string; categoryName: string; categoryColor: string; total: number }[]> {
   const database = await getDb();
   const start = new Date(year, month - 1, 1).toISOString();
-  const end   = new Date(year, month, 1).toISOString();
+  const end = new Date(year, month, 1).toISOString();
 
   const rows = await database.getAllAsync<any>(
     `SELECT
@@ -404,7 +416,7 @@ export async function getTransactionsByCategory(
 ): Promise<any[]> {
   const database = await getDb();
   const start = new Date(year, month - 1, 1).toISOString();
-  const end   = new Date(year, month, 1).toISOString();
+  const end = new Date(year, month, 1).toISOString();
 
   const rows = await database.getAllAsync<any>(
     `SELECT * FROM transactions
@@ -414,4 +426,51 @@ export async function getTransactionsByCategory(
   );
 
   return rows;
+}
+
+// ─── Queries de Tarjetas ───────────────────────────────────
+
+export async function getAllCards(): Promise<any[]> {
+  const database = await getDb();
+  const rows = await database.getAllAsync<any>(
+    `SELECT * FROM cards ORDER BY isFavorite DESC, createdAt ASC`
+  );
+  return rows.map((r) => ({
+    ...r,
+    benefits: JSON.parse(r.benefits || '[]'),
+  }));
+}
+
+export async function createCard(
+  name: string,
+  bank: string,
+  annualFee: number,
+  cashbackPercent: number,
+  interestRate: number,
+  benefits: string[],
+  colorHex: string
+): Promise<void> {
+  const database = await getDb();
+  const id  = `card-${Date.now()}`;
+  const now = new Date().toISOString();
+
+  await database.runAsync(
+    `INSERT INTO cards
+       (id, name, bank, annualFee, cashbackPercent, interestRate, benefits, colorHex, isFavorite, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
+    [id, name, bank, annualFee, cashbackPercent, interestRate, JSON.stringify(benefits), colorHex, now]
+  );
+}
+
+export async function toggleFavoriteCard(id: string, isFavorite: boolean): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(
+    `UPDATE cards SET isFavorite = ? WHERE id = ?`,
+    [isFavorite ? 1 : 0, id]
+  );
+}
+
+export async function deleteCard(id: string): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(`DELETE FROM cards WHERE id = ?`, [id]);
 }

@@ -119,3 +119,17 @@ export interface DashboardData {
   error: string | null;
   refresh: () => Promise<void>;
 }
+
+// ─── Tarjetas ──────────────────────────────────────────────
+export interface Card {
+  id: string;
+  name: string;
+  bank: string;
+  annualFee: number;
+  cashbackPercent: number;
+  interestRate: number;
+  benefits: string[];
+  colorHex: string;
+  isFavorite: boolean;
+  createdAt: string;
+}
