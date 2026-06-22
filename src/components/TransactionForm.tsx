@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius } from '../constants/theme';
+import { ReceiptScannerButton } from './ReceiptScannerButton';
 import type { Account, Category } from '../models/types';
 
 interface TransactionFormProps {
@@ -149,6 +150,23 @@ export function TransactionForm({
               </Text>
             </TouchableOpacity>
           </View>
+
+          {/* Escanear recibo — solo para gastos */}
+          {type === 'expense' && (
+            <View style={styles.field}>
+              <ReceiptScannerButton
+                onScanned={(amount, notes) => {
+                  if (amount !== null) {
+                    setAmount(String(Math.round(amount)));
+                  }
+                  if (notes) {
+                    setNotes(notes);
+                  }
+                  setError('');
+                }}
+              />
+            </View>
+          )}
 
           {/* Monto */}
           <View style={styles.field}>

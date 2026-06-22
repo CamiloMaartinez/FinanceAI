@@ -13,8 +13,13 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
-    },
+    "supportsTablet": true,
+    "infoPlist": {
+    "NSCameraUsageDescription": "FinanceAI necesita acceso a la cámara para capturar fotos de tus recibos y extraer el monto automáticamente.",
+    "NSPhotoLibraryUsageDescription": "FinanceAI necesita acceso a tus fotos para seleccionar recibos guardados previamente.",
+    "NSFaceIDUsageDescription": "FinanceAI usa Face ID para proteger el acceso a tu información financiera personal."
+    }
+  },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
