@@ -5,35 +5,84 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "scheme": "financeai",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000000"
     },
     "ios": {
-    "supportsTablet": true,
-    "infoPlist": {
-    "NSCameraUsageDescription": "FinanceAI necesita acceso a la cámara para capturar fotos de tus recibos y extraer el monto automáticamente.",
-    "NSPhotoLibraryUsageDescription": "FinanceAI necesita acceso a tus fotos para seleccionar recibos guardados previamente.",
-    "NSFaceIDUsageDescription": "FinanceAI usa Face ID para proteger el acceso a tu información financiera personal."
-    }
-  },
+      "supportsTablet": false,
+      "bundleIdentifier": "com.camilomartinez.financeai",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "FinanceAI necesita acceso a la cámara para capturar fotos de tus recibos y extraer el monto automáticamente.",
+        "NSPhotoLibraryUsageDescription": "FinanceAI necesita acceso a tus fotos para seleccionar recibos guardados previamente.",
+        "NSFaceIDUsageDescription": "FinanceAI usa Face ID para proteger el acceso a tu información financiera personal.",
+        "NSMicrophoneUsageDescription": "FinanceAI necesita acceso al micrófono para funciones de la cámara.",
+        "NSUserNotificationsUsageDescription": "FinanceAI envía notificaciones antes del cobro de tus suscripciones.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#000000"
       },
+      "package": "com.camilomartinez.financeai",
+      "versionCode": 1,
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "expo-router",
       "expo-sqlite",
-      "expo-router"
-    ]
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "FinanceAI necesita acceso a la cámara para capturar fotos de tus recibos."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "FinanceAI usa Face ID para proteger el acceso a tu información financiera personal."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#007AFF"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "FinanceAI necesita acceso a tus fotos para seleccionar recibos guardados previamente.",
+          "cameraPermission": "FinanceAI necesita acceso a la cámara para capturar fotos de tus recibos."
+        }
+      ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "27013f10-b063-46eb-b758-570bb526e5ca"
+      }
+    }
   }
 }
