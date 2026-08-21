@@ -474,3 +474,74 @@ export async function deleteCard(id: string): Promise<void> {
   const database = await getDb();
   await database.runAsync(`DELETE FROM cards WHERE id = ?`, [id]);
 }
+
+// ─── Queries de Estadísticas de Perfil ─────────────────────
+
+export async function getGlobalStats(): Promise<{
+  totalTransactions: number;
+  totalIncome: number;
+  totalExpenses: number;
+  oldestTransactionDate: string | null;
+  completedGoals: number;
+  activeGoals: number;
+}> {
+  const database = await getDb();
+
+  const txCount = await database.getFirstAsync<{ count: number }>(
+    `SELECT COUNT(*) as count FROM transactions`
+  );
+
+  const totals = await database.getFirstAsync<{
+    income: number | null;
+    expenses: number | null;
+  }>(
+    `SELECT
+       SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as income,
+       SUM(CASE WHEN type IN ('expense','payment') THEN amount ELSE 0 END) as expenses
+     FROM transactions`
+  );
+
+  const oldest = await database.getFirstAsync<{ date: string | null }>(
+    `SELECT MIN(date) as date FROM transactions`
+  );
+
+  const goalsCompleted = await database.getFirstAsync<{ count: number }>(
+    `SELECT COUNT(*) as count FROM goals WHERE isCompleted = 1`
+  );
+
+  const goalsActive = await database.getFirstAsync<{ count: number }>(
+    `SELECT COUNT(*) as count FROM goals WHERE isCompleted = 0`
+  );
+
+  return {
+    totalTransactions: txCount?.count ?? 0,
+    totalIncome:       totals?.income   ?? 0,
+    totalExpenses:     totals?.expenses ?? 0,
+    oldestTransactionDate: oldest?.date ?? null,
+    completedGoals:    goalsCompleted?.count ?? 0,
+    activeGoals:       goalsActive?.count    ?? 0,
+  };
+}
+
+export async function getAverageMonthlySavings(): Promise<number> {
+  const database = await getDb();
+
+  const rows = await database.getAllAsync<{
+    month: string;
+    income: number;
+    expenses: number;
+  }>(
+    `SELECT
+       strftime('%Y-%m', date) as month,
+       SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as income,
+       SUM(CASE WHEN type IN ('expense','payment') THEN amount ELSE 0 END) as expenses
+     FROM transactions
+     GROUP BY month
+     ORDER BY month ASC`
+  );
+
+  if (rows.length === 0) return 0;
+
+  const totalSavings = rows.reduce((sum, row) => sum + (row.income - row.expenses), 0);
+  return totalSavings / rows.length;
+}
