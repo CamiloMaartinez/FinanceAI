@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
-    import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius } from '../../constants/theme';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, spacing, typography } from '../../constants/theme';
 import { formatCurrency } from '../../utils/currency';
 
 interface BalanceCardProps {
@@ -19,115 +14,76 @@ export function BalanceCard({ totalBalance, netFlow }: BalanceCardProps) {
   const isPositive = netFlow >= 0;
 
   return (
-    <View style={styles.card}>
-
-      {/* Círculos decorativos de fondo */}
-      <View style={[styles.circle, styles.circleTop]} />
-      <View style={[styles.circle, styles.circleBottom]} />
-
-      {/* Fila superior: etiqueta + botón ojo */}
+    <View style={styles.container}>
+      {/* Etiqueta superior */}
       <View style={styles.header}>
-        <Text style={styles.label}>Saldo Total</Text>
+        <Text style={styles.label}>PATRIMONIO TOTAL</Text>
         <TouchableOpacity onPress={() => setIsVisible(!isVisible)}>
           <Ionicons
-            name={isVisible ? 'eye' : 'eye-off'}
-            size={18}
-            color={colors.textSecondary}
+            name={isVisible ? 'eye-outline' : 'eye-off-outline'}
+            size={14}
+            color={colors.textTertiary}
           />
         </TouchableOpacity>
       </View>
 
-      {/* Saldo principal */}
-      <Text style={styles.balance}>
+      {/* Monto principal */}
+      <Text style={styles.amount}>
         {isVisible ? formatCurrency(totalBalance) : '••••••••'}
       </Text>
 
-      {/* Línea divisora */}
-      <View style={styles.divider} />
-
-      {/* Fila inferior: flujo neto del mes */}
-      <View style={styles.footer}>
-        <View style={styles.footerLeft}>
-          <Ionicons
-            name={isPositive ? 'arrow-up-circle' : 'arrow-down-circle'}
-            size={14}
-            color={colors.textSecondary}
-          />
-          <Text style={styles.footerLabel}>Flujo neto del mes</Text>
-        </View>
-        <Text style={[
-          styles.footerValue,
-          { color: isPositive ? colors.income : colors.expense }
-        ]}>
-          {isPositive ? '+' : '-'}{formatCurrency(Math.abs(netFlow))}
+      {/* Flujo neto */}
+      <View style={styles.flowRow}>
+        <Text style={styles.flowIcon}>{isPositive ? '↑' : '↓'}</Text>
+        <Text style={[styles.flowText, { color: isPositive ? colors.income : colors.expense }]}>
+          {isPositive ? '+' : '-'}{formatCurrency(Math.abs(netFlow))} este mes
         </Text>
       </View>
 
+      {/* Línea divisora */}
+      <View style={styles.divider} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: '#1C1C2E',
-    borderRadius: radius.xl,
-    padding: spacing.xl,
-    height: 180,
-    overflow: 'hidden',
-    justifyContent: 'space-between',
-  },
-  circle: {
-    position: 'absolute',
-    borderRadius: 999,
-  },
-  circleTop: {
-    width: 200,
-    height: 200,
-    top: -70,
-    right: -50,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-  },
-  circleBottom: {
-    width: 150,
-    height: 150,
-    bottom: -60,
-    left: -40,
-    backgroundColor: 'rgba(255,255,255,0.03)',
+  container: {
+    paddingVertical: spacing.xl,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: spacing.sm,
   },
   label: {
-    fontSize: 14,
-    color: colors.textSecondary,
+    ...typography.label,
+    color: colors.textTertiary,
   },
-  balance: {
-    fontSize: 36,
-    fontWeight: '700',
+  amount: {
+    fontSize: 38,
+    fontWeight: '200',
     color: colors.textPrimary,
+    letterSpacing: -1.5,
+    marginBottom: spacing.sm,
+  },
+  flowRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: spacing.xl,
+  },
+  flowIcon: {
+    fontSize: 12,
+    color: colors.textTertiary,
+  },
+  flowText: {
+    fontSize: 13,
+    fontWeight: '300',
+    letterSpacing: 0.2,
   },
   divider: {
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  footerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  footerLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  footerValue: {
-    fontSize: 15,
-    fontWeight: '700',
+    height: 0.5,
+    backgroundColor: colors.borderStrong,
   },
 });

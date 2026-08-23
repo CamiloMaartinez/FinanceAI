@@ -18,48 +18,34 @@ import { Ionicons } from '@expo/vector-icons';
 import { useGoals } from '../../src/hooks/useGoals';
 import { GoalCard } from '../../src/components/GoalCard';
 import { GoalForm } from '../../src/components/GoalForm';
-import { colors, spacing, radius } from '../../src/constants/theme';
+import { colors, spacing, typography } from '../../src/constants/theme';
 import type { Goal } from '../../src/models/types';
 
 export default function GoalsScreen() {
   const goals = useGoals();
   const [formVisible, setFormVisible] = useState(false);
-
-  // Estado para el modal de "abonar"
   const [contributeGoal, setContributeGoal] = useState<Goal | null>(null);
   const [contributeAmount, setContributeAmount] = useState('');
 
   const handleSaveGoal = async (
-    name: string,
-    targetAmount: number,
-    targetDate: string,
-    priority: string,
-    colorHex: string,
-    iconName: string
+    name: string, targetAmount: number, targetDate: string,
+    priority: string, colorHex: string, iconName: string
   ) => {
     await goals.addGoal(name, targetAmount, targetDate, priority, colorHex, iconName);
   };
 
   const handleLongPress = (goal: Goal) => {
-    Alert.alert(
-      goal.name,
-      '¿Eliminar esta meta?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: () => goals.removeGoal(goal.id),
-        },
-      ]
-    );
+    Alert.alert(goal.name, '¿Eliminar esta meta?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Eliminar', style: 'destructive', onPress: () => goals.removeGoal(goal.id) },
+    ]);
   };
 
   const handleConfirmContribute = async () => {
     if (!contributeGoal) return;
     const amount = parseFloat(contributeAmount.replace(/\./g, '').replace(',', '.'));
     if (isNaN(amount) || amount <= 0) {
-      Alert.alert('Monto inválido', 'Ingresa un monto válido para abonar');
+      Alert.alert('Monto inválido', 'Ingresa un monto válido');
       return;
     }
     await goals.contribute(contributeGoal.id, amount);
@@ -70,7 +56,7 @@ export default function GoalsScreen() {
   if (goals.isLoading && goals.goals.length === 0) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.blue} />
+        <ActivityIndicator size="small" color={colors.textTertiary} />
       </View>
     );
   }
@@ -84,30 +70,31 @@ export default function GoalsScreen() {
           <RefreshControl
             refreshing={goals.isLoading}
             onRefresh={goals.refresh}
-            tintColor={colors.textPrimary}
+            tintColor={colors.textTertiary}
           />
         }
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Metas</Text>
+          <View>
+            <Text style={styles.label}>METAS</Text>
+            <Text style={styles.count}>
+              {goals.goals.length} activa{goals.goals.length !== 1 ? 's' : ''}
+            </Text>
+          </View>
           <TouchableOpacity style={styles.addButton} onPress={() => setFormVisible(true)}>
-            <Ionicons name="add" size={24} color="#fff" />
+            <Ionicons name="add" size={20} color={colors.textPrimary} />
           </TouchableOpacity>
         </View>
 
-        {goals.error && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>⚠️ {goals.error}</Text>
-          </View>
-        )}
+        <View style={styles.divider} />
 
         {goals.goals.length === 0 ? (
           <View style={styles.empty}>
-            <Ionicons name="trophy-outline" size={48} color={colors.textTertiary} />
-            <Text style={styles.emptyTitle}>Sin metas todavía</Text>
-            <Text style={styles.emptySubtitle}>
-              Crea tu primera meta de ahorro
-            </Text>
+            <Text style={styles.emptyTitle}>Sin metas activas</Text>
+            <Text style={styles.emptySubtitle}>Define tu primer objetivo financiero</Text>
+            <TouchableOpacity style={styles.emptyButton} onPress={() => setFormVisible(true)}>
+              <Text style={styles.emptyButtonText}>+ Nueva meta</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           goals.goals.map((goal) => (
@@ -121,9 +108,7 @@ export default function GoalsScreen() {
         )}
 
         {goals.goals.length > 0 && (
-          <Text style={styles.hint}>
-            💡 Mantén presionada una meta para eliminarla
-          </Text>
+          <Text style={styles.hint}>Mantén presionada una meta para eliminarla</Text>
         )}
       </ScrollView>
 
@@ -133,25 +118,23 @@ export default function GoalsScreen() {
         onSave={handleSaveGoal}
       />
 
-      {/* Modal simple para abonar dinero a la meta */}
       <Modal
         visible={contributeGoal !== null}
         animationType="fade"
         transparent
         onRequestClose={() => setContributeGoal(null)}
       >
-        <View style={styles.contributeOverlay}>
+        <View style={styles.overlay}>
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.contributeBox}
+            style={styles.modalBox}
           >
-            <Text style={styles.contributeTitle}>
-              Abonar a "{contributeGoal?.name}"
-            </Text>
-            <View style={styles.contributeInputWrapper}>
-              <Text style={styles.contributePrefix}>$</Text>
+            <Text style={styles.modalLabel}>ABONAR A META</Text>
+            <Text style={styles.modalTitle}>{contributeGoal?.name}</Text>
+            <View style={styles.inputRow}>
+              <Text style={styles.inputPrefix}>$</Text>
               <TextInput
-                style={styles.contributeInput}
+                style={styles.input}
                 placeholder="0"
                 placeholderTextColor={colors.textTertiary}
                 value={contributeAmount}
@@ -160,18 +143,15 @@ export default function GoalsScreen() {
                 autoFocus
               />
             </View>
-            <View style={styles.contributeButtons}>
+            <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={styles.contributeCancelBtn}
+                style={styles.cancelBtn}
                 onPress={() => { setContributeGoal(null); setContributeAmount(''); }}
               >
-                <Text style={styles.contributeCancelText}>Cancelar</Text>
+                <Text style={styles.cancelText}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.contributeConfirmBtn}
-                onPress={handleConfirmContribute}
-              >
-                <Text style={styles.contributeConfirmText}>Abonar</Text>
+              <TouchableOpacity style={styles.confirmBtn} onPress={handleConfirmContribute}>
+                <Text style={styles.confirmText}>Abonar</Text>
               </TouchableOpacity>
             </View>
           </KeyboardAvoidingView>
@@ -182,110 +162,53 @@ export default function GoalsScreen() {
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  loadingContainer: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xl,
+    alignItems: 'flex-end',
+    paddingVertical: spacing.lg,
   },
-  title: { fontSize: 28, fontWeight: '700', color: colors.textPrimary },
+  label: { ...typography.label, color: colors.textTertiary, marginBottom: spacing.xs },
+  count: { fontSize: 24, fontWeight: '200', color: colors.textPrimary, letterSpacing: -0.5 },
   addButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.blue,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 36, height: 36, borderRadius: 18,
+    borderWidth: 0.5, borderColor: colors.borderStrong,
+    alignItems: 'center', justifyContent: 'center',
   },
-  errorBox: {
-    backgroundColor: 'rgba(255,59,48,0.15)',
-    borderRadius: 8,
-    padding: spacing.md,
-    marginBottom: spacing.md,
+  divider: { height: 0.5, backgroundColor: colors.borderStrong, marginBottom: spacing.xl },
+  empty: { paddingVertical: spacing.xxl * 2, alignItems: 'center', gap: spacing.sm },
+  emptyTitle: { fontSize: 16, fontWeight: '300', color: colors.textPrimary },
+  emptySubtitle: { fontSize: 13, fontWeight: '300', color: colors.textTertiary, textAlign: 'center' },
+  emptyButton: {
+    marginTop: spacing.lg, paddingVertical: spacing.sm, paddingHorizontal: spacing.xl,
+    borderWidth: 0.5, borderColor: colors.borderStrong, borderRadius: 6,
   },
-  errorText: { fontSize: 13, color: colors.expense },
-  empty: {
-    alignItems: 'center',
-    paddingVertical: spacing.xxl * 2,
-    gap: spacing.sm,
+  emptyButtonText: { fontSize: 13, fontWeight: '300', color: colors.textPrimary, letterSpacing: 0.3 },
+  hint: { fontSize: 11, color: colors.textTertiary, textAlign: 'center', marginTop: spacing.xl, letterSpacing: 0.3 },
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', padding: spacing.xl },
+  modalBox: {
+    backgroundColor: colors.surface, borderRadius: 14,
+    padding: spacing.xl, gap: spacing.lg,
+    borderWidth: 0.5, borderColor: colors.borderStrong,
   },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginTop: spacing.md,
+  modalLabel: { ...typography.label, color: colors.textTertiary },
+  modalTitle: { fontSize: 18, fontWeight: '300', color: colors.textPrimary },
+  inputRow: {
+    flexDirection: 'row', alignItems: 'center',
+    borderBottomWidth: 0.5, borderBottomColor: colors.borderStrong,
+    paddingBottom: spacing.sm,
   },
-  emptySubtitle: { fontSize: 13, color: colors.textTertiary },
-  hint: {
-    fontSize: 12,
-    color: colors.textTertiary,
-    textAlign: 'center',
-    marginTop: spacing.lg,
+  inputPrefix: { fontSize: 24, fontWeight: '200', color: colors.textTertiary, marginRight: spacing.xs },
+  input: { flex: 1, fontSize: 24, fontWeight: '200', color: colors.textPrimary },
+  modalButtons: { flexDirection: 'row', gap: spacing.md },
+  cancelBtn: {
+    flex: 1, paddingVertical: spacing.md, borderRadius: 6,
+    borderWidth: 0.5, borderColor: colors.borderStrong, alignItems: 'center',
   },
-  contributeOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    padding: spacing.xl,
-  },
-  contributeBox: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.xl,
-    gap: spacing.lg,
-  },
-  contributeTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    textAlign: 'center',
-  },
-  contributeInputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surfaceSecondary,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.lg,
-  },
-  contributePrefix: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.textSecondary,
-    marginRight: spacing.sm,
-  },
-  contributeInput: {
-    flex: 1,
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    paddingVertical: spacing.md,
-  },
-  contributeButtons: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  contributeCancelBtn: {
-    flex: 1,
-    paddingVertical: spacing.md,
-    borderRadius: radius.md,
-    backgroundColor: colors.surfaceSecondary,
-    alignItems: 'center',
-  },
-  contributeCancelText: { color: colors.textSecondary, fontWeight: '600' },
-  contributeConfirmBtn: {
-    flex: 1,
-    paddingVertical: spacing.md,
-    borderRadius: radius.md,
-    backgroundColor: colors.blue,
-    alignItems: 'center',
-  },
-  contributeConfirmText: { color: '#fff', fontWeight: '600' },
+  cancelText: { fontSize: 13, fontWeight: '300', color: colors.textSecondary },
+  confirmBtn: { flex: 1, paddingVertical: spacing.md, borderRadius: 6, backgroundColor: colors.income, alignItems: 'center' },
+  confirmText: { fontSize: 13, fontWeight: '500', color: '#000' },
 });

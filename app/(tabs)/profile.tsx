@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   TextInput,
   Modal,
   Switch,
@@ -14,41 +13,50 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../../src/hooks/useProfile';
-import { colors, spacing, radius } from '../../src/constants/theme';
-import { formatCurrency, formatCurrencyCompact } from '../../src/utils/currency';
+import { colors, spacing, typography } from '../../src/constants/theme';
+import { formatCurrencyCompact } from '../../src/utils/currency';
 import type { Achievement } from '../../src/hooks/useProfile';
 
-function HealthScoreRing({ score }: { score: number }) {
+function HealthScore({ score }: { score: number }) {
   const color = score >= 70 ? colors.income : score >= 40 ? colors.orange : colors.expense;
+  const label = score >= 70 ? 'Excelente' : score >= 40 ? 'En progreso' : 'Por mejorar';
 
   return (
-    <View style={styles.scoreContainer}>
-      <View style={[styles.scoreRing, { borderColor: color }]}>
+    <View style={styles.scoreRow}>
+      <View style={styles.scoreLeft}>
+        <Text style={styles.scoreLabel}>SALUD FINANCIERA</Text>
         <Text style={[styles.scoreNumber, { color }]}>{score}</Text>
-        <Text style={styles.scoreLabel}>/ 100</Text>
+        <Text style={styles.scoreMax}>/100</Text>
       </View>
-      <Text style={styles.scoreTitle}>Salud financiera</Text>
-      <Text style={styles.scoreSubtitle}>
-        {score >= 70 ? '¡Excelente manejo!' : score >= 40 ? 'Vas bien, sigue mejorando' : 'Hay oportunidades de mejora'}
-      </Text>
+      <View style={styles.scoreRight}>
+        <View style={styles.scoreTrack}>
+          <View style={[styles.scoreFill, { width: `${score}%`, backgroundColor: color }]} />
+        </View>
+        <Text style={[styles.scoreStatus, { color }]}>{label}</Text>
+      </View>
     </View>
   );
 }
 
-function AchievementBadge({ achievement }: { achievement: Achievement }) {
+function AchievementRow({ achievement }: { achievement: Achievement }) {
   return (
-    <View style={[styles.badge, !achievement.unlocked && styles.badgeLocked]}>
+    <View style={[styles.achievementRow, !achievement.unlocked && styles.achievementLocked]}>
       <Ionicons
         name={achievement.icon as any}
-        size={22}
-        color={achievement.unlocked ? colors.orange : colors.textTertiary}
+        size={18}
+        color={achievement.unlocked ? colors.income : colors.textTertiary}
       />
-      <Text style={[styles.badgeTitle, !achievement.unlocked && styles.badgeTitleLocked]}>
-        {achievement.title}
-      </Text>
-      <Text style={styles.badgeDesc} numberOfLines={2}>
-        {achievement.description}
-      </Text>
+      <View style={styles.achievementInfo}>
+        <Text style={[styles.achievementTitle, !achievement.unlocked && { color: colors.textTertiary }]}>
+          {achievement.title}
+        </Text>
+        <Text style={styles.achievementDesc}>{achievement.description}</Text>
+      </View>
+      {achievement.unlocked && (
+        <View style={styles.achievementBadge}>
+          <Text style={styles.achievementBadgeText}>✓</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -69,14 +77,10 @@ export default function ProfileScreen() {
     setEditNameVisible(false);
   };
 
-  const handleToggleFaceId = async (value: boolean) => {
-    await toggleFaceId(value);
-  };
-
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.blue} />
+        <ActivityIndicator size="small" color={colors.textTertiary} />
       </View>
     );
   }
@@ -89,96 +93,97 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.title}>Perfil</Text>
-
-        {/* Tarjeta de usuario */}
-        <View style={styles.userCard}>
-          <View style={styles.avatarCircle}>
-            <Ionicons name="person" size={32} color={colors.blue} />
-          </View>
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>{profile?.name ?? 'Mi Perfil'}</Text>
-            <Text style={styles.userSince}>
-              {stats?.daysUsing === 0
-                ? 'Primer día en FinanceAI'
-                : `${stats?.daysUsing} días usando FinanceAI`}
+        {/* Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.label}>PERFIL</Text>
+            <TouchableOpacity style={styles.nameRow} onPress={handleEditName}>
+              <Text style={styles.userName}>{profile?.name ?? 'Mi Perfil'}</Text>
+              <Ionicons name="pencil-outline" size={14} color={colors.textTertiary} />
+            </TouchableOpacity>
+            <Text style={styles.daysText}>
+              {stats?.daysUsing === 0 ? 'Primer día' : `${stats?.daysUsing} días usando FinanceAI`}
             </Text>
           </View>
-          <TouchableOpacity onPress={handleEditName} style={styles.editBtn}>
-            <Ionicons name="pencil-outline" size={18} color={colors.textSecondary} />
-          </TouchableOpacity>
         </View>
 
-        {/* Puntuación de salud financiera */}
-        {stats && <HealthScoreRing score={stats.healthScore} />}
+        <View style={styles.divider} />
 
-        {/* Estadísticas globales */}
-        <View style={styles.sectionTitle}>
-          <Text style={styles.sectionText}>Estadísticas globales</Text>
-        </View>
+        {/* Salud financiera */}
+        {stats && <HealthScore score={stats.healthScore} />}
 
+        <View style={styles.divider} />
+
+        {/* Estadísticas */}
+        <Text style={styles.sectionLabel}>ESTADÍSTICAS GLOBALES</Text>
         <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
+          <View style={styles.statRow}>
+            <Text style={styles.statLabel}>Transacciones registradas</Text>
             <Text style={styles.statValue}>{stats?.totalTransactions ?? 0}</Text>
-            <Text style={styles.statLabel}>Transacciones</Text>
           </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{formatCurrencyCompact(stats?.totalIncome ?? 0)}</Text>
+          <View style={styles.statDivider} />
+          <View style={styles.statRow}>
             <Text style={styles.statLabel}>Ingresos totales</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{formatCurrencyCompact(stats?.totalExpenses ?? 0)}</Text>
-            <Text style={styles.statLabel}>Gastos totales</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{formatCurrencyCompact(stats?.averageMonthlySavings ?? 0)}</Text>
-            <Text style={styles.statLabel}>Ahorro promedio/mes</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats?.completedGoals ?? 0}</Text>
-            <Text style={styles.statLabel}>Metas completadas</Text>
-          </View>
-          <View style={styles.statCard}>
             <Text style={[styles.statValue, { color: colors.income }]}>
+              {formatCurrencyCompact(stats?.totalIncome ?? 0)}
+            </Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statRow}>
+            <Text style={styles.statLabel}>Gastos totales</Text>
+            <Text style={[styles.statValue, { color: colors.expense }]}>
+              {formatCurrencyCompact(stats?.totalExpenses ?? 0)}
+            </Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statRow}>
+            <Text style={styles.statLabel}>Ahorro promedio mensual</Text>
+            <Text style={styles.statValue}>
+              {formatCurrencyCompact(stats?.averageMonthlySavings ?? 0)}
+            </Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statRow}>
+            <Text style={styles.statLabel}>Metas completadas</Text>
+            <Text style={styles.statValue}>{stats?.completedGoals ?? 0}</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statRow}>
+            <Text style={styles.statLabel}>Tasa de ahorro</Text>
+            <Text style={[
+              styles.statValue,
+              { color: (stats?.savingsRate ?? 0) >= 10 ? colors.income : colors.textPrimary }
+            ]}>
               {(stats?.savingsRate ?? 0).toFixed(1)}%
             </Text>
-            <Text style={styles.statLabel}>Tasa de ahorro</Text>
           </View>
         </View>
 
-        {/* Logros */}
-        <View style={styles.sectionTitle}>
-          <Text style={styles.sectionText}>
-            Logros — {unlockedCount}/{achievements.length} desbloqueados
-          </Text>
-        </View>
+        <View style={styles.divider} />
 
-        <View style={styles.badgesGrid}>
-          {achievements.map((achievement) => (
-            <AchievementBadge key={achievement.id} achievement={achievement} />
+        {/* Logros */}
+        <Text style={styles.sectionLabel}>
+          LOGROS — {unlockedCount}/{achievements.length}
+        </Text>
+        <View style={styles.achievementsList}>
+          {achievements.map((a) => (
+            <AchievementRow key={a.id} achievement={a} />
           ))}
         </View>
 
+        <View style={styles.divider} />
+
         {/* Configuración */}
-        <View style={styles.sectionTitle}>
-          <Text style={styles.sectionText}>Configuración</Text>
+        <Text style={styles.sectionLabel}>CONFIGURACIÓN</Text>
+        <View style={styles.settingRow}>
+          <Text style={styles.settingLabel}>Face ID / Touch ID</Text>
+          <Switch
+            value={profile?.faceIdEnabled ?? true}
+            onValueChange={toggleFaceId}
+            trackColor={{ false: colors.surfaceTertiary, true: colors.income }}
+            thumbColor="#fff"
+          />
         </View>
-
-        <View style={styles.settingsCard}>
-          <View style={styles.settingRow}>
-            <View style={styles.settingLeft}>
-              <Ionicons name="scan-outline" size={20} color={colors.blue} />
-              <Text style={styles.settingLabel}>Face ID / Touch ID</Text>
-            </View>
-            <Switch
-              value={profile?.faceIdEnabled ?? true}
-              onValueChange={handleToggleFaceId}
-              trackColor={{ false: colors.surfaceSecondary, true: colors.blue }}
-              thumbColor="#fff"
-            />
-          </View>
-        </View>
-
       </ScrollView>
 
       {/* Modal editar nombre */}
@@ -188,9 +193,9 @@ export default function ProfileScreen() {
         transparent
         onRequestClose={() => setEditNameVisible(false)}
       >
-        <View style={styles.modalOverlay}>
+        <View style={styles.overlay}>
           <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Tu nombre</Text>
+            <Text style={styles.modalLabel}>TU NOMBRE</Text>
             <TextInput
               style={styles.modalInput}
               value={newName}
@@ -206,10 +211,7 @@ export default function ProfileScreen() {
               >
                 <Text style={styles.modalCancelText}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalSaveBtn}
-                onPress={handleSaveName}
-              >
+              <TouchableOpacity style={styles.modalSaveBtn} onPress={handleSaveName}>
                 <Text style={styles.modalSaveText}>Guardar</Text>
               </TouchableOpacity>
             </View>
@@ -221,170 +223,65 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  loadingContainer: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, paddingBottom: spacing.xxl },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginBottom: spacing.xl,
+  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
+  header: { paddingVertical: spacing.lg },
+  label: { ...typography.label, color: colors.textTertiary, marginBottom: spacing.xs },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: 4 },
+  userName: { fontSize: 26, fontWeight: '200', color: colors.textPrimary, letterSpacing: -0.5 },
+  daysText: { fontSize: 12, fontWeight: '300', color: colors.textTertiary, letterSpacing: 0.2 },
+  divider: { height: 0.5, backgroundColor: colors.borderStrong, marginVertical: spacing.xl },
+  scoreRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xl },
+  scoreLeft: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
+  scoreLabel: { ...typography.label, color: colors.textTertiary, position: 'absolute', top: -16 },
+  scoreNumber: { fontSize: 42, fontWeight: '200', letterSpacing: -2 },
+  scoreMax: { fontSize: 14, fontWeight: '300', color: colors.textTertiary },
+  scoreRight: { flex: 1, gap: spacing.sm },
+  scoreTrack: { height: 2, backgroundColor: colors.surfaceTertiary, borderRadius: 1, overflow: 'hidden' },
+  scoreFill: { height: '100%', borderRadius: 1 },
+  scoreStatus: { fontSize: 12, fontWeight: '300', letterSpacing: 0.3 },
+  sectionLabel: { ...typography.label, color: colors.textTertiary, marginBottom: spacing.lg },
+  statsGrid: { gap: 0 },
+  statRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.md },
+  statDivider: { height: 0.5, backgroundColor: colors.border },
+  statLabel: { fontSize: 13, fontWeight: '300', color: colors.textSecondary },
+  statValue: { fontSize: 14, fontWeight: '300', color: colors.textPrimary, letterSpacing: -0.3 },
+  achievementsList: { gap: 0 },
+  achievementRow: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.md,
+    paddingVertical: spacing.md, borderBottomWidth: 0.5, borderBottomColor: colors.border,
   },
-  userCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.lg,
-    gap: spacing.md,
+  achievementLocked: { opacity: 0.35 },
+  achievementInfo: { flex: 1 },
+  achievementTitle: { fontSize: 13, fontWeight: '400', color: colors.textPrimary, marginBottom: 2 },
+  achievementDesc: { fontSize: 11, fontWeight: '300', color: colors.textTertiary },
+  achievementBadge: {
+    width: 20, height: 20, borderRadius: 10,
+    backgroundColor: colors.income, alignItems: 'center', justifyContent: 'center',
   },
-  avatarCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'rgba(0,122,255,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userInfo: { flex: 1 },
-  userName: { fontSize: 17, fontWeight: '600', color: colors.textPrimary },
-  userSince: { fontSize: 12, color: colors.textSecondary, marginTop: 3 },
-  editBtn: { padding: spacing.sm },
-  scoreContainer: {
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.xl,
-    marginBottom: spacing.lg,
-  },
-  scoreRing: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  scoreNumber: { fontSize: 28, fontWeight: '700' },
-  scoreLabel: { fontSize: 11, color: colors.textTertiary },
-  scoreTitle: { fontSize: 15, fontWeight: '600', color: colors.textPrimary },
-  scoreSubtitle: { fontSize: 12, color: colors.textSecondary, marginTop: 4 },
-  sectionTitle: { marginBottom: spacing.sm, marginTop: spacing.sm },
-  sectionText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  statCard: {
-    flexBasis: '31%',
-    flexGrow: 1,
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginBottom: 3,
-  },
-  statLabel: { fontSize: 11, color: colors.textTertiary, textAlign: 'center' },
-  badgesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  badge: {
-    flexBasis: '47%',
-    flexGrow: 1,
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    alignItems: 'center',
-    gap: 4,
-    borderWidth: 1,
-    borderColor: colors.orange + '40',
-  },
-  badgeLocked: {
-    borderColor: 'transparent',
-    opacity: 0.5,
-  },
-  badgeTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    textAlign: 'center',
-  },
-  badgeTitleLocked: { color: colors.textTertiary },
-  badgeDesc: { fontSize: 11, color: colors.textTertiary, textAlign: 'center' },
-  settingsCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-  },
+  achievementBadgeText: { fontSize: 10, color: '#000', fontWeight: '600' },
   settingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', paddingVertical: spacing.md,
   },
-  settingLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  settingLabel: { fontSize: 15, color: colors.textPrimary },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    padding: spacing.xl,
-  },
+  settingLabel: { fontSize: 13, fontWeight: '300', color: colors.textPrimary },
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', padding: spacing.xl },
   modalBox: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.xl,
-    gap: spacing.lg,
+    backgroundColor: colors.surface, borderRadius: 14, padding: spacing.xl,
+    gap: spacing.lg, borderWidth: 0.5, borderColor: colors.borderStrong,
   },
-  modalTitle: { fontSize: 17, fontWeight: '600', color: colors.textPrimary },
+  modalLabel: { ...typography.label, color: colors.textTertiary },
   modalInput: {
-    backgroundColor: colors.surfaceSecondary,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    fontSize: 16,
-    color: colors.textPrimary,
+    fontSize: 18, fontWeight: '200', color: colors.textPrimary,
+    borderBottomWidth: 0.5, borderBottomColor: colors.borderStrong, paddingBottom: spacing.sm,
   },
   modalButtons: { flexDirection: 'row', gap: spacing.md },
   modalCancelBtn: {
-    flex: 1,
-    paddingVertical: spacing.md,
-    borderRadius: radius.md,
-    backgroundColor: colors.surfaceSecondary,
-    alignItems: 'center',
+    flex: 1, paddingVertical: spacing.md, borderRadius: 6,
+    borderWidth: 0.5, borderColor: colors.borderStrong, alignItems: 'center',
   },
-  modalCancelText: { color: colors.textSecondary, fontWeight: '600' },
-  modalSaveBtn: {
-    flex: 1,
-    paddingVertical: spacing.md,
-    borderRadius: radius.md,
-    backgroundColor: colors.blue,
-    alignItems: 'center',
-  },
-  modalSaveText: { color: '#fff', fontWeight: '600' },
+  modalCancelText: { fontSize: 13, fontWeight: '300', color: colors.textSecondary },
+  modalSaveBtn: { flex: 1, paddingVertical: spacing.md, borderRadius: 6, backgroundColor: colors.income, alignItems: 'center' },
+  modalSaveText: { fontSize: 13, fontWeight: '500', color: '#000' },
 });

@@ -6,38 +6,45 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useReports } from '../../src/hooks/useReports';
 import { CategoryPieChart } from '../../src/components/CategoryPieChart';
 import { MonthComparisonCard } from '../../src/components/MonthComparisonCard';
-import { colors, spacing } from '../../src/constants/theme';
+import { colors, spacing, typography } from '../../src/constants/theme';
 import { exportReportToPdf } from '../../src/services/pdfExport';
-import { TouchableOpacity, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 export default function ReportsScreen() {
   const reports = useReports();
+
   const handleExport = async () => {
     try {
       await exportReportToPdf({
-        breakdown: reports.breakdown,
-        currentMonthExpense: reports.currentMonthExpense,
+        breakdown:            reports.breakdown,
+        currentMonthExpense:  reports.currentMonthExpense,
         previousMonthExpense: reports.previousMonthExpense,
         monthOverMonthChange: reports.monthOverMonthChange,
       });
-    } catch (err) {
-      Alert.alert('Error', 'No se pudo generar el PDF. Intenta de nuevo.');
+    } catch {
+      Alert.alert('Error', 'No se pudo generar el PDF.');
     }
   };
 
   if (reports.isLoading && reports.breakdown.length === 0) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.blue} />
+        <ActivityIndicator size="small" color={colors.textTertiary} />
       </View>
     );
   }
+
+  const monthName = new Date().toLocaleDateString('es-CO', {
+    month: 'long',
+    year: 'numeric',
+  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -48,21 +55,24 @@ export default function ReportsScreen() {
           <RefreshControl
             refreshing={reports.isLoading}
             onRefresh={reports.refresh}
-            tintColor={colors.textPrimary}
+            tintColor={colors.textTertiary}
           />
         }
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Reportes</Text>
+          <View>
+            <Text style={styles.label}>REPORTES</Text>
+            <Text style={styles.monthName}>{monthName}</Text>
+          </View>
           <TouchableOpacity style={styles.exportButton} onPress={handleExport}>
-            <Ionicons name="share-outline" size={20} color={colors.blue} />
+            <Ionicons name="share-outline" size={16} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
+        <View style={styles.divider} />
+
         {reports.error && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>⚠️ {reports.error}</Text>
-          </View>
+          <Text style={styles.errorText}>{reports.error}</Text>
         )}
 
         <MonthComparisonCard
@@ -71,7 +81,7 @@ export default function ReportsScreen() {
           monthOverMonthChange={reports.monthOverMonthChange}
         />
 
-        <View style={{ height: spacing.lg }} />
+        <View style={{ height: spacing.xl }} />
 
         <CategoryPieChart data={reports.breakdown} />
 
@@ -88,31 +98,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xl,
+    alignItems: 'flex-end',
+    paddingVertical: spacing.lg,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
+  label: { ...typography.label, color: colors.textTertiary, marginBottom: spacing.xs },
+  monthName: {
+    fontSize: 22,
+    fontWeight: '200',
     color: colors.textPrimary,
+    letterSpacing: -0.5,
+    textTransform: 'capitalize',
   },
   exportButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.surface,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 0.5,
+    borderColor: colors.borderStrong,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  errorBox: {
-    backgroundColor: 'rgba(255,59,48,0.15)',
-    borderRadius: 8,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-  },
-  errorText: { fontSize: 13, color: colors.expense },
+  divider: { height: 0.5, backgroundColor: colors.borderStrong, marginBottom: spacing.xl },
+  errorText: { fontSize: 12, color: colors.expense, marginBottom: spacing.md },
 });

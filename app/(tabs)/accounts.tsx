@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAccounts } from '../../src/hooks/useAccounts';
 import { AccountCard } from '../../src/components/AccountCard';
 import { AccountForm } from '../../src/components/AccountForm';
-import { colors, spacing, radius } from '../../src/constants/theme';
+import { colors, spacing, typography } from '../../src/constants/theme';
 import { formatCurrency } from '../../src/utils/currency';
 import type { Account } from '../../src/models/types';
 
@@ -23,11 +23,8 @@ export default function AccountsScreen() {
   const [formVisible, setFormVisible] = useState(false);
 
   const handleSave = async (
-    name: string,
-    type: string,
-    balance: number,
-    colorHex: string,
-    iconName: string
+    name: string, type: string, balance: number,
+    colorHex: string, iconName: string
   ) => {
     await accounts.addAccount(name, type, balance, colorHex, iconName);
   };
@@ -44,14 +41,10 @@ export default function AccountsScreen() {
           onPress: () => {
             Alert.alert(
               'Confirmar',
-              `¿Eliminar la cuenta "${account.name}"? Esta acción no se puede deshacer.`,
+              `¿Eliminar "${account.name}"?`,
               [
                 { text: 'Cancelar', style: 'cancel' },
-                {
-                  text: 'Eliminar',
-                  style: 'destructive',
-                  onPress: () => accounts.removeAccount(account.id),
-                },
+                { text: 'Eliminar', style: 'destructive', onPress: () => accounts.removeAccount(account.id) },
               ]
             );
           },
@@ -61,14 +54,13 @@ export default function AccountsScreen() {
   };
 
   const handlePress = (account: Account) => {
-    // En un módulo futuro: navegar al detalle de la cuenta
-    Alert.alert(account.name, `Saldo: ${formatCurrency(account.balance)}`);
+    Alert.alert(account.name, formatCurrency(account.balance));
   };
 
   if (accounts.isLoading && accounts.accounts.length === 0) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.blue} />
+        <ActivityIndicator size="small" color={colors.textTertiary} />
       </View>
     );
   }
@@ -82,64 +74,59 @@ export default function AccountsScreen() {
           <RefreshControl
             refreshing={accounts.isLoading}
             onRefresh={accounts.refresh}
-            tintColor={colors.textPrimary}
+            tintColor={colors.textTertiary}
           />
         }
       >
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.title}>Mis Cuentas</Text>
-            <Text style={styles.subtitle}>
-              {accounts.accounts.length} cuenta{accounts.accounts.length !== 1 ? 's' : ''} · {formatCurrency(accounts.totalBalance)}
+            <Text style={styles.label}>CUENTAS</Text>
+            <Text style={styles.totalBalance}>
+              {formatCurrency(accounts.totalBalance)}
             </Text>
           </View>
           <TouchableOpacity
             style={styles.addButton}
             onPress={() => setFormVisible(true)}
           >
-            <Ionicons name="add" size={24} color="#fff" />
+            <Ionicons name="add" size={20} color={colors.textPrimary} />
           </TouchableOpacity>
         </View>
 
-        {/* Error */}
+        <View style={styles.divider} />
+
         {accounts.error && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>⚠️ {accounts.error}</Text>
-          </View>
+          <Text style={styles.errorText}>⚠️ {accounts.error}</Text>
         )}
 
-        {/* Lista de cuentas */}
         {accounts.accounts.length === 0 ? (
           <View style={styles.empty}>
-            <Ionicons name="wallet-outline" size={48} color={colors.textTertiary} />
-            <Text style={styles.emptyTitle}>Sin cuentas todavía</Text>
+            <Text style={styles.emptyTitle}>Sin cuentas</Text>
             <Text style={styles.emptySubtitle}>
-              Agrega tu primera cuenta para empezar a registrar tus finanzas
+              Agrega tu primera cuenta financiera
             </Text>
             <TouchableOpacity
               style={styles.emptyButton}
               onPress={() => setFormVisible(true)}
             >
-              <Text style={styles.emptyButtonText}>Crear cuenta</Text>
+              <Text style={styles.emptyButtonText}>+ Nueva cuenta</Text>
             </TouchableOpacity>
           </View>
         ) : (
-          accounts.accounts.map((account) => (
-            <AccountCard
-              key={account.id}
-              account={account}
-              onPress={handlePress}
-              onLongPress={handleLongPress}
-            />
-          ))
-        )}
-
-        {/* Tip de uso */}
-        {accounts.accounts.length > 0 && (
-          <Text style={styles.hint}>
-            💡 Mantén presionada una cuenta para editarla o eliminarla
-          </Text>
+          <>
+            {accounts.accounts.map((account) => (
+              <AccountCard
+                key={account.id}
+                account={account}
+                onPress={handlePress}
+                onLongPress={handleLongPress}
+              />
+            ))}
+            <Text style={styles.hint}>
+              Mantén presionada una cuenta para eliminarla
+            </Text>
+          </>
         )}
       </ScrollView>
 
@@ -154,86 +141,80 @@ export default function AccountsScreen() {
 
 const styles = StyleSheet.create({
   loadingContainer: {
-    flex:            1,
+    flex: 1,
     backgroundColor: colors.background,
-    alignItems:      'center',
-    justifyContent:  'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  container: {
-    flex:            1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    padding:       spacing.lg,
-    paddingBottom: spacing.xxl,
-  },
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
   header: {
-    flexDirection:  'row',
+    flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems:     'center',
-    marginBottom:   spacing.xl,
+    alignItems: 'flex-end',
+    paddingVertical: spacing.lg,
   },
-  title: {
-    fontSize:   28,
-    fontWeight: '700',
-    color:      colors.textPrimary,
+  label: {
+    ...typography.label,
+    color: colors.textTertiary,
+    marginBottom: spacing.xs,
   },
-  subtitle: {
-    fontSize:  13,
-    color:     colors.textSecondary,
-    marginTop: 4,
+  totalBalance: {
+    fontSize: 28,
+    fontWeight: '200',
+    color: colors.textPrimary,
+    letterSpacing: -1,
   },
   addButton: {
-    width:           44,
-    height:          44,
-    borderRadius:    22,
-    backgroundColor: colors.blue,
-    alignItems:      'center',
-    justifyContent:  'center',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 0.5,
+    borderColor: colors.borderStrong,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  errorBox: {
-    backgroundColor: 'rgba(255,59,48,0.15)',
-    borderRadius:    8,
-    padding:         spacing.md,
-    marginBottom:    spacing.md,
+  divider: {
+    height: 0.5,
+    backgroundColor: colors.borderStrong,
+    marginBottom: spacing.xl,
   },
-  errorText: {
-    fontSize: 13,
-    color:    colors.expense,
-  },
+  errorText: { fontSize: 12, color: colors.expense, marginBottom: spacing.md },
   empty: {
-    alignItems:      'center',
     paddingVertical: spacing.xxl * 2,
-    gap:              spacing.sm,
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   emptyTitle: {
-    fontSize:   16,
-    fontWeight: '600',
-    color:      colors.textPrimary,
-    marginTop:  spacing.md,
+    fontSize: 16,
+    fontWeight: '300',
+    color: colors.textPrimary,
   },
   emptySubtitle: {
-    fontSize:   13,
-    color:      colors.textTertiary,
-    textAlign:  'center',
-    paddingHorizontal: spacing.xl,
+    fontSize: 13,
+    fontWeight: '300',
+    color: colors.textTertiary,
+    textAlign: 'center',
   },
   emptyButton: {
-    backgroundColor: colors.blue,
-    borderRadius:    radius.md,
-    paddingVertical:   spacing.md,
-    paddingHorizontal: spacing.xl,
     marginTop: spacing.lg,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xl,
+    borderWidth: 0.5,
+    borderColor: colors.borderStrong,
+    borderRadius: 6,
   },
   emptyButtonText: {
-    color:      '#fff',
-    fontWeight: '600',
-    fontSize:   14,
+    fontSize: 13,
+    fontWeight: '300',
+    color: colors.textPrimary,
+    letterSpacing: 0.3,
   },
   hint: {
-    fontSize:  12,
-    color:     colors.textTertiary,
+    fontSize: 11,
+    color: colors.textTertiary,
     textAlign: 'center',
-    marginTop: spacing.lg,
+    marginTop: spacing.xl,
+    letterSpacing: 0.3,
   },
 });

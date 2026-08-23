@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius } from '../../constants/theme';
+import { colors, spacing, typography } from '../../constants/theme';
 import { formatCurrency, formatDate } from '../../utils/currency';
 import type { DashboardData } from '../../models/types';
 
@@ -9,81 +8,53 @@ interface Props {
   transactions: DashboardData['recentTransactions'];
 }
 
-// Ícono por tipo de transacción
-const TYPE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
-  income:     'arrow-down-circle',
-  expense:    'arrow-up-circle',
-  transfer:   'swap-horizontal',
-  investment: 'pie-chart',
-  loan:       'business',
-  payment:    'checkmark-circle',
-};
-
-// Color por tipo de transacción
 const TYPE_COLORS: Record<string, string> = {
   income:     colors.income,
   expense:    colors.expense,
-  transfer:   colors.blue,
-  investment: colors.purple,
-  loan:       colors.orange,
-  payment:    colors.pink,
+  transfer:   'rgba(255,255,255,0.3)',
+  investment: colors.income,
+  loan:       colors.income,
+  payment:    colors.expense,
 };
 
 export function RecentTransactions({ transactions }: Props) {
   return (
-    <View style={styles.card}>
-      <Text style={styles.title}>Últimos movimientos</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>MOVIMIENTOS RECIENTES</Text>
 
-      {/* Si no hay transacciones mostramos un mensaje vacío */}
       {transactions.length === 0 ? (
-        <View style={styles.empty}>
-          <Ionicons
-            name="receipt-outline"
-            size={32}
-            color={colors.textTertiary}
-          />
-          <Text style={styles.emptyText}>
-            Sin movimientos todavía
-          </Text>
-          <Text style={styles.emptySubText}>
-            Agrega tu primera transacción
-          </Text>
-        </View>
+        <Text style={styles.emptyText}>Sin movimientos registrados</Text>
       ) : (
         transactions.map((tx, index) => {
-          const icon     = TYPE_ICONS[tx.type]  ?? 'ellipse';
-          const color    = TYPE_COLORS[tx.type] ?? colors.textSecondary;
           const isIncome = tx.type === 'income' || tx.type === 'loan';
-          const isLast   = index === transactions.length - 1;
+          const lineColor = TYPE_COLORS[tx.type] ?? colors.textTertiary;
 
           return (
             <View
               key={tx.id}
-              style={[styles.row, !isLast && styles.rowBorder]}
+              style={[
+                styles.row,
+                index < transactions.length - 1 && styles.rowBorder,
+              ]}
             >
-              {/* Ícono del tipo */}
-              <View style={[
-                styles.iconCircle,
-                { backgroundColor: color + '20' }
-              ]}>
-                <Ionicons name={icon} size={18} color={color} />
-              </View>
+              {/* Línea vertical de acento */}
+              <View style={[styles.accentLine, { backgroundColor: lineColor }]} />
 
-              {/* Descripción y fecha */}
+              {/* Info */}
               <View style={styles.info}>
-                <Text style={styles.notes} numberOfLines={1}>
+                <Text style={styles.notesText} numberOfLines={1}>
                   {tx.notes || tx.categoryName || 'Movimiento'}
                 </Text>
-                <Text style={styles.date}>
+                <Text style={styles.metaText}>
                   {formatDate(tx.date)}
-                  {tx.categoryName ? ` · ${tx.categoryName}` : ''}
+                  {tx.categoryName ? `  ·  ${tx.categoryName}` : ''}
                 </Text>
               </View>
 
               {/* Monto */}
               <Text style={[
                 styles.amount,
-                { color: isIncome ? colors.income : colors.expense }
+                { color: isIncome ? colors.income : colors.expense },
               ]}>
                 {isIncome ? '+' : '-'}{formatCurrency(tx.amount)}
               </Text>
@@ -96,63 +67,54 @@ export function RecentTransactions({ transactions }: Props) {
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius:    radius.lg,
-    padding:         spacing.lg,
+  container: {
+    marginTop: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   title: {
-    fontSize:     15,
-    fontWeight:   '600',
-    color:        colors.textPrimary,
-    marginBottom: spacing.md,
-  },
-  empty: {
-    alignItems:     'center',
-    paddingVertical: spacing.xl,
-    gap:             spacing.sm,
+    ...typography.label,
+    color: colors.textTertiary,
+    marginBottom: spacing.lg,
   },
   emptyText: {
-    fontSize:   14,
-    fontWeight: '500',
-    color:      colors.textSecondary,
-  },
-  emptySubText: {
-    fontSize: 12,
-    color:    colors.textTertiary,
+    fontSize: 13,
+    fontWeight: '300',
+    color: colors.textTertiary,
+    paddingVertical: spacing.xl,
   },
   row: {
     flexDirection: 'row',
-    alignItems:    'center',
+    alignItems: 'center',
     paddingVertical: spacing.md,
-    gap:           spacing.md,
+    gap: spacing.md,
   },
   rowBorder: {
     borderBottomWidth: 0.5,
     borderBottomColor: colors.border,
   },
-  iconCircle: {
-    width:           40,
-    height:          40,
-    borderRadius:    20,
-    alignItems:      'center',
-    justifyContent:  'center',
+  accentLine: {
+    width: 2,
+    height: 28,
+    borderRadius: 1,
+    flexShrink: 0,
   },
   info: {
     flex: 1,
   },
-  notes: {
-    fontSize:     14,
-    fontWeight:   '500',
-    color:        colors.textPrimary,
+  notesText: {
+    fontSize: 14,
+    fontWeight: '300',
+    color: colors.textPrimary,
     marginBottom: 2,
   },
-  date: {
-    fontSize: 12,
-    color:    colors.textTertiary,
+  metaText: {
+    fontSize: 11,
+    color: colors.textTertiary,
+    letterSpacing: 0.3,
   },
   amount: {
-    fontSize:   14,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '300',
+    letterSpacing: -0.3,
   },
 });

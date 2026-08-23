@@ -14,7 +14,7 @@ import { BalanceCard } from '../../src/components/dashboard/BalanceCard';
 import { SummaryCards } from '../../src/components/dashboard/SummaryCards';
 import { MonthlyBarChart } from '../../src/components/dashboard/MonthlyBarChart';
 import { RecentTransactions } from '../../src/components/dashboard/RecentTransactions';
-import { colors, spacing } from '../../src/constants/theme';
+import { colors, spacing, typography } from '../../src/constants/theme';
 import { getGreeting } from '../../src/utils/currency';
 
 export default function DashboardScreen() {
@@ -23,8 +23,7 @@ export default function DashboardScreen() {
   if (dashboard.isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.blue} />
-        <Text style={styles.loadingText}>Cargando FinanceAI...</Text>
+        <ActivityIndicator size="small" color={colors.textTertiary} />
       </View>
     );
   }
@@ -40,32 +39,42 @@ export default function DashboardScreen() {
           <RefreshControl
             refreshing={dashboard.isLoading}
             onRefresh={dashboard.refresh}
-            tintColor={colors.textPrimary}
+            tintColor={colors.textTertiary}
           />
         }
       >
-        <Text style={styles.greeting}>{getGreeting()} 👋</Text>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.greeting}>{getGreeting()}</Text>
+          <Text style={styles.appName}>FinanceAI</Text>
+        </View>
 
+        {/* Línea superior */}
+        <View style={styles.topDivider} />
+
+        {/* Error */}
         {dashboard.error && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>⚠️ {dashboard.error}</Text>
-          </View>
+          <Text style={styles.errorText}>{dashboard.error}</Text>
         )}
 
+        {/* Saldo principal */}
         <BalanceCard
           totalBalance={dashboard.totalBalance}
           netFlow={dashboard.monthlyNet}
         />
 
+        {/* Estadísticas en grid */}
         <SummaryCards
           income={dashboard.monthlyIncome}
           expenses={dashboard.monthlyExpenses}
         />
 
+        {/* Gráfica */}
         {dashboard.monthlyChart.length > 0 && (
           <MonthlyBarChart data={dashboard.monthlyChart} />
         )}
 
+        {/* Transacciones recientes */}
         <RecentTransactions transactions={dashboard.recentTransactions} />
 
       </ScrollView>
@@ -75,37 +84,47 @@ export default function DashboardScreen() {
 
 const styles = StyleSheet.create({
   loadingContainer: {
-    flex:            1,
+    flex: 1,
     backgroundColor: colors.background,
-    alignItems:      'center',
-    justifyContent:  'center',
-    gap:             spacing.md,
-  },
-  loadingText: {
-    fontSize: 14,
-    color:    colors.textSecondary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   container: {
-    flex:            1,
+    flex: 1,
     backgroundColor: colors.background,
   },
   content: {
-    padding: spacing.lg,
-    gap:     spacing.lg,
+    paddingHorizontal: spacing.xl,
     paddingBottom: spacing.xxl,
   },
-  greeting: {
-    fontSize:   28,
-    fontWeight: '700',
-    color:      colors.textPrimary,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
   },
-  errorBox: {
-    backgroundColor: 'rgba(255,59,48,0.15)',
-    borderRadius:    8,
-    padding:         spacing.md,
+  greeting: {
+    fontSize: 13,
+    fontWeight: '300',
+    color: colors.textTertiary,
+    letterSpacing: 0.3,
+    fontStyle: 'italic',
+  },
+  appName: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: colors.textTertiary,
+    letterSpacing: 0.15,
+  },
+  topDivider: {
+    height: 0.5,
+    backgroundColor: colors.borderStrong,
+    marginBottom: spacing.xs,
   },
   errorText: {
-    fontSize: 13,
-    color:    colors.expense,
+    fontSize: 12,
+    color: colors.expense,
+    marginTop: spacing.md,
+    fontWeight: '300',
   },
 });

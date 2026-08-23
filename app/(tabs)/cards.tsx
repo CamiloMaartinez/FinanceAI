@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCards } from '../../src/hooks/useCards';
 import { CardItem } from '../../src/components/CardItem';
 import { CardForm } from '../../src/components/CardForm';
-import { colors, spacing, radius } from '../../src/constants/theme';
+import { colors, spacing, typography } from '../../src/constants/theme';
 import type { Card } from '../../src/models/types';
 
 export default function CardsScreen() {
@@ -22,13 +22,9 @@ export default function CardsScreen() {
   const [formVisible, setFormVisible] = useState(false);
 
   const handleSave = async (
-    name: string,
-    bank: string,
-    annualFee: number,
-    cashbackPercent: number,
-    interestRate: number,
-    benefits: string[],
-    colorHex: string
+    name: string, bank: string, annualFee: number,
+    cashbackPercent: number, interestRate: number,
+    benefits: string[], colorHex: string
   ) => {
     await data.addCard(name, bank, annualFee, cashbackPercent, interestRate, benefits, colorHex);
   };
@@ -38,24 +34,16 @@ export default function CardsScreen() {
   };
 
   const handleLongPress = (card: Card) => {
-    Alert.alert(
-      card.name,
-      '¿Qué deseas hacer?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: () => data.removeCard(card.id),
-        },
-      ]
-    );
+    Alert.alert(card.name, '¿Qué deseas hacer?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Eliminar', style: 'destructive', onPress: () => data.removeCard(card.id) },
+    ]);
   };
 
   if (data.isLoading && data.cards.length === 0) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.blue} />
+        <ActivityIndicator size="small" color={colors.textTertiary} />
       </View>
     );
   }
@@ -72,35 +60,27 @@ export default function CardsScreen() {
           <RefreshControl
             refreshing={data.isLoading}
             onRefresh={data.refresh}
-            tintColor={colors.textPrimary}
+            tintColor={colors.textTertiary}
           />
         }
       >
         <View style={styles.header}>
           <View>
-            <Text style={styles.title}>Comparador</Text>
-            <Text style={styles.subtitle}>
-              {data.cards.length} tarjeta{data.cards.length !== 1 ? 's' : ''} guardadas
+            <Text style={styles.label}>COMPARADOR</Text>
+            <Text style={styles.count}>
+              {data.cards.length} tarjeta{data.cards.length !== 1 ? 's' : ''}
             </Text>
           </View>
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => setFormVisible(true)}
-          >
-            <Ionicons name="add" size={24} color="#fff" />
+          <TouchableOpacity style={styles.addButton} onPress={() => setFormVisible(true)}>
+            <Ionicons name="add" size={20} color={colors.textPrimary} />
           </TouchableOpacity>
         </View>
 
-        {data.error && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>⚠️ {data.error}</Text>
-          </View>
-        )}
+        <View style={styles.divider} />
 
         {data.cards.length === 0 ? (
           <View style={styles.empty}>
-            <Ionicons name="card-outline" size={48} color={colors.textTertiary} />
-            <Text style={styles.emptyTitle}>Sin tarjetas todavía</Text>
+            <Text style={styles.emptyTitle}>Sin tarjetas</Text>
             <Text style={styles.emptySubtitle}>
               Agrega tus tarjetas para comparar cuotas, cashback e intereses
             </Text>
@@ -108,18 +88,14 @@ export default function CardsScreen() {
               style={styles.emptyButton}
               onPress={() => setFormVisible(true)}
             >
-              <Text style={styles.emptyButtonText}>Agregar tarjeta</Text>
+              <Text style={styles.emptyButtonText}>+ Nueva tarjeta</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <>
-            {/* Favoritas */}
             {favorites.length > 0 && (
               <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                  <Ionicons name="star" size={14} color="#FF9500" />
-                  <Text style={styles.sectionTitle}>Favoritas</Text>
-                </View>
+                <Text style={styles.sectionLabel}>FAVORITAS</Text>
                 {favorites.map((card) => (
                   <CardItem
                     key={card.id}
@@ -131,11 +107,10 @@ export default function CardsScreen() {
               </View>
             )}
 
-            {/* Todas las demás */}
             {nonFavorites.length > 0 && (
               <View style={styles.section}>
                 {favorites.length > 0 && (
-                  <Text style={styles.sectionTitle}>Todas las tarjetas</Text>
+                  <Text style={styles.sectionLabel}>TODAS</Text>
                 )}
                 {nonFavorites.map((card) => (
                   <CardItem
@@ -147,13 +122,11 @@ export default function CardsScreen() {
                 ))}
               </View>
             )}
-          </>
-        )}
 
-        {data.cards.length > 0 && (
-          <Text style={styles.hint}>
-            💡 Toca ⭐ para marcar tu favorita · Mantén presionada para eliminar
-          </Text>
+            <Text style={styles.hint}>
+              Toca ⭐ para marcar favorita · Mantén presionada para eliminar
+            </Text>
+          </>
         )}
       </ScrollView>
 
@@ -174,73 +147,37 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xl,
+    alignItems: 'flex-end',
+    paddingVertical: spacing.lg,
   },
-  title: { fontSize: 28, fontWeight: '700', color: colors.textPrimary },
-  subtitle: { fontSize: 13, color: colors.textSecondary, marginTop: 4 },
+  label: { ...typography.label, color: colors.textTertiary, marginBottom: spacing.xs },
+  count: { fontSize: 24, fontWeight: '200', color: colors.textPrimary, letterSpacing: -0.5 },
   addButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.blue,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 36, height: 36, borderRadius: 18,
+    borderWidth: 0.5, borderColor: colors.borderStrong,
+    alignItems: 'center', justifyContent: 'center',
   },
-  errorBox: {
-    backgroundColor: 'rgba(255,59,48,0.15)',
-    borderRadius: 8,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-  },
-  errorText: { fontSize: 13, color: colors.expense },
-  empty: {
-    alignItems: 'center',
-    paddingVertical: spacing.xxl * 2,
-    gap: spacing.sm,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginTop: spacing.md,
-  },
+  divider: { height: 0.5, backgroundColor: colors.borderStrong, marginBottom: spacing.xl },
+  empty: { paddingVertical: spacing.xxl * 2, alignItems: 'center', gap: spacing.sm },
+  emptyTitle: { fontSize: 16, fontWeight: '300', color: colors.textPrimary },
   emptySubtitle: {
-    fontSize: 13,
-    color: colors.textTertiary,
-    textAlign: 'center',
-    paddingHorizontal: spacing.xl,
+    fontSize: 13, fontWeight: '300', color: colors.textTertiary,
+    textAlign: 'center', paddingHorizontal: spacing.xl,
   },
   emptyButton: {
-    backgroundColor: colors.blue,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    marginTop: spacing.lg,
+    marginTop: spacing.lg, paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xl, borderWidth: 0.5,
+    borderColor: colors.borderStrong, borderRadius: 6,
   },
-  emptyButtonText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+  emptyButtonText: { fontSize: 13, fontWeight: '300', color: colors.textPrimary, letterSpacing: 0.3 },
   section: { marginBottom: spacing.lg },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    marginBottom: spacing.sm,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
+  sectionLabel: { ...typography.label, color: colors.textTertiary, marginBottom: spacing.md },
   hint: {
-    fontSize: 12,
-    color: colors.textTertiary,
-    textAlign: 'center',
-    marginTop: spacing.lg,
+    fontSize: 11, color: colors.textTertiary,
+    textAlign: 'center', marginTop: spacing.xl, letterSpacing: 0.3,
   },
 });
