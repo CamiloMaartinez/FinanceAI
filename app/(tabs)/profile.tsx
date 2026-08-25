@@ -284,4 +284,4 @@ const styles = StyleSheet.create({
   modalCancelText: { fontSize: 13, fontWeight: '300', color: colors.textSecondary },
   modalSaveBtn: { flex: 1, paddingVertical: spacing.md, borderRadius: 6, backgroundColor: colors.income, alignItems: 'center' },
   modalSaveText: { fontSize: 13, fontWeight: '500', color: '#000' },
-});
+});   

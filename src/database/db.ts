@@ -77,6 +77,18 @@ async function initDb(database: SQLite.SQLiteDatabase) {
 
     CREATE INDEX IF NOT EXISTS idx_transactions_date
       ON transactions(date);
+
+          CREATE TABLE IF NOT EXISTS alerts (
+      id          TEXT PRIMARY KEY NOT NULL,
+      title       TEXT NOT NULL,
+      type        TEXT NOT NULL,
+      condition   TEXT NOT NULL,
+      threshold   REAL NOT NULL DEFAULT 0,
+      categoryId  TEXT,
+      isActive    INTEGER NOT NULL DEFAULT 1,
+      lastTriggered TEXT,
+      createdAt   TEXT NOT NULL
+    );
       CREATE TABLE IF NOT EXISTS cards (
       id              TEXT PRIMARY KEY NOT NULL,
       name            TEXT NOT NULL,
@@ -544,4 +556,45 @@ export async function getAverageMonthlySavings(): Promise<number> {
 
   const totalSavings = rows.reduce((sum, row) => sum + (row.income - row.expenses), 0);
   return totalSavings / rows.length;
+}
+
+// ─── Queries de Alertas ─────────────────────────────────────
+
+export async function getAllAlerts(): Promise<any[]> {
+  const database = await getDb();
+  const rows = await database.getAllAsync<any>(
+    `SELECT * FROM alerts WHERE isActive = 1 ORDER BY createdAt DESC`
+  );
+  return rows;
+}
+
+export async function createAlert(
+  title: string,
+  type: string,
+  condition: string,
+  threshold: number,
+  categoryId: string | null
+): Promise<void> {
+  const database = await getDb();
+  const id  = `alert-${Date.now()}`;
+  const now = new Date().toISOString();
+
+  await database.runAsync(
+    `INSERT INTO alerts (id, title, type, condition, threshold, categoryId, isActive, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, 1, ?)`,
+    [id, title, type, condition, threshold, categoryId, now]
+  );
+}
+
+export async function updateAlertTriggered(id: string): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(
+    `UPDATE alerts SET lastTriggered = ? WHERE id = ?`,
+    [new Date().toISOString(), id]
+  );
+}
+
+export async function deleteAlert(id: string): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(`DELETE FROM alerts WHERE id = ?`, [id]);
 }

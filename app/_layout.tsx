@@ -4,6 +4,7 @@ import { LogBox, View, ActivityIndicator } from 'react-native';
 import { seedIfEmpty } from '../src/database/seed';
 import { isBiometricAvailable } from '../src/services/biometricAuth';
 import { LockScreen } from '../src/components/LockScreen';
+import { evaluateAlerts } from '../src/services/alertEngine';
 import { colors } from '../src/constants/theme';
 
 LogBox.ignoreLogs(['A props object containing a "key" prop']);
@@ -16,6 +17,7 @@ export default function RootLayout() {
   useEffect(() => {
     const init = async () => {
       await seedIfEmpty();
+      await evaluateAlerts();
 
       const available = await isBiometricAvailable();
       setNeedsBiometric(available);
