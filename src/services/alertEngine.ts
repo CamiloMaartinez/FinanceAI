@@ -8,16 +8,6 @@ import {
   updateAlertTriggered,
 } from '../database/db';
 
-interface AlertRule {
-  id: string;
-  title: string;
-  type: string;
-  condition: string;
-  threshold: number;
-  categoryId: string | null;
-  lastTriggered: string | null;
-}
-
 // Evita enviar la misma alerta más de una vez por día
 function wasTriggeredToday(lastTriggered: string | null): boolean {
   if (!lastTriggered) return false;
@@ -39,7 +29,7 @@ async function sendAlert(title: string, body: string): Promise<void> {
 
 export async function evaluateAlerts(): Promise<void> {
   try {
-    const alerts = await getAllAlerts() as AlertRule[];
+    const alerts = await getAllAlerts();
     if (alerts.length === 0) return;
 
     const now          = new Date();
@@ -77,7 +67,7 @@ export async function evaluateAlerts(): Promise<void> {
 
         case 'category_expense_above':
           if (alert.categoryId) {
-            const cat = breakdown.find((b: any) => b.categoryId === alert.categoryId);
+            const cat = breakdown.find((b) => b.categoryId === alert.categoryId);
             if (cat && cat.total > alert.threshold) {
               triggered = true;
               body = `Gastaste $${Math.round(cat.total).toLocaleString('es-CO')} en ${cat.categoryName}, superando el límite de $${Math.round(alert.threshold).toLocaleString('es-CO')}.`;
@@ -86,7 +76,7 @@ export async function evaluateAlerts(): Promise<void> {
           break;
 
         case 'goal_progress':
-          for (const goal of goals as any[]) {
+          for (const goal of goals) {
             const progress = goal.targetAmount > 0
               ? (goal.currentAmount / goal.targetAmount) * 100
               : 0;

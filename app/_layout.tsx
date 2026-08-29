@@ -4,12 +4,25 @@ import { LogBox, View, ActivityIndicator } from 'react-native';
 import { seedIfEmpty } from '../src/database/seed';
 import { isBiometricAvailable } from '../src/services/biometricAuth';
 import { LockScreen } from '../src/components/LockScreen';
+import { ThemeProvider } from '../src/context/ThemeContext';
 import { evaluateAlerts } from '../src/services/alertEngine';
-import { colors } from '../src/constants/theme';
+import { useColors } from '../src/constants/theme';
+import { ErrorBoundary } from '../src/components/ErrorBoundary';
 
 LogBox.ignoreLogs(['A props object containing a "key" prop']);
 
 export default function RootLayout() {
+  return (
+    <ErrorBoundary>
+      <ThemeProvider>
+        <RootLayoutInner />
+      </ThemeProvider>
+    </ErrorBoundary>
+  );
+}
+
+function RootLayoutInner() {
+  const c = useColors();
   const [isReady,      setIsReady]      = useState(false);
   const [isUnlocked,   setIsUnlocked]   = useState(false);
   const [needsBiometric, setNeedsBiometric] = useState(false);
@@ -30,8 +43,8 @@ export default function RootLayout() {
 
   if (!isReady) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" color={colors.blue} />
+      <View style={{ flex: 1, backgroundColor: c.background, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator size="large" color={c.blue} />
       </View>
     );
   }
@@ -40,7 +53,5 @@ export default function RootLayout() {
     return <LockScreen onUnlock={() => setIsUnlocked(true)} />;
   }
 
-  return (
-    <Stack screenOptions={{ headerShown: false }} />
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

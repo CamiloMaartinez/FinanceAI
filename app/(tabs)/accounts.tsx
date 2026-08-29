@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,11 +14,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAccounts } from '../../src/hooks/useAccounts';
 import { AccountCard } from '../../src/components/AccountCard';
 import { AccountForm } from '../../src/components/AccountForm';
-import { colors, spacing, typography } from '../../src/constants/theme';
+import { useColors, spacing, typography } from '../../src/constants/theme';
 import { formatCurrency } from '../../src/utils/currency';
 import type { Account } from '../../src/models/types';
 
 export default function AccountsScreen() {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   const accounts = useAccounts();
   const [formVisible, setFormVisible] = useState(false);
 
@@ -60,7 +62,7 @@ export default function AccountsScreen() {
   if (accounts.isLoading && accounts.accounts.length === 0) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color={colors.textTertiary} />
+        <ActivityIndicator size="small" color={c.textTertiary} />
       </View>
     );
   }
@@ -74,7 +76,7 @@ export default function AccountsScreen() {
           <RefreshControl
             refreshing={accounts.isLoading}
             onRefresh={accounts.refresh}
-            tintColor={colors.textTertiary}
+            tintColor={c.textTertiary}
           />
         }
       >
@@ -90,7 +92,7 @@ export default function AccountsScreen() {
             style={styles.addButton}
             onPress={() => setFormVisible(true)}
           >
-            <Ionicons name="add" size={20} color={colors.textPrimary} />
+            <Ionicons name="add" size={20} color={c.textPrimary} />
           </TouchableOpacity>
         </View>
 
@@ -139,14 +141,14 @@ export default function AccountsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: c.background,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: c.background },
   content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
   header: {
     flexDirection: 'row',
@@ -156,13 +158,13 @@ const styles = StyleSheet.create({
   },
   label: {
     ...typography.label,
-    color: colors.textTertiary,
+    color: c.textTertiary,
     marginBottom: spacing.xs,
   },
   totalBalance: {
     fontSize: 28,
     fontWeight: '200',
-    color: colors.textPrimary,
+    color: c.textPrimary,
     letterSpacing: -1,
   },
   addButton: {
@@ -170,16 +172,16 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     borderWidth: 0.5,
-    borderColor: colors.borderStrong,
+    borderColor: c.borderStrong,
     alignItems: 'center',
     justifyContent: 'center',
   },
   divider: {
     height: 0.5,
-    backgroundColor: colors.borderStrong,
+    backgroundColor: c.borderStrong,
     marginBottom: spacing.xl,
   },
-  errorText: { fontSize: 12, color: colors.expense, marginBottom: spacing.md },
+  errorText: { fontSize: 12, color: c.expense, marginBottom: spacing.md },
   empty: {
     paddingVertical: spacing.xxl * 2,
     alignItems: 'center',
@@ -188,12 +190,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontWeight: '300',
-    color: colors.textPrimary,
+    color: c.textPrimary,
   },
   emptySubtitle: {
     fontSize: 13,
     fontWeight: '300',
-    color: colors.textTertiary,
+    color: c.textTertiary,
     textAlign: 'center',
   },
   emptyButton: {
@@ -201,18 +203,18 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.xl,
     borderWidth: 0.5,
-    borderColor: colors.borderStrong,
+    borderColor: c.borderStrong,
     borderRadius: 6,
   },
   emptyButtonText: {
     fontSize: 13,
     fontWeight: '300',
-    color: colors.textPrimary,
+    color: c.textPrimary,
     letterSpacing: 0.3,
   },
   hint: {
     fontSize: 11,
-    color: colors.textTertiary,
+    color: c.textTertiary,
     textAlign: 'center',
     marginTop: spacing.xl,
     letterSpacing: 0.3,

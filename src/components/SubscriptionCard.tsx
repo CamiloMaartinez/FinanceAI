@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius } from '../constants/theme';
 import { formatCurrency } from '../utils/currency';
 import {
   getDaysUntilBilling,
@@ -23,6 +23,8 @@ const FREQUENCY_LABELS: Record<string, string> = {
 };
 
 export function SubscriptionCard({ subscription, onLongPress }: SubscriptionCardProps) {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   const daysUntil = getDaysUntilBilling(subscription);
   const urgent    = isUrgent(subscription);
   const upcoming  = isUpcoming(subscription);
@@ -75,11 +77,11 @@ export function SubscriptionCard({ subscription, onLongPress }: SubscriptionCard
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.lg,
     padding: spacing.lg,
     marginBottom: spacing.md,
@@ -98,11 +100,11 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: c.textPrimary,
   },
   frequency: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: c.textSecondary,
     marginTop: 2,
   },
   right: {
@@ -112,13 +114,13 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: 15,
     fontWeight: '700',
-    color: colors.textPrimary,
+    color: c.textPrimary,
   },
   badge: {
     paddingVertical: 2,
     paddingHorizontal: 8,
     borderRadius: 6,
-    backgroundColor: colors.surfaceSecondary,
+    backgroundColor: c.surfaceSecondary,
   },
   badgeUrgent: {
     backgroundColor: 'rgba(255,59,48,0.15)',
@@ -128,14 +130,14 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 11,
-    color: colors.textTertiary,
+    color: c.textTertiary,
   },
   badgeTextUrgent: {
-    color: colors.expense,
+    color: c.expense,
     fontWeight: '600',
   },
   badgeTextUpcoming: {
-    color: colors.orange,
+    color: c.orange,
     fontWeight: '600',
   },
 });

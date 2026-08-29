@@ -4,25 +4,9 @@ import {
   createAlert,
   deleteAlert,
 } from '../database/db';
+import type { Alert, AlertType } from '../models/types';
 
-export interface Alert {
-  id: string;
-  title: string;
-  type: AlertType;
-  condition: string;
-  threshold: number;
-  categoryId: string | null;
-  isActive: boolean;
-  lastTriggered: string | null;
-  createdAt: string;
-}
-
-export type AlertType =
-  | 'balance_below'
-  | 'monthly_expense_above'
-  | 'category_expense_above'
-  | 'goal_progress'
-  | 'savings_rate_below';
+export type { Alert, AlertType };
 
 export const ALERT_TYPE_LABELS: Record<AlertType, string> = {
   balance_below:          'Saldo por debajo de',

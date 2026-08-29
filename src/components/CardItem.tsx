@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius } from '../constants/theme';
 import { formatCurrency } from '../utils/currency';
 import type { Card } from '../models/types';
 
@@ -17,6 +17,8 @@ interface CardItemProps {
 }
 
 export function CardItem({ card, onToggleFavorite, onLongPress }: CardItemProps) {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   return (
     <TouchableOpacity
       style={styles.card}
@@ -40,7 +42,7 @@ export function CardItem({ card, onToggleFavorite, onLongPress }: CardItemProps)
             <Ionicons
               name={card.isFavorite ? 'star' : 'star-outline'}
               size={20}
-              color={card.isFavorite ? '#FF9500' : colors.textTertiary}
+              color={card.isFavorite ? '#FF9500' : c.textTertiary}
             />
           </TouchableOpacity>
         </View>
@@ -56,14 +58,14 @@ export function CardItem({ card, onToggleFavorite, onLongPress }: CardItemProps)
           <View style={styles.dataDivider} />
           <View style={styles.dataItem}>
             <Text style={styles.dataLabel}>Cashback</Text>
-            <Text style={[styles.dataValue, { color: colors.income }]}>
+            <Text style={[styles.dataValue, { color: c.income }]}>
               {card.cashbackPercent > 0 ? `${card.cashbackPercent}%` : 'Sin cashback'}
             </Text>
           </View>
           <View style={styles.dataDivider} />
           <View style={styles.dataItem}>
             <Text style={styles.dataLabel}>Interés EA</Text>
-            <Text style={[styles.dataValue, { color: card.interestRate > 30 ? colors.expense : colors.textPrimary }]}>
+            <Text style={[styles.dataValue, { color: card.interestRate > 30 ? c.expense : c.textPrimary }]}>
               {card.interestRate}%
             </Text>
           </View>
@@ -93,9 +95,9 @@ export function CardItem({ card, onToggleFavorite, onLongPress }: CardItemProps)
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.lg,
     marginBottom: spacing.md,
     overflow: 'hidden',
@@ -120,11 +122,11 @@ const styles = StyleSheet.create({
   cardName: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: c.textPrimary,
   },
   bankName: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: c.textSecondary,
     marginTop: 2,
   },
   favoriteBtn: {
@@ -133,7 +135,7 @@ const styles = StyleSheet.create({
   dataRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surfaceSecondary,
+    backgroundColor: c.surfaceSecondary,
     borderRadius: radius.md,
     padding: spacing.md,
   },
@@ -144,17 +146,17 @@ const styles = StyleSheet.create({
   dataDivider: {
     width: 0.5,
     height: 30,
-    backgroundColor: colors.border,
+    backgroundColor: c.border,
   },
   dataLabel: {
     fontSize: 11,
-    color: colors.textTertiary,
+    color: c.textTertiary,
     marginBottom: 3,
   },
   dataValue: {
     fontSize: 13,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: c.textPrimary,
   },
   benefitsRow: {
     flexDirection: 'row',
@@ -162,13 +164,13 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   benefitChip: {
-    backgroundColor: colors.surfaceSecondary,
+    backgroundColor: c.surfaceSecondary,
     borderRadius: 6,
     paddingVertical: 3,
     paddingHorizontal: 8,
   },
   benefitText: {
     fontSize: 11,
-    color: colors.textSecondary,
+    color: c.textSecondary,
   },
 });

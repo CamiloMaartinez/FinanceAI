@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,10 +14,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCards } from '../../src/hooks/useCards';
 import { CardItem } from '../../src/components/CardItem';
 import { CardForm } from '../../src/components/CardForm';
-import { colors, spacing, typography } from '../../src/constants/theme';
+import { useColors, spacing, typography } from '../../src/constants/theme';
 import type { Card } from '../../src/models/types';
 
 export default function CardsScreen() {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   const data = useCards();
   const [formVisible, setFormVisible] = useState(false);
 
@@ -43,7 +45,7 @@ export default function CardsScreen() {
   if (data.isLoading && data.cards.length === 0) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color={colors.textTertiary} />
+        <ActivityIndicator size="small" color={c.textTertiary} />
       </View>
     );
   }
@@ -60,7 +62,7 @@ export default function CardsScreen() {
           <RefreshControl
             refreshing={data.isLoading}
             onRefresh={data.refresh}
-            tintColor={colors.textTertiary}
+            tintColor={c.textTertiary}
           />
         }
       >
@@ -72,7 +74,7 @@ export default function CardsScreen() {
             </Text>
           </View>
           <TouchableOpacity style={styles.addButton} onPress={() => setFormVisible(true)}>
-            <Ionicons name="add" size={20} color={colors.textPrimary} />
+            <Ionicons name="add" size={20} color={c.textPrimary} />
           </TouchableOpacity>
         </View>
 
@@ -139,14 +141,14 @@ export default function CardsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: c.background,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: c.background },
   content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
   header: {
     flexDirection: 'row',
@@ -154,30 +156,30 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingVertical: spacing.lg,
   },
-  label: { ...typography.label, color: colors.textTertiary, marginBottom: spacing.xs },
-  count: { fontSize: 24, fontWeight: '200', color: colors.textPrimary, letterSpacing: -0.5 },
+  label: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
+  count: { fontSize: 24, fontWeight: '200', color: c.textPrimary, letterSpacing: -0.5 },
   addButton: {
     width: 36, height: 36, borderRadius: 18,
-    borderWidth: 0.5, borderColor: colors.borderStrong,
+    borderWidth: 0.5, borderColor: c.borderStrong,
     alignItems: 'center', justifyContent: 'center',
   },
-  divider: { height: 0.5, backgroundColor: colors.borderStrong, marginBottom: spacing.xl },
+  divider: { height: 0.5, backgroundColor: c.borderStrong, marginBottom: spacing.xl },
   empty: { paddingVertical: spacing.xxl * 2, alignItems: 'center', gap: spacing.sm },
-  emptyTitle: { fontSize: 16, fontWeight: '300', color: colors.textPrimary },
+  emptyTitle: { fontSize: 16, fontWeight: '300', color: c.textPrimary },
   emptySubtitle: {
-    fontSize: 13, fontWeight: '300', color: colors.textTertiary,
+    fontSize: 13, fontWeight: '300', color: c.textTertiary,
     textAlign: 'center', paddingHorizontal: spacing.xl,
   },
   emptyButton: {
     marginTop: spacing.lg, paddingVertical: spacing.sm,
     paddingHorizontal: spacing.xl, borderWidth: 0.5,
-    borderColor: colors.borderStrong, borderRadius: 6,
+    borderColor: c.borderStrong, borderRadius: 6,
   },
-  emptyButtonText: { fontSize: 13, fontWeight: '300', color: colors.textPrimary, letterSpacing: 0.3 },
+  emptyButtonText: { fontSize: 13, fontWeight: '300', color: c.textPrimary, letterSpacing: 0.3 },
   section: { marginBottom: spacing.lg },
-  sectionLabel: { ...typography.label, color: colors.textTertiary, marginBottom: spacing.md },
+  sectionLabel: { ...typography.label, color: c.textTertiary, marginBottom: spacing.md },
   hint: {
-    fontSize: 11, color: colors.textTertiary,
+    fontSize: 11, color: c.textTertiary,
     textAlign: 'center', marginTop: spacing.xl, letterSpacing: 0.3,
   },
 });

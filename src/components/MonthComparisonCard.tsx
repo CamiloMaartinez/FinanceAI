@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius } from '../constants/theme';
 import { formatCurrency } from '../utils/currency';
 
 interface MonthComparisonCardProps {
@@ -15,6 +15,8 @@ export function MonthComparisonCard({
   previousMonthExpense,
   monthOverMonthChange,
 }: MonthComparisonCardProps) {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   const isIncrease = monthOverMonthChange > 0;
   const isNeutral  = previousMonthExpense === 0;
 
@@ -28,7 +30,7 @@ export function MonthComparisonCard({
           <Text style={styles.value}>{formatCurrency(previousMonthExpense)}</Text>
         </View>
 
-        <Ionicons name="arrow-forward" size={18} color={colors.textTertiary} />
+        <Ionicons name="arrow-forward" size={18} color={c.textTertiary} />
 
         <View style={styles.column}>
           <Text style={styles.label}>Este mes</Text>
@@ -44,11 +46,11 @@ export function MonthComparisonCard({
           <Ionicons
             name={isIncrease ? 'trending-up' : 'trending-down'}
             size={16}
-            color={isIncrease ? colors.expense : colors.income}
+            color={isIncrease ? c.expense : c.income}
           />
           <Text style={[
             styles.changeText,
-            { color: isIncrease ? colors.expense : colors.income },
+            { color: isIncrease ? c.expense : c.income },
           ]}>
             {isIncrease ? 'Gastaste' : 'Ahorraste'} {Math.abs(monthOverMonthChange).toFixed(0)}% {isIncrease ? 'más' : 'menos'} que el mes anterior
           </Text>
@@ -58,16 +60,16 @@ export function MonthComparisonCard({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.lg,
     padding: spacing.lg,
   },
   title: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: c.textPrimary,
     marginBottom: spacing.lg,
   },
   row: {
@@ -82,13 +84,13 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: c.textSecondary,
     marginBottom: 4,
   },
   value: {
     fontSize: 17,
     fontWeight: '700',
-    color: colors.textPrimary,
+    color: c.textPrimary,
   },
   changeBox: {
     flexDirection: 'row',

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -18,10 +18,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useGoals } from '../../src/hooks/useGoals';
 import { GoalCard } from '../../src/components/GoalCard';
 import { GoalForm } from '../../src/components/GoalForm';
-import { colors, spacing, typography } from '../../src/constants/theme';
+import { useColors, spacing, typography } from '../../src/constants/theme';
 import type { Goal } from '../../src/models/types';
 
 export default function GoalsScreen() {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   const goals = useGoals();
   const [formVisible, setFormVisible] = useState(false);
   const [contributeGoal, setContributeGoal] = useState<Goal | null>(null);
@@ -56,7 +58,7 @@ export default function GoalsScreen() {
   if (goals.isLoading && goals.goals.length === 0) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color={colors.textTertiary} />
+        <ActivityIndicator size="small" color={c.textTertiary} />
       </View>
     );
   }
@@ -70,7 +72,7 @@ export default function GoalsScreen() {
           <RefreshControl
             refreshing={goals.isLoading}
             onRefresh={goals.refresh}
-            tintColor={colors.textTertiary}
+            tintColor={c.textTertiary}
           />
         }
       >
@@ -82,7 +84,7 @@ export default function GoalsScreen() {
             </Text>
           </View>
           <TouchableOpacity style={styles.addButton} onPress={() => setFormVisible(true)}>
-            <Ionicons name="add" size={20} color={colors.textPrimary} />
+            <Ionicons name="add" size={20} color={c.textPrimary} />
           </TouchableOpacity>
         </View>
 
@@ -136,7 +138,7 @@ export default function GoalsScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="0"
-                placeholderTextColor={colors.textTertiary}
+                placeholderTextColor={c.textTertiary}
                 value={contributeAmount}
                 onChangeText={setContributeAmount}
                 keyboardType="numeric"
@@ -161,9 +163,9 @@ export default function GoalsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  loadingContainer: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
-  container: { flex: 1, backgroundColor: colors.background },
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
+  loadingContainer: { flex: 1, backgroundColor: c.background, alignItems: 'center', justifyContent: 'center' },
+  container: { flex: 1, backgroundColor: c.background },
   content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
   header: {
     flexDirection: 'row',
@@ -171,44 +173,44 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingVertical: spacing.lg,
   },
-  label: { ...typography.label, color: colors.textTertiary, marginBottom: spacing.xs },
-  count: { fontSize: 24, fontWeight: '200', color: colors.textPrimary, letterSpacing: -0.5 },
+  label: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
+  count: { fontSize: 24, fontWeight: '200', color: c.textPrimary, letterSpacing: -0.5 },
   addButton: {
     width: 36, height: 36, borderRadius: 18,
-    borderWidth: 0.5, borderColor: colors.borderStrong,
+    borderWidth: 0.5, borderColor: c.borderStrong,
     alignItems: 'center', justifyContent: 'center',
   },
-  divider: { height: 0.5, backgroundColor: colors.borderStrong, marginBottom: spacing.xl },
+  divider: { height: 0.5, backgroundColor: c.borderStrong, marginBottom: spacing.xl },
   empty: { paddingVertical: spacing.xxl * 2, alignItems: 'center', gap: spacing.sm },
-  emptyTitle: { fontSize: 16, fontWeight: '300', color: colors.textPrimary },
-  emptySubtitle: { fontSize: 13, fontWeight: '300', color: colors.textTertiary, textAlign: 'center' },
+  emptyTitle: { fontSize: 16, fontWeight: '300', color: c.textPrimary },
+  emptySubtitle: { fontSize: 13, fontWeight: '300', color: c.textTertiary, textAlign: 'center' },
   emptyButton: {
     marginTop: spacing.lg, paddingVertical: spacing.sm, paddingHorizontal: spacing.xl,
-    borderWidth: 0.5, borderColor: colors.borderStrong, borderRadius: 6,
+    borderWidth: 0.5, borderColor: c.borderStrong, borderRadius: 6,
   },
-  emptyButtonText: { fontSize: 13, fontWeight: '300', color: colors.textPrimary, letterSpacing: 0.3 },
-  hint: { fontSize: 11, color: colors.textTertiary, textAlign: 'center', marginTop: spacing.xl, letterSpacing: 0.3 },
+  emptyButtonText: { fontSize: 13, fontWeight: '300', color: c.textPrimary, letterSpacing: 0.3 },
+  hint: { fontSize: 11, color: c.textTertiary, textAlign: 'center', marginTop: spacing.xl, letterSpacing: 0.3 },
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', padding: spacing.xl },
   modalBox: {
-    backgroundColor: colors.surface, borderRadius: 14,
+    backgroundColor: c.surface, borderRadius: 14,
     padding: spacing.xl, gap: spacing.lg,
-    borderWidth: 0.5, borderColor: colors.borderStrong,
+    borderWidth: 0.5, borderColor: c.borderStrong,
   },
-  modalLabel: { ...typography.label, color: colors.textTertiary },
-  modalTitle: { fontSize: 18, fontWeight: '300', color: colors.textPrimary },
+  modalLabel: { ...typography.label, color: c.textTertiary },
+  modalTitle: { fontSize: 18, fontWeight: '300', color: c.textPrimary },
   inputRow: {
     flexDirection: 'row', alignItems: 'center',
-    borderBottomWidth: 0.5, borderBottomColor: colors.borderStrong,
+    borderBottomWidth: 0.5, borderBottomColor: c.borderStrong,
     paddingBottom: spacing.sm,
   },
-  inputPrefix: { fontSize: 24, fontWeight: '200', color: colors.textTertiary, marginRight: spacing.xs },
-  input: { flex: 1, fontSize: 24, fontWeight: '200', color: colors.textPrimary },
+  inputPrefix: { fontSize: 24, fontWeight: '200', color: c.textTertiary, marginRight: spacing.xs },
+  input: { flex: 1, fontSize: 24, fontWeight: '200', color: c.textPrimary },
   modalButtons: { flexDirection: 'row', gap: spacing.md },
   cancelBtn: {
     flex: 1, paddingVertical: spacing.md, borderRadius: 6,
-    borderWidth: 0.5, borderColor: colors.borderStrong, alignItems: 'center',
+    borderWidth: 0.5, borderColor: c.borderStrong, alignItems: 'center',
   },
-  cancelText: { fontSize: 13, fontWeight: '300', color: colors.textSecondary },
-  confirmBtn: { flex: 1, paddingVertical: spacing.md, borderRadius: 6, backgroundColor: colors.income, alignItems: 'center' },
+  cancelText: { fontSize: 13, fontWeight: '300', color: c.textSecondary },
+  confirmBtn: { flex: 1, paddingVertical: spacing.md, borderRadius: 6, backgroundColor: c.income, alignItems: 'center' },
   confirmText: { fontSize: 13, fontWeight: '500', color: '#000' },
 });

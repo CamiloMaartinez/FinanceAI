@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius } from '../constants/theme';
 
 interface AccountFormProps {
   visible: boolean;
@@ -50,6 +50,8 @@ const ACCOUNT_COLORS = [
 ];
 
 export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   const [name,       setName]       = useState('');
   const [type,       setType]       = useState('digital');
   const [balance,    setBalance]    = useState('');
@@ -118,7 +120,7 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
             <TextInput
               style={styles.input}
               placeholder="Ej: Nequi, Bancolombia..."
-              placeholderTextColor={colors.textTertiary}
+              placeholderTextColor={c.textTertiary}
               value={name}
               onChangeText={(text) => { setName(text); setError(''); }}
               autoFocus
@@ -131,7 +133,7 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
             <TextInput
               style={styles.input}
               placeholder="0"
-              placeholderTextColor={colors.textTertiary}
+              placeholderTextColor={c.textTertiary}
               value={balance}
               onChangeText={(text) => { setBalance(text); setError(''); }}
               keyboardType="numeric"
@@ -154,7 +156,7 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
                   <Ionicons
                     name={t.icon as any}
                     size={20}
-                    color={type === t.value ? colors.blue : colors.textSecondary}
+                    color={type === t.value ? c.blue : c.textSecondary}
                   />
                   <Text style={[
                     styles.typeLabel,
@@ -171,17 +173,17 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
           <View style={styles.field}>
             <Text style={styles.fieldLabel}>Color</Text>
             <View style={styles.colorGrid}>
-              {ACCOUNT_COLORS.map((c) => (
+              {ACCOUNT_COLORS.map((hex) => (
                 <TouchableOpacity
-                  key={c}
+                  key={hex}
                   style={[
                     styles.colorDot,
-                    { backgroundColor: c },
-                    colorHex === c && styles.colorDotSelected,
+                    { backgroundColor: hex },
+                    colorHex === hex && styles.colorDotSelected,
                   ]}
-                  onPress={() => setColorHex(c)}
+                  onPress={() => setColorHex(hex)}
                 >
-                  {colorHex === c && (
+                  {colorHex === hex && (
                     <Ionicons name="checkmark" size={16} color="#fff" />
                   )}
                 </TouchableOpacity>
@@ -208,10 +210,10 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   container: {
     flex:            1,
-    backgroundColor: colors.background,
+    backgroundColor: c.background,
   },
   header: {
     flexDirection:  'row',
@@ -219,21 +221,21 @@ const styles = StyleSheet.create({
     alignItems:     'center',
     padding:        spacing.lg,
     borderBottomWidth: 0.5,
-    borderBottomColor: colors.border,
+    borderBottomColor: c.border,
   },
   headerTitle: {
     fontSize:   17,
     fontWeight: '600',
-    color:      colors.textPrimary,
+    color:      c.textPrimary,
   },
   cancelBtn: {
     fontSize: 16,
-    color:    colors.textSecondary,
+    color:    c.textSecondary,
   },
   saveBtn: {
     fontSize:   16,
     fontWeight: '600',
-    color:      colors.blue,
+    color:      c.blue,
   },
   form: {
     padding: spacing.lg,
@@ -246,7 +248,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 13,
-    color:    colors.expense,
+    color:    c.expense,
   },
   field: {
     marginBottom: spacing.xl,
@@ -254,17 +256,17 @@ const styles = StyleSheet.create({
   fieldLabel: {
     fontSize:     13,
     fontWeight:   '500',
-    color:        colors.textSecondary,
+    color:        c.textSecondary,
     marginBottom: spacing.sm,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   input: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius:    radius.md,
     padding:         spacing.lg,
     fontSize:        16,
-    color:           colors.textPrimary,
+    color:           c.textPrimary,
   },
   typeGrid: {
     flexDirection: 'row',
@@ -275,22 +277,22 @@ const styles = StyleSheet.create({
     flexDirection:  'row',
     alignItems:     'center',
     gap:            spacing.sm,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius:   radius.md,
     padding:        spacing.md,
     borderWidth:    1.5,
     borderColor:    'transparent',
   },
   typeOptionSelected: {
-    borderColor:     colors.blue,
+    borderColor:     c.blue,
     backgroundColor: 'rgba(0,122,255,0.1)',
   },
   typeLabel: {
     fontSize: 13,
-    color:    colors.textSecondary,
+    color:    c.textSecondary,
   },
   typeLabelSelected: {
-    color:      colors.blue,
+    color:      c.blue,
     fontWeight: '500',
   },
   colorGrid: {
@@ -310,7 +312,7 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
   },
   preview: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius:    radius.md,
     padding:         spacing.lg,
     borderLeftWidth: 4,
@@ -319,11 +321,11 @@ const styles = StyleSheet.create({
   previewName: {
     fontSize:   15,
     fontWeight: '600',
-    color:      colors.textPrimary,
+    color:      c.textPrimary,
   },
   previewBalance: {
     fontSize:   22,
     fontWeight: '700',
-    color:      colors.textPrimary,
+    color:      c.textPrimary,
   },
 });

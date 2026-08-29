@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
-import { colors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius } from '../constants/theme';
 import { formatCurrency } from '../utils/currency';
 import type { CategoryBreakdownItem } from '../hooks/useReports';
 
@@ -10,6 +10,8 @@ interface CategoryPieChartProps {
 }
 
 export function CategoryPieChart({ data }: CategoryPieChartProps) {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   if (data.length === 0) {
@@ -41,7 +43,7 @@ export function CategoryPieChart({ data }: CategoryPieChartProps) {
           data={pieData}
           radius={80}
           innerRadius={50}
-          innerCircleColor={colors.surface}
+          innerCircleColor={c.surface}
           centerLabelComponent={() => (
             <View style={styles.centerLabel}>
               {selected ? (
@@ -95,21 +97,21 @@ export function CategoryPieChart({ data }: CategoryPieChartProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.lg,
     padding: spacing.lg,
   },
   title: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: c.textPrimary,
     marginBottom: spacing.lg,
   },
   emptyText: {
     fontSize: 13,
-    color: colors.textTertiary,
+    color: c.textTertiary,
     textAlign: 'center',
     paddingVertical: spacing.xl,
   },
@@ -124,11 +126,11 @@ const styles = StyleSheet.create({
   centerValue: {
     fontSize: 15,
     fontWeight: '700',
-    color: colors.textPrimary,
+    color: c.textPrimary,
   },
   centerCategory: {
     fontSize: 11,
-    color: colors.textTertiary,
+    color: c.textTertiary,
     marginTop: 2,
   },
   legend: {
@@ -143,7 +145,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
   },
   legendRowSelected: {
-    backgroundColor: colors.surfaceSecondary,
+    backgroundColor: c.surfaceSecondary,
   },
   legendDot: {
     width: 10,
@@ -153,18 +155,18 @@ const styles = StyleSheet.create({
   legendName: {
     flex: 1,
     fontSize: 13,
-    color: colors.textPrimary,
+    color: c.textPrimary,
   },
   legendPercentage: {
     fontSize: 12,
-    color: colors.textTertiary,
+    color: c.textTertiary,
     width: 36,
     textAlign: 'right',
   },
   legendAmount: {
     fontSize: 13,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: c.textPrimary,
     width: 90,
     textAlign: 'right',
   },

@@ -1,4 +1,20 @@
 import * as SQLite from 'expo-sqlite';
+import type {
+  Account,
+  Category,
+  Transaction,
+  TransactionWithCategory,
+  Goal,
+  Subscription,
+  Card,
+  Alert,
+} from '../models/types';
+
+// Filas crudas de SQLite: los campos que se guardan como JSON en texto
+// (tags, subcategories, benefits) llegan como string y hay que parsearlos.
+type TransactionRow = Omit<TransactionWithCategory, 'tags'> & { tags: string };
+type CategoryRow = Omit<Category, 'subcategories'> & { subcategories: string };
+type CardRow = Omit<Card, 'benefits'> & { benefits: string };
 
 // Variable que guarda la conexión abierta a la base de datos
 let db: SQLite.SQLiteDatabase | null = null;
@@ -150,10 +166,10 @@ export async function getMonthlyTotals(
 
 export async function getRecentTransactions(
   limit: number = 5
-): Promise<any[]> {
+): Promise<TransactionWithCategory[]> {
   const database = await getDb();
 
-  const rows = await database.getAllAsync<any>(
+  const rows = await database.getAllAsync<TransactionRow>(
     `SELECT
        t.*,
        c.name     as categoryName,
@@ -173,9 +189,9 @@ export async function getRecentTransactions(
 }
 // ─── Queries de Cuentas ────────────────────────────────────
 
-export async function getAllAccounts(): Promise<any[]> {
+export async function getAllAccounts(): Promise<Account[]> {
   const database = await getDb();
-  const rows = await database.getAllAsync<any>(
+  const rows = await database.getAllAsync<Account>(
     `SELECT * FROM accounts WHERE isActive = 1 ORDER BY createdAt ASC`
   );
   return rows;
@@ -224,9 +240,9 @@ export async function deleteAccount(id: string): Promise<void> {
 }
 // ─── Queries de Transacciones ──────────────────────────────
 
-export async function getAllTransactionsWithCategory(): Promise<any[]> {
+export async function getAllTransactionsWithCategory(): Promise<TransactionWithCategory[]> {
   const database = await getDb();
-  const rows = await database.getAllAsync<any>(
+  const rows = await database.getAllAsync<TransactionRow>(
     `SELECT
        t.*,
        c.name     as categoryName,
@@ -242,9 +258,9 @@ export async function getAllTransactionsWithCategory(): Promise<any[]> {
   return rows.map((r) => ({ ...r, tags: JSON.parse(r.tags || '[]') }));
 }
 
-export async function getAllCategories(): Promise<any[]> {
+export async function getAllCategories(): Promise<Category[]> {
   const database = await getDb();
-  const rows = await database.getAllAsync<any>(
+  const rows = await database.getAllAsync<CategoryRow>(
     `SELECT * FROM categories ORDER BY name ASC`
   );
   return rows.map((r) => ({
@@ -303,9 +319,9 @@ export async function deleteTransaction(
 }
 // ─── Queries de Metas ───────────────────────────────────────
 
-export async function getAllGoals(): Promise<any[]> {
+export async function getAllGoals(): Promise<Goal[]> {
   const database = await getDb();
-  const rows = await database.getAllAsync<any>(
+  const rows = await database.getAllAsync<Goal>(
     `SELECT * FROM goals WHERE isCompleted = 0 ORDER BY targetDate ASC`
   );
   return rows;
@@ -356,9 +372,9 @@ export async function deleteGoal(id: string): Promise<void> {
 }
 // ─── Queries de Suscripciones ──────────────────────────────
 
-export async function getAllSubscriptions(): Promise<any[]> {
+export async function getAllSubscriptions(): Promise<Subscription[]> {
   const database = await getDb();
-  const rows = await database.getAllAsync<any>(
+  const rows = await database.getAllAsync<Subscription>(
     `SELECT * FROM subscriptions WHERE isActive = 1 ORDER BY nextBillingDate ASC`
   );
   return rows;
@@ -403,7 +419,12 @@ export async function getCategoryBreakdown(
   const start = new Date(year, month - 1, 1).toISOString();
   const end = new Date(year, month, 1).toISOString();
 
-  const rows = await database.getAllAsync<any>(
+  const rows = await database.getAllAsync<{
+    categoryId: string;
+    categoryName: string;
+    categoryColor: string;
+    total: number;
+  }>(
     `SELECT
        c.id as categoryId,
        c.name as categoryName,
@@ -425,26 +446,26 @@ export async function getTransactionsByCategory(
   categoryId: string,
   month: number,
   year: number
-): Promise<any[]> {
+): Promise<Transaction[]> {
   const database = await getDb();
   const start = new Date(year, month - 1, 1).toISOString();
   const end = new Date(year, month, 1).toISOString();
 
-  const rows = await database.getAllAsync<any>(
+  const rows = await database.getAllAsync<Omit<Transaction, 'tags'> & { tags: string }>(
     `SELECT * FROM transactions
      WHERE categoryId = ? AND date >= ? AND date < ?
      ORDER BY date DESC`,
     [categoryId, start, end]
   );
 
-  return rows;
+  return rows.map((r) => ({ ...r, tags: JSON.parse(r.tags || '[]') }));
 }
 
 // ─── Queries de Tarjetas ───────────────────────────────────
 
-export async function getAllCards(): Promise<any[]> {
+export async function getAllCards(): Promise<Card[]> {
   const database = await getDb();
-  const rows = await database.getAllAsync<any>(
+  const rows = await database.getAllAsync<CardRow>(
     `SELECT * FROM cards ORDER BY isFavorite DESC, createdAt ASC`
   );
   return rows.map((r) => ({
@@ -560,9 +581,9 @@ export async function getAverageMonthlySavings(): Promise<number> {
 
 // ─── Queries de Alertas ─────────────────────────────────────
 
-export async function getAllAlerts(): Promise<any[]> {
+export async function getAllAlerts(): Promise<Alert[]> {
   const database = await getDb();
-  const rows = await database.getAllAsync<any>(
+  const rows = await database.getAllAsync<Alert>(
     `SELECT * FROM alerts WHERE isActive = 1 ORDER BY createdAt DESC`
   );
   return rows;

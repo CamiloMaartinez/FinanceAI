@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { colors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius } from '../constants/theme';
 
 interface CardFormProps {
   visible: boolean;
@@ -38,6 +38,8 @@ const COMMON_BENEFITS = [
 ];
 
 export function CardForm({ visible, onClose, onSave }: CardFormProps) {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   const [name,          setName]          = useState('');
   const [bank,          setBank]          = useState('');
   const [annualFee,     setAnnualFee]     = useState('');
@@ -117,7 +119,7 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
             <TextInput
               style={styles.input}
               placeholder="Ej: Mastercard Platinum"
-              placeholderTextColor={colors.textTertiary}
+              placeholderTextColor={c.textTertiary}
               value={name}
               onChangeText={(t) => { setName(t); setError(''); }}
               autoFocus
@@ -129,7 +131,7 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
             <TextInput
               style={styles.input}
               placeholder="Ej: Bancolombia, Nu, Davivienda"
-              placeholderTextColor={colors.textTertiary}
+              placeholderTextColor={c.textTertiary}
               value={bank}
               onChangeText={(t) => { setBank(t); setError(''); }}
             />
@@ -141,7 +143,7 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
               <TextInput
                 style={styles.input}
                 placeholder="0"
-                placeholderTextColor={colors.textTertiary}
+                placeholderTextColor={c.textTertiary}
                 value={annualFee}
                 onChangeText={setAnnualFee}
                 keyboardType="numeric"
@@ -152,7 +154,7 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
               <TextInput
                 style={styles.input}
                 placeholder="0"
-                placeholderTextColor={colors.textTertiary}
+                placeholderTextColor={c.textTertiary}
                 value={cashback}
                 onChangeText={setCashback}
                 keyboardType="numeric"
@@ -163,7 +165,7 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
               <TextInput
                 style={styles.input}
                 placeholder="0"
-                placeholderTextColor={colors.textTertiary}
+                placeholderTextColor={c.textTertiary}
                 value={interestRate}
                 onChangeText={(t) => { setInterestRate(t); setError(''); }}
                 keyboardType="numeric"
@@ -196,7 +198,7 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
               <TextInput
                 style={[styles.input, { flex: 1 }]}
                 placeholder="Agregar beneficio personalizado"
-                placeholderTextColor={colors.textTertiary}
+                placeholderTextColor={c.textTertiary}
                 value={customBenefit}
                 onChangeText={setCustomBenefit}
                 onSubmitEditing={addCustomBenefit}
@@ -210,15 +212,15 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
           <View style={styles.field}>
             <Text style={styles.fieldLabel}>Color de la tarjeta</Text>
             <View style={styles.colorGrid}>
-              {CARD_COLORS.map((c) => (
+              {CARD_COLORS.map((hex) => (
                 <TouchableOpacity
-                  key={c}
+                  key={hex}
                   style={[
                     styles.colorDot,
-                    { backgroundColor: c },
-                    colorHex === c && styles.colorDotSelected,
+                    { backgroundColor: hex },
+                    colorHex === hex && styles.colorDotSelected,
                   ]}
-                  onPress={() => setColorHex(c)}
+                  onPress={() => setColorHex(hex)}
                 />
               ))}
             </View>
@@ -230,19 +232,19 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.background },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: spacing.lg,
     borderBottomWidth: 0.5,
-    borderBottomColor: colors.border,
+    borderBottomColor: c.border,
   },
-  headerTitle: { fontSize: 17, fontWeight: '600', color: colors.textPrimary },
-  cancelBtn: { fontSize: 16, color: colors.textSecondary },
-  saveBtn: { fontSize: 16, fontWeight: '600', color: colors.blue },
+  headerTitle: { fontSize: 17, fontWeight: '600', color: c.textPrimary },
+  cancelBtn: { fontSize: 16, color: c.textSecondary },
+  saveBtn: { fontSize: 16, fontWeight: '600', color: c.blue },
   form: { padding: spacing.lg },
   errorBox: {
     backgroundColor: 'rgba(255,59,48,0.15)',
@@ -250,22 +252,22 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginBottom: spacing.md,
   },
-  errorText: { fontSize: 13, color: colors.expense },
+  errorText: { fontSize: 13, color: c.expense },
   field: { marginBottom: spacing.xl },
   fieldLabel: {
     fontSize: 13,
     fontWeight: '500',
-    color: colors.textSecondary,
+    color: c.textSecondary,
     marginBottom: spacing.sm,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   input: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.md,
     padding: spacing.md,
     fontSize: 15,
-    color: colors.textPrimary,
+    color: c.textPrimary,
   },
   row3: {
     flexDirection: 'row',
@@ -280,7 +282,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   benefitChip: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.sm,
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.sm,
@@ -288,11 +290,11 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   benefitChipSelected: {
-    borderColor: colors.blue,
+    borderColor: c.blue,
     backgroundColor: 'rgba(0,122,255,0.1)',
   },
-  benefitChipText: { fontSize: 12, color: colors.textSecondary },
-  benefitChipTextSelected: { color: colors.blue, fontWeight: '500' },
+  benefitChipText: { fontSize: 12, color: c.textSecondary },
+  benefitChipTextSelected: { color: c.blue, fontWeight: '500' },
   customBenefitRow: {
     flexDirection: 'row',
     gap: spacing.sm,
@@ -302,7 +304,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: radius.md,
-    backgroundColor: colors.blue,
+    backgroundColor: c.blue,
     alignItems: 'center',
     justifyContent: 'center',
   },

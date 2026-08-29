@@ -133,3 +133,23 @@ export interface Card {
   isFavorite: boolean;
   createdAt: string;
 }
+
+// ─── Alertas ───────────────────────────────────────────────
+export type AlertType =
+  | 'balance_below'
+  | 'monthly_expense_above'
+  | 'category_expense_above'
+  | 'goal_progress'
+  | 'savings_rate_below';
+
+export interface Alert {
+  id: string;
+  title: string;
+  type: AlertType;
+  condition: string;
+  threshold: number;
+  categoryId: string | null;
+  isActive: boolean;
+  lastTriggered: string | null;
+  createdAt: string;
+}

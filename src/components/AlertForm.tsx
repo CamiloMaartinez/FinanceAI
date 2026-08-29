@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { colors, spacing, typography, radius } from '../constants/theme';
+import { useColors, spacing, typography, radius } from '../constants/theme';
 import type { AlertType } from '../hooks/useAlerts';
 import { ALERT_TYPE_LABELS, ALERT_TYPE_UNITS } from '../hooks/useAlerts';
 import type { Category } from '../models/types';
@@ -56,6 +56,8 @@ export function AlertForm({ visible, categories, onClose, onSave }: AlertFormPro
   const [threshold,  setThreshold]  = useState('');
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [error,      setError]      = useState('');
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
 
   const unit       = ALERT_TYPE_UNITS[type];
   const needsCategory = type === 'category_expense_above';
@@ -127,7 +129,7 @@ export function AlertForm({ visible, categories, onClose, onSave }: AlertFormPro
               <View style={styles.typeLeft}>
                 <Text style={[
                   styles.typeTitle,
-                  type === t.value && { color: colors.income },
+                  type === t.value && { color: c.income },
                 ]}>
                   {ALERT_TYPE_LABELS[t.value]}
                 </Text>
@@ -148,7 +150,7 @@ export function AlertForm({ visible, categories, onClose, onSave }: AlertFormPro
             <TextInput
               style={styles.thresholdInput}
               placeholder="0"
-              placeholderTextColor={colors.textTertiary}
+              placeholderTextColor={c.textTertiary}
               value={threshold}
               onChangeText={(t) => { setThreshold(t); setError(''); }}
               keyboardType="numeric"
@@ -196,19 +198,19 @@ export function AlertForm({ visible, categories, onClose, onSave }: AlertFormPro
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.background },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: spacing.lg,
     borderBottomWidth: 0.5,
-    borderBottomColor: colors.borderStrong,
+    borderBottomColor: c.borderStrong,
   },
-  headerTitle: { ...typography.label, color: colors.textPrimary },
-  cancelBtn: { fontSize: 15, fontWeight: '300', color: colors.textSecondary },
-  saveBtn: { fontSize: 15, fontWeight: '400', color: colors.income },
+  headerTitle: { ...typography.label, color: c.textPrimary },
+  cancelBtn: { fontSize: 15, fontWeight: '300', color: c.textSecondary },
+  saveBtn: { fontSize: 15, fontWeight: '400', color: c.income },
   form: { padding: spacing.xl },
   errorBox: {
     backgroundColor: 'rgba(229,90,78,0.1)',
@@ -216,22 +218,22 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginBottom: spacing.lg,
   },
-  errorText: { fontSize: 13, fontWeight: '300', color: colors.expense },
-  fieldLabel: { ...typography.label, color: colors.textTertiary, marginBottom: spacing.md },
+  errorText: { fontSize: 13, fontWeight: '300', color: c.expense },
+  fieldLabel: { ...typography.label, color: c.textTertiary, marginBottom: spacing.md },
   typeOption: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderBottomWidth: 0.5,
-    borderBottomColor: colors.border,
+    borderBottomColor: c.border,
   },
   typeOptionSelected: {},
   typeLeft: { flex: 1 },
-  typeTitle: { fontSize: 14, fontWeight: '300', color: colors.textPrimary, marginBottom: 2 },
-  typeDesc: { fontSize: 11, fontWeight: '300', color: colors.textTertiary },
+  typeTitle: { fontSize: 14, fontWeight: '300', color: c.textPrimary, marginBottom: 2 },
+  typeDesc: { fontSize: 11, fontWeight: '300', color: c.textTertiary },
   selectedDot: {
     width: 8, height: 8, borderRadius: 4,
-    backgroundColor: colors.income,
+    backgroundColor: c.income,
   },
   thresholdRow: {
     flexDirection: 'row',
@@ -241,18 +243,18 @@ const styles = StyleSheet.create({
   thresholdPrefix: {
     fontSize: 28,
     fontWeight: '200',
-    color: colors.textTertiary,
+    color: c.textTertiary,
   },
   thresholdInput: {
     flex: 1,
     fontSize: 36,
     fontWeight: '200',
-    color: colors.textPrimary,
+    color: c.textPrimary,
     letterSpacing: -1,
   },
   thresholdDivider: {
     height: 0.5,
-    backgroundColor: colors.borderStrong,
+    backgroundColor: c.borderStrong,
     marginTop: spacing.sm,
   },
   categoryRow: { flexDirection: 'row', gap: spacing.sm, paddingBottom: spacing.sm },
@@ -261,7 +263,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderRadius: radius.sm,
     borderWidth: 0.5,
-    borderColor: colors.borderStrong,
+    borderColor: c.borderStrong,
   },
-  categoryChipText: { fontSize: 13, fontWeight: '300', color: colors.textSecondary },
+  categoryChipText: { fontSize: 13, fontWeight: '300', color: c.textSecondary },
 });

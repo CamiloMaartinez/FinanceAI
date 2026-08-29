@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,11 +14,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useReports } from '../../src/hooks/useReports';
 import { CategoryPieChart } from '../../src/components/CategoryPieChart';
 import { MonthComparisonCard } from '../../src/components/MonthComparisonCard';
-import { colors, spacing, typography } from '../../src/constants/theme';
+import { useColors, spacing, typography } from '../../src/constants/theme';
 import { exportReportToPdf } from '../../src/services/pdfExport';
 
 export default function ReportsScreen() {
   const reports = useReports();
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
 
   const handleExport = async () => {
     try {
@@ -36,7 +38,7 @@ export default function ReportsScreen() {
   if (reports.isLoading && reports.breakdown.length === 0) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color={colors.textTertiary} />
+        <ActivityIndicator size="small" color={c.textTertiary} />
       </View>
     );
   }
@@ -55,7 +57,7 @@ export default function ReportsScreen() {
           <RefreshControl
             refreshing={reports.isLoading}
             onRefresh={reports.refresh}
-            tintColor={colors.textTertiary}
+            tintColor={c.textTertiary}
           />
         }
       >
@@ -65,7 +67,7 @@ export default function ReportsScreen() {
             <Text style={styles.monthName}>{monthName}</Text>
           </View>
           <TouchableOpacity style={styles.exportButton} onPress={handleExport}>
-            <Ionicons name="share-outline" size={16} color={colors.textSecondary} />
+            <Ionicons name="share-outline" size={16} color={c.textSecondary} />
           </TouchableOpacity>
         </View>
 
@@ -90,14 +92,14 @@ export default function ReportsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: c.background,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: c.background },
   content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
   header: {
     flexDirection: 'row',
@@ -105,11 +107,11 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingVertical: spacing.lg,
   },
-  label: { ...typography.label, color: colors.textTertiary, marginBottom: spacing.xs },
+  label: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
   monthName: {
     fontSize: 22,
     fontWeight: '200',
-    color: colors.textPrimary,
+    color: c.textPrimary,
     letterSpacing: -0.5,
     textTransform: 'capitalize',
   },
@@ -118,10 +120,10 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     borderWidth: 0.5,
-    borderColor: colors.borderStrong,
+    borderColor: c.borderStrong,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  divider: { height: 0.5, backgroundColor: colors.borderStrong, marginBottom: spacing.xl },
-  errorText: { fontSize: 12, color: colors.expense, marginBottom: spacing.md },
+  divider: { height: 0.5, backgroundColor: c.borderStrong, marginBottom: spacing.xl },
+  errorText: { fontSize: 12, color: c.expense, marginBottom: spacing.md },
 });

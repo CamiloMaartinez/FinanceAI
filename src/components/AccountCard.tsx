@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius } from '../constants/theme';
 import { formatCurrency } from '../utils/currency';
 import type { Account } from '../models/types';
 
@@ -26,8 +26,10 @@ const ACCOUNT_TYPE_LABELS: Record<string, string> = {
 };
 
 export function AccountCard({ account, onPress, onLongPress }: AccountCardProps) {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   const typeLabel = ACCOUNT_TYPE_LABELS[account.type] ?? account.type;
-  const cardColor = account.colorHex ?? colors.blue;
+  const cardColor = account.colorHex ?? c.blue;
 
   return (
     <TouchableOpacity
@@ -67,9 +69,9 @@ export function AccountCard({ account, onPress, onLongPress }: AccountCardProps)
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius:    radius.lg,
     overflow:        'hidden',
     marginBottom:    spacing.md,
@@ -112,16 +114,16 @@ const styles = StyleSheet.create({
   accountName: {
     fontSize:   15,
     fontWeight: '600',
-    color:      colors.textPrimary,
+    color:      c.textPrimary,
   },
   accountType: {
     fontSize:  12,
-    color:     colors.textSecondary,
+    color:     c.textSecondary,
     marginTop: 2,
   },
   balance: {
     fontSize:   24,
     fontWeight: '700',
-    color:      colors.textPrimary,
+    color:      c.textPrimary,
   },
 });

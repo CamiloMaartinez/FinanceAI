@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -6,7 +6,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius } from '../constants/theme';
 import { formatCurrency, formatCurrencyCompact } from '../utils/currency';
 import {
   getGoalProgress,
@@ -25,6 +25,8 @@ interface GoalCardProps {
 }
 
 export function GoalCard({ goal, onContribute, onLongPress }: GoalCardProps) {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   const progress       = getGoalProgress(goal);
   const percentage      = getGoalProgressPercentage(goal);
   const remaining        = getGoalRemainingAmount(goal);
@@ -73,13 +75,13 @@ export function GoalCard({ goal, onContribute, onLongPress }: GoalCardProps) {
 
       <View style={styles.footer}>
         <View style={styles.footerItem}>
-          <Ionicons name="calendar-outline" size={13} color={colors.textTertiary} />
+          <Ionicons name="calendar-outline" size={13} color={c.textTertiary} />
           <Text style={styles.footerText}>
             {isOverdue ? 'Fecha vencida' : `${daysRemaining} días restantes`}
           </Text>
         </View>
         <View style={styles.footerItem}>
-          <Ionicons name="cash-outline" size={13} color={colors.textTertiary} />
+          <Ionicons name="cash-outline" size={13} color={c.textTertiary} />
           <Text style={styles.footerText}>
             Faltan {formatCurrencyCompact(remaining)}
           </Text>
@@ -88,7 +90,7 @@ export function GoalCard({ goal, onContribute, onLongPress }: GoalCardProps) {
 
       {!isOverdue && remaining > 0 && (
         <View style={styles.suggestion}>
-          <Ionicons name="bulb-outline" size={14} color={colors.orange} />
+          <Ionicons name="bulb-outline" size={14} color={c.orange} />
           <Text style={styles.suggestionText}>
             Ahorra {formatCurrency(weeklySaving)} por semana para llegar a tiempo
           </Text>
@@ -106,9 +108,9 @@ export function GoalCard({ goal, onContribute, onLongPress }: GoalCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.lg,
     padding: spacing.lg,
     marginBottom: spacing.md,
@@ -132,11 +134,11 @@ const styles = StyleSheet.create({
   goalName: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: c.textPrimary,
   },
   goalAmounts: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: c.textSecondary,
     marginTop: 2,
   },
   percentage: {
@@ -145,7 +147,7 @@ const styles = StyleSheet.create({
   },
   progressTrack: {
     height: 8,
-    backgroundColor: colors.surfaceSecondary,
+    backgroundColor: c.surfaceSecondary,
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -164,7 +166,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: colors.textTertiary,
+    color: c.textTertiary,
   },
   suggestion: {
     flexDirection: 'row',
@@ -176,7 +178,7 @@ const styles = StyleSheet.create({
   },
   suggestionText: {
     fontSize: 11,
-    color: colors.orange,
+    color: c.orange,
     flex: 1,
   },
   contributeBtn: {

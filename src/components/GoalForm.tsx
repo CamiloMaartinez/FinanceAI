@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius } from '../constants/theme';
 
 interface GoalFormProps {
   visible: boolean;
@@ -56,6 +56,8 @@ function getQuickDate(monthsAhead: number): string {
 }
 
 export function GoalForm({ visible, onClose, onSave }: GoalFormProps) {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   const [name,         setName]         = useState('');
   const [targetAmount, setTargetAmount] = useState('');
   const [targetDate,   setTargetDate]   = useState(getQuickDate(6));
@@ -125,7 +127,7 @@ export function GoalForm({ visible, onClose, onSave }: GoalFormProps) {
             <TextInput
               style={styles.input}
               placeholder="Ej: Fondo de emergencia"
-              placeholderTextColor={colors.textTertiary}
+              placeholderTextColor={c.textTertiary}
               value={name}
               onChangeText={(text) => { setName(text); setError(''); }}
               autoFocus
@@ -140,7 +142,7 @@ export function GoalForm({ visible, onClose, onSave }: GoalFormProps) {
               <TextInput
                 style={styles.amountInput}
                 placeholder="0"
-                placeholderTextColor={colors.textTertiary}
+                placeholderTextColor={c.textTertiary}
                 value={targetAmount}
                 onChangeText={(text) => { setTargetAmount(text); setError(''); }}
                 keyboardType="numeric"
@@ -207,7 +209,7 @@ export function GoalForm({ visible, onClose, onSave }: GoalFormProps) {
                   <Ionicons
                     name={icon.value as any}
                     size={22}
-                    color={iconName === icon.value ? colorHex : colors.textSecondary}
+                    color={iconName === icon.value ? colorHex : c.textSecondary}
                   />
                 </TouchableOpacity>
               ))}
@@ -218,17 +220,17 @@ export function GoalForm({ visible, onClose, onSave }: GoalFormProps) {
           <View style={styles.field}>
             <Text style={styles.fieldLabel}>Color</Text>
             <View style={styles.colorGrid}>
-              {GOAL_COLORS.map((c) => (
+              {GOAL_COLORS.map((hex) => (
                 <TouchableOpacity
-                  key={c}
+                  key={hex}
                   style={[
                     styles.colorDot,
-                    { backgroundColor: c },
-                    colorHex === c && styles.colorDotSelected,
+                    { backgroundColor: hex },
+                    colorHex === hex && styles.colorDotSelected,
                   ]}
-                  onPress={() => setColorHex(c)}
+                  onPress={() => setColorHex(hex)}
                 >
-                  {colorHex === c && <Ionicons name="checkmark" size={16} color="#fff" />}
+                  {colorHex === hex && <Ionicons name="checkmark" size={16} color="#fff" />}
                 </TouchableOpacity>
               ))}
             </View>
@@ -240,19 +242,19 @@ export function GoalForm({ visible, onClose, onSave }: GoalFormProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.background },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: spacing.lg,
     borderBottomWidth: 0.5,
-    borderBottomColor: colors.border,
+    borderBottomColor: c.border,
   },
-  headerTitle: { fontSize: 17, fontWeight: '600', color: colors.textPrimary },
-  cancelBtn: { fontSize: 16, color: colors.textSecondary },
-  saveBtn: { fontSize: 16, fontWeight: '600', color: colors.blue },
+  headerTitle: { fontSize: 17, fontWeight: '600', color: c.textPrimary },
+  cancelBtn: { fontSize: 16, color: c.textSecondary },
+  saveBtn: { fontSize: 16, fontWeight: '600', color: c.blue },
   form: { padding: spacing.lg },
   errorBox: {
     backgroundColor: 'rgba(255,59,48,0.15)',
@@ -260,46 +262,46 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginBottom: spacing.md,
   },
-  errorText: { fontSize: 13, color: colors.expense },
+  errorText: { fontSize: 13, color: c.expense },
   field: { marginBottom: spacing.xl },
   fieldLabel: {
     fontSize: 13,
     fontWeight: '500',
-    color: colors.textSecondary,
+    color: c.textSecondary,
     marginBottom: spacing.sm,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   input: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.md,
     padding: spacing.lg,
     fontSize: 16,
-    color: colors.textPrimary,
+    color: c.textPrimary,
   },
   amountWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.md,
     paddingHorizontal: spacing.lg,
   },
   amountPrefix: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.textSecondary,
+    color: c.textSecondary,
     marginRight: spacing.sm,
   },
   amountInput: {
     flex: 1,
     fontSize: 28,
     fontWeight: '700',
-    color: colors.textPrimary,
+    color: c.textPrimary,
     paddingVertical: spacing.lg,
   },
   chipRow: { flexDirection: 'row', gap: spacing.sm },
   chip: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.md,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
@@ -307,17 +309,17 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   chipSelected: {
-    borderColor: colors.blue,
+    borderColor: c.blue,
     backgroundColor: 'rgba(0,122,255,0.1)',
   },
-  chipLabel: { fontSize: 13, color: colors.textSecondary },
-  chipLabelSelected: { color: colors.blue, fontWeight: '600' },
+  chipLabel: { fontSize: 13, color: c.textSecondary },
+  chipLabelSelected: { color: c.blue, fontWeight: '600' },
   iconGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   iconOption: {
     width: 48,
     height: 48,
     borderRadius: radius.md,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,

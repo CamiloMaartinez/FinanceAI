@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSubscriptions } from '../../src/hooks/useSubscriptions';
 import { SubscriptionCard } from '../../src/components/SubscriptionCard';
 import { SubscriptionForm } from '../../src/components/SubscriptionForm';
-import { colors, spacing, typography } from '../../src/constants/theme';
+import { useColors, spacing, typography } from '../../src/constants/theme';
 import { formatCurrency } from '../../src/utils/currency';
 import { getTotalAnnualCost, getTotalMonthlyCost } from '../../src/utils/subscriptionCalculations';
 import type { Subscription } from '../../src/models/types';
@@ -22,6 +22,8 @@ import type { Subscription } from '../../src/models/types';
 export default function SubscriptionsScreen() {
   const data = useSubscriptions();
   const [formVisible, setFormVisible] = useState(false);
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
 
   const handleSave = async (
     name: string, amount: number, frequency: string,
@@ -44,7 +46,7 @@ export default function SubscriptionsScreen() {
   if (data.isLoading && data.subscriptions.length === 0) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color={colors.textTertiary} />
+        <ActivityIndicator size="small" color={c.textTertiary} />
       </View>
     );
   }
@@ -61,7 +63,7 @@ export default function SubscriptionsScreen() {
           <RefreshControl
             refreshing={data.isLoading}
             onRefresh={data.refresh}
-            tintColor={colors.textTertiary}
+            tintColor={c.textTertiary}
           />
         }
       >
@@ -73,7 +75,7 @@ export default function SubscriptionsScreen() {
             </Text>
           </View>
           <TouchableOpacity style={styles.addButton} onPress={() => setFormVisible(true)}>
-            <Ionicons name="add" size={20} color={colors.textPrimary} />
+            <Ionicons name="add" size={20} color={c.textPrimary} />
           </TouchableOpacity>
         </View>
 
@@ -88,7 +90,7 @@ export default function SubscriptionsScreen() {
             <View style={styles.summaryDivider} />
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>ANUAL</Text>
-              <Text style={[styles.summaryValue, { color: colors.expense }]}>
+              <Text style={[styles.summaryValue, { color: c.expense }]}>
                 {formatCurrency(annualCost)}
               </Text>
             </View>
@@ -128,9 +130,9 @@ export default function SubscriptionsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  loadingContainer: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
-  container: { flex: 1, backgroundColor: colors.background },
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
+  loadingContainer: { flex: 1, backgroundColor: c.background, alignItems: 'center', justifyContent: 'center' },
+  container: { flex: 1, backgroundColor: c.background },
   content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
   header: {
     flexDirection: 'row',
@@ -138,28 +140,28 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingVertical: spacing.lg,
   },
-  label: { ...typography.label, color: colors.textTertiary, marginBottom: spacing.xs },
-  count: { fontSize: 24, fontWeight: '200', color: colors.textPrimary, letterSpacing: -0.5 },
+  label: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
+  count: { fontSize: 24, fontWeight: '200', color: c.textPrimary, letterSpacing: -0.5 },
   addButton: {
     width: 36, height: 36, borderRadius: 18,
-    borderWidth: 0.5, borderColor: colors.borderStrong,
+    borderWidth: 0.5, borderColor: c.borderStrong,
     alignItems: 'center', justifyContent: 'center',
   },
-  divider: { height: 0.5, backgroundColor: colors.borderStrong, marginBottom: spacing.xl },
+  divider: { height: 0.5, backgroundColor: c.borderStrong, marginBottom: spacing.xl },
   summaryRow: {
     flexDirection: 'row',
     borderWidth: 0.5,
-    borderColor: colors.border,
+    borderColor: c.border,
     borderRadius: 8,
     marginBottom: spacing.xl,
     overflow: 'hidden',
   },
   summaryItem: { flex: 1, padding: spacing.lg, alignItems: 'center' },
-  summaryDivider: { width: 0.5, backgroundColor: colors.border },
-  summaryLabel: { ...typography.label, color: colors.textTertiary, marginBottom: spacing.xs },
-  summaryValue: { fontSize: 18, fontWeight: '200', color: colors.textPrimary, letterSpacing: -0.5 },
+  summaryDivider: { width: 0.5, backgroundColor: c.border },
+  summaryLabel: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
+  summaryValue: { fontSize: 18, fontWeight: '200', color: c.textPrimary, letterSpacing: -0.5 },
   empty: { paddingVertical: spacing.xxl * 2, alignItems: 'center', gap: spacing.sm },
-  emptyTitle: { fontSize: 16, fontWeight: '300', color: colors.textPrimary },
-  emptySubtitle: { fontSize: 13, fontWeight: '300', color: colors.textTertiary, textAlign: 'center' },
-  hint: { fontSize: 11, color: colors.textTertiary, textAlign: 'center', marginTop: spacing.xl, letterSpacing: 0.3 },
+  emptyTitle: { fontSize: 16, fontWeight: '300', color: c.textPrimary },
+  emptySubtitle: { fontSize: 13, fontWeight: '300', color: c.textTertiary, textAlign: 'center' },
+  hint: { fontSize: 11, color: c.textTertiary, textAlign: 'center', marginTop: spacing.xl, letterSpacing: 0.3 },
 });

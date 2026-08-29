@@ -60,9 +60,9 @@ export function useFinancialAssistant(): UseFinancialAssistantResult {
 
       const topCategories = breakdown
         .slice(0, 3)
-        .map((c: any) => ({ name: c.categoryName, amount: c.total }));
+        .map((c) => ({ name: c.categoryName, amount: c.total }));
 
-      const activeGoals = goals.map((g: any) => ({
+      const activeGoals = goals.map((g) => ({
         name: g.name,
         targetAmount: g.targetAmount,
         currentAmount: g.currentAmount,
@@ -84,7 +84,9 @@ export function useFinancialAssistant(): UseFinancialAssistantResult {
       };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (err) {
-      console.log('ERROR COMPLETO DEL ASISTENTE:', err);
+      if (__DEV__) {
+        console.log('Error del asistente financiero:', err);
+      }
       const errorMsg = err instanceof Error ? err.message : 'Error consultando al asistente';
       setError(errorMsg);
       setMessages((prev) => [...prev, {

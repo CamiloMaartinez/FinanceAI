@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius } from '../constants/theme';
 import { authenticateWithBiometrics } from '../services/biometricAuth';
 
 interface LockScreenProps {
@@ -15,6 +15,8 @@ interface LockScreenProps {
 }
 
 export function LockScreen({ onUnlock }: LockScreenProps) {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [failedOnce, setFailedOnce] = useState(false);
 
@@ -33,7 +35,7 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
   return (
     <View style={styles.container}>
       <View style={styles.iconCircle}>
-        <Ionicons name="lock-closed" size={36} color={colors.blue} />
+        <Ionicons name="lock-closed" size={36} color={c.blue} />
       </View>
 
       <Text style={styles.title}>FinanceAI</Text>
@@ -65,10 +67,10 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: c.background,
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.xl,
@@ -86,17 +88,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: colors.textPrimary,
+    color: c.textPrimary,
   },
   subtitle: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: c.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.xl,
   },
   failedText: {
     fontSize: 13,
-    color: colors.expense,
+    color: c.expense,
     marginBottom: spacing.md,
   },
   unlockButton: {
@@ -104,7 +106,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    backgroundColor: colors.blue,
+    backgroundColor: c.blue,
     borderRadius: radius.lg,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
