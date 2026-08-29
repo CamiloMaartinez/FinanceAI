@@ -20,6 +20,12 @@ interface MenuItem {
 
 const MENU_ITEMS: MenuItem[] = [
   {
+    label: 'Presupuestos',
+    description: 'Límite mensual y por categoría',
+    icon: 'wallet-outline',
+    route: '/(tabs)/budgets',
+  },
+  {
     label: 'Cuentas',
     description: 'Gestiona tus cuentas bancarias',
     icon: 'card-outline',

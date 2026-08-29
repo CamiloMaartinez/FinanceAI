@@ -8,6 +8,7 @@ import type {
   Subscription,
   Card,
   Alert,
+  Budget,
 } from '../models/types';
 
 // Filas crudas de SQLite: los campos que se guardan como JSON en texto
@@ -116,6 +117,16 @@ async function initDb(database: SQLite.SQLiteDatabase) {
       colorHex        TEXT NOT NULL,
       isFavorite      INTEGER NOT NULL DEFAULT 0,
       createdAt       TEXT NOT NULL
+    );
+      CREATE TABLE IF NOT EXISTS budgets (
+      id             TEXT PRIMARY KEY NOT NULL,
+      month          INTEGER NOT NULL,
+      year           INTEGER NOT NULL,
+      totalLimit     REAL NOT NULL DEFAULT 0,
+      categoryLimits TEXT NOT NULL DEFAULT '{}',
+      isAIGenerated  INTEGER NOT NULL DEFAULT 0,
+      createdAt      TEXT NOT NULL,
+      UNIQUE(month, year)
     );
     CREATE INDEX IF NOT EXISTS idx_transactions_account
       ON transactions(accountId);
@@ -618,4 +629,64 @@ export async function updateAlertTriggered(id: string): Promise<void> {
 export async function deleteAlert(id: string): Promise<void> {
   const database = await getDb();
   await database.runAsync(`DELETE FROM alerts WHERE id = ?`, [id]);
+}
+
+// ─── Queries de Presupuestos ─────────────────────────────────
+
+type BudgetRow = Omit<Budget, 'categoryLimits' | 'isAIGenerated'> & {
+  categoryLimits: string;
+  isAIGenerated: number;
+};
+
+function mapBudgetRow(row: BudgetRow): Budget {
+  return {
+    ...row,
+    categoryLimits: JSON.parse(row.categoryLimits || '{}'),
+    isAIGenerated: !!row.isAIGenerated,
+  };
+}
+
+export async function getBudgetForMonth(month: number, year: number): Promise<Budget | null> {
+  const database = await getDb();
+  const row = await database.getFirstAsync<BudgetRow>(
+    `SELECT * FROM budgets WHERE month = ? AND year = ?`,
+    [month, year]
+  );
+  return row ? mapBudgetRow(row) : null;
+}
+
+export async function upsertBudget(
+  month: number,
+  year: number,
+  totalLimit: number,
+  categoryLimits: Record<string, number>,
+  isAIGenerated: boolean = false
+): Promise<void> {
+  const database = await getDb();
+  const now = new Date().toISOString();
+  const limitsJson = JSON.stringify(categoryLimits);
+
+  const existing = await database.getFirstAsync<{ id: string }>(
+    `SELECT id FROM budgets WHERE month = ? AND year = ?`,
+    [month, year]
+  );
+
+  if (existing) {
+    await database.runAsync(
+      `UPDATE budgets SET totalLimit = ?, categoryLimits = ?, isAIGenerated = ? WHERE id = ?`,
+      [totalLimit, limitsJson, isAIGenerated ? 1 : 0, existing.id]
+    );
+  } else {
+    const id = `budget-${Date.now()}`;
+    await database.runAsync(
+      `INSERT INTO budgets (id, month, year, totalLimit, categoryLimits, isAIGenerated, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [id, month, year, totalLimit, limitsJson, isAIGenerated ? 1 : 0, now]
+    );
+  }
+}
+
+export async function deleteBudget(id: string): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(`DELETE FROM budgets WHERE id = ?`, [id]);
 }
