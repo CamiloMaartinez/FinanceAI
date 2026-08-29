@@ -1,20 +1,22 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../../src/constants/theme';
+import { useColors } from '../../src/constants/theme';
 import { Platform } from 'react-native';
 
 export default function TabsLayout() {
+  const c = useColors();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.textPrimary,
-        tabBarInactiveTintColor: colors.textTertiary,
+        tabBarActiveTintColor: c.textPrimary,
+        tabBarInactiveTintColor: c.textTertiary,
         tabBarStyle: {
-          backgroundColor: colors.background,
+          backgroundColor: c.background,
           borderTopWidth: 0.5,
-          borderTopColor: colors.borderStrong,
+          borderTopColor: c.borderStrong,
           paddingTop: 8,
           paddingBottom: Platform.OS === 'ios' ? 20 : 10,
           height: Platform.OS === 'ios' ? 80 : 60,
@@ -38,38 +40,11 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="accounts"
-        options={{
-          title: 'Cuentas',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="card-outline" size={20} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="transactions"
         options={{
           title: 'Movimientos',
           tabBarIcon: ({ color }) => (
             <Ionicons name="swap-vertical-outline" size={20} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="goals"
-        options={{
-          title: 'Metas',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="trophy-outline" size={20} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="subscriptions"
-        options={{
-          title: 'Suscripciones',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="repeat-outline" size={20} color={color} />
           ),
         }}
       />
@@ -83,24 +58,6 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="assistant"
-        options={{
-          title: 'Asistente',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="sparkles-outline" size={20} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="cards"
-        options={{
-          title: 'Tarjetas',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="card-outline" size={20} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: 'Perfil',
@@ -109,15 +66,23 @@ export default function TabsLayout() {
           ),
         }}
       />
-            <Tabs.Screen
-        name="alerts"
+      <Tabs.Screen
+        name="more"
         options={{
-          title: 'Alertas',
+          title: 'Más',
           tabBarIcon: ({ color }) => (
-            <Ionicons name="notifications-outline" size={20} color={color} />
+            <Ionicons name="grid-outline" size={20} color={color} />
           ),
         }}
       />
+
+      {/* Pantallas ocultas de la barra pero accesibles */}
+      <Tabs.Screen name="accounts"      options={{ href: null }} />
+      <Tabs.Screen name="goals"         options={{ href: null }} />
+      <Tabs.Screen name="subscriptions" options={{ href: null }} />
+      <Tabs.Screen name="assistant"     options={{ href: null }} />
+      <Tabs.Screen name="cards"         options={{ href: null }} />
+      <Tabs.Screen name="alerts"        options={{ href: null }} />
     </Tabs>
   );
 }

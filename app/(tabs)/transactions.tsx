@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTransactions } from '../../src/hooks/useTransactions';
 import { TransactionForm } from '../../src/components/TransactionForm';
 import { TransactionRow } from '../../src/components/TransactionRow';
-import { colors, spacing, typography } from '../../src/constants/theme';
+import { useColors, spacing, typography } from '../../src/constants/theme';
 import type { TransactionWithCategory } from '../../src/models/types';
 
 function groupByDay(transactions: TransactionWithCategory[]) {
@@ -46,6 +46,8 @@ function groupByDay(transactions: TransactionWithCategory[]) {
 }
 
 export default function TransactionsScreen() {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   const data = useTransactions();
   const [formVisible, setFormVisible] = useState(false);
   const grouped = useMemo(() => groupByDay(data.transactions), [data.transactions]);
@@ -71,7 +73,7 @@ export default function TransactionsScreen() {
   if (data.isLoading && data.transactions.length === 0) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color={colors.textTertiary} />
+        <ActivityIndicator size="small" color={c.textTertiary} />
       </View>
     );
   }
@@ -85,7 +87,7 @@ export default function TransactionsScreen() {
           <RefreshControl
             refreshing={data.isLoading}
             onRefresh={data.refresh}
-            tintColor={colors.textTertiary}
+            tintColor={c.textTertiary}
           />
         }
       >
@@ -110,7 +112,7 @@ export default function TransactionsScreen() {
               setFormVisible(true);
             }}
           >
-            <Ionicons name="add" size={20} color={colors.textPrimary} />
+            <Ionicons name="add" size={20} color={c.textPrimary} />
           </TouchableOpacity>
         </View>
 
@@ -165,14 +167,14 @@ export default function TransactionsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: c.background,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: c.background },
   content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
   header: {
     flexDirection: 'row',
@@ -182,13 +184,13 @@ const styles = StyleSheet.create({
   },
   label: {
     ...typography.label,
-    color: colors.textTertiary,
+    color: c.textTertiary,
     marginBottom: spacing.xs,
   },
   count: {
     fontSize: 24,
     fontWeight: '200',
-    color: colors.textPrimary,
+    color: c.textPrimary,
     letterSpacing: -0.5,
   },
   addButton: {
@@ -196,41 +198,41 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     borderWidth: 0.5,
-    borderColor: colors.borderStrong,
+    borderColor: c.borderStrong,
     alignItems: 'center',
     justifyContent: 'center',
   },
   addButtonDisabled: { opacity: 0.3 },
   divider: {
     height: 0.5,
-    backgroundColor: colors.borderStrong,
+    backgroundColor: c.borderStrong,
     marginBottom: spacing.xl,
   },
-  errorText: { fontSize: 12, color: colors.expense, marginBottom: spacing.md },
+  errorText: { fontSize: 12, color: c.expense, marginBottom: spacing.md },
   empty: {
     paddingVertical: spacing.xxl * 2,
     alignItems: 'center',
     gap: spacing.sm,
   },
-  emptyTitle: { fontSize: 16, fontWeight: '300', color: colors.textPrimary },
-  emptySubtitle: { fontSize: 13, fontWeight: '300', color: colors.textTertiary },
+  emptyTitle: { fontSize: 16, fontWeight: '300', color: c.textPrimary },
+  emptySubtitle: { fontSize: 13, fontWeight: '300', color: c.textTertiary },
   group: { marginBottom: spacing.sm },
   groupLabel: {
     fontSize: 11,
     fontWeight: '500',
-    color: colors.textTertiary,
+    color: c.textTertiary,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     marginBottom: spacing.sm,
   },
   rowDivider: {
     height: 0.5,
-    backgroundColor: colors.border,
+    backgroundColor: c.border,
     marginLeft: spacing.md,
   },
   hint: {
     fontSize: 11,
-    color: colors.textTertiary,
+    color: c.textTertiary,
     textAlign: 'center',
     marginTop: spacing.xl,
     letterSpacing: 0.3,

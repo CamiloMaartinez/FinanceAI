@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius } from '../constants/theme';
 import { scanReceipt } from '../services/receiptScanner';
 
 interface ReceiptScannerButtonProps {
@@ -17,6 +17,8 @@ interface ReceiptScannerButtonProps {
 }
 
 export function ReceiptScannerButton({ onScanned }: ReceiptScannerButtonProps) {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   const [isScanning, setIsScanning] = useState(false);
 
   const handlePress = async () => {
@@ -72,12 +74,12 @@ export function ReceiptScannerButton({ onScanned }: ReceiptScannerButtonProps) {
     >
       {isScanning ? (
         <>
-          <ActivityIndicator size="small" color={colors.blue} />
+          <ActivityIndicator size="small" color={c.blue} />
           <Text style={styles.text}>Analizando recibo...</Text>
         </>
       ) : (
         <>
-          <Ionicons name="camera-outline" size={20} color={colors.blue} />
+          <Ionicons name="camera-outline" size={20} color={c.blue} />
           <Text style={styles.text}>Escanear recibo</Text>
         </>
       )}
@@ -85,7 +87,7 @@ export function ReceiptScannerButton({ onScanned }: ReceiptScannerButtonProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -101,6 +103,6 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.blue,
+    color: c.blue,
   },
 });

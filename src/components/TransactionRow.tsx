@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing } from '../constants/theme';
+import { useColors, spacing } from '../constants/theme';
 import { formatCurrency } from '../utils/currency';
 import type { TransactionWithCategory } from '../models/types';
 
@@ -19,20 +19,22 @@ const TYPE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   payment:    'checkmark-circle',
 };
 
-const TYPE_COLORS: Record<string, string> = {
-  income:     colors.income,
-  expense:    colors.expense,
-  transfer:   colors.blue,
-  investment: colors.purple,
-  loan:       colors.orange,
-  payment:    colors.pink,
-};
+const getTypeColors = (c: ReturnType<typeof useColors>): Record<string, string> => ({
+  income:     c.income,
+  expense:    c.expense,
+  transfer:   c.blue,
+  investment: c.purple,
+  loan:       c.orange,
+  payment:    c.pink,
+});
 
 export function TransactionRow({ transaction, onLongPress }: TransactionRowProps) {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   const icon     = transaction.categoryIcon
     ? (transaction.categoryIcon as keyof typeof Ionicons.glyphMap)
     : (TYPE_ICONS[transaction.type] ?? 'ellipse');
-  const color    = transaction.categoryColor ?? TYPE_COLORS[transaction.type] ?? colors.textSecondary;
+  const color    = transaction.categoryColor ?? getTypeColors(c)[transaction.type] ?? c.textSecondary;
   const isIncome = transaction.type === 'income' || transaction.type === 'loan';
 
   return (
@@ -55,14 +57,14 @@ export function TransactionRow({ transaction, onLongPress }: TransactionRowProps
         </Text>
       </View>
 
-      <Text style={[styles.amount, { color: isIncome ? colors.income : colors.expense }]}>
+      <Text style={[styles.amount, { color: isIncome ? c.income : c.expense }]}>
         {isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}
       </Text>
     </TouchableOpacity>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -82,12 +84,12 @@ const styles = StyleSheet.create({
   notes: {
     fontSize: 14,
     fontWeight: '500',
-    color: colors.textPrimary,
+    color: c.textPrimary,
     marginBottom: 2,
   },
   meta: {
     fontSize: 12,
-    color: colors.textTertiary,
+    color: c.textTertiary,
   },
   amount: {
     fontSize: 14,

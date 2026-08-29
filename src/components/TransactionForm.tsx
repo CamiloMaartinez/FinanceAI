@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius } from '../constants/theme';
 import { ReceiptScannerButton } from './ReceiptScannerButton';
 import type { Account, Category } from '../models/types';
 
@@ -37,6 +37,8 @@ export function TransactionForm({
   onClose,
   onSave,
 }: TransactionFormProps) {
+  const c = useColors();
+  const styles = useMemo(() => createStyles(c), [c]);
   const [type,       setType]       = useState<'expense' | 'income'>('expense');
   const [amount,     setAmount]     = useState('');
   const [accountId,  setAccountId]  = useState<string | null>(null);
@@ -176,7 +178,7 @@ export function TransactionForm({
               <TextInput
                 style={styles.amountInput}
                 placeholder="0"
-                placeholderTextColor={colors.textTertiary}
+                placeholderTextColor={c.textTertiary}
                 value={amount}
                 onChangeText={(text) => { setAmount(text); setError(''); }}
                 keyboardType="numeric"
@@ -230,7 +232,7 @@ export function TransactionForm({
                     <Ionicons
                       name={cat.iconName as any}
                       size={18}
-                      color={categoryId === cat.id ? cat.colorHex : colors.textSecondary}
+                      color={categoryId === cat.id ? cat.colorHex : c.textSecondary}
                     />
                     <Text style={[
                       styles.categoryLabel,
@@ -250,7 +252,7 @@ export function TransactionForm({
             <TextInput
               style={styles.input}
               placeholder="Ej: Almuerzo con amigos"
-              placeholderTextColor={colors.textTertiary}
+              placeholderTextColor={c.textTertiary}
               value={notes}
               onChangeText={setNotes}
             />
@@ -262,10 +264,10 @@ export function TransactionForm({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: c.background,
   },
   header: {
     flexDirection:  'row',
@@ -273,21 +275,21 @@ const styles = StyleSheet.create({
     alignItems:     'center',
     padding:        spacing.lg,
     borderBottomWidth: 0.5,
-    borderBottomColor: colors.border,
+    borderBottomColor: c.border,
   },
   headerTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: c.textPrimary,
   },
   cancelBtn: {
     fontSize: 16,
-    color: colors.textSecondary,
+    color: c.textSecondary,
   },
   saveBtn: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.blue,
+    color: c.blue,
   },
   form: {
     padding: spacing.lg,
@@ -300,11 +302,11 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 13,
-    color: colors.expense,
+    color: c.expense,
   },
   typeSwitch: {
     flexDirection: 'row',
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.md,
     padding: 4,
     marginBottom: spacing.xl,
@@ -323,10 +325,10 @@ const styles = StyleSheet.create({
   },
   typeSwitchLabel: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: c.textSecondary,
   },
   typeSwitchLabelActive: {
-    color: colors.textPrimary,
+    color: c.textPrimary,
     fontWeight: '600',
   },
   field: {
@@ -335,7 +337,7 @@ const styles = StyleSheet.create({
   fieldLabel: {
     fontSize: 13,
     fontWeight: '500',
-    color: colors.textSecondary,
+    color: c.textSecondary,
     marginBottom: spacing.sm,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -343,29 +345,29 @@ const styles = StyleSheet.create({
   amountWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.md,
     paddingHorizontal: spacing.lg,
   },
   amountPrefix: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.textSecondary,
+    color: c.textSecondary,
     marginRight: spacing.sm,
   },
   amountInput: {
     flex: 1,
     fontSize: 28,
     fontWeight: '700',
-    color: colors.textPrimary,
+    color: c.textPrimary,
     paddingVertical: spacing.lg,
   },
   input: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.md,
     padding: spacing.lg,
     fontSize: 16,
-    color: colors.textPrimary,
+    color: c.textPrimary,
   },
   chipRow: {
     flexDirection: 'row',
@@ -375,7 +377,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.md,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
@@ -389,7 +391,7 @@ const styles = StyleSheet.create({
   },
   chipLabel: {
     fontSize: 13,
-    color: colors.textPrimary,
+    color: c.textPrimary,
   },
   categoryGrid: {
     flexDirection: 'row',
@@ -400,7 +402,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.md,
     padding: spacing.md,
     borderWidth: 1.5,
@@ -408,6 +410,6 @@ const styles = StyleSheet.create({
   },
   categoryLabel: {
     fontSize: 13,
-    color: colors.textSecondary,
+    color: c.textSecondary,
   },
 });
