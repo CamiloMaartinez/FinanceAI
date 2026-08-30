@@ -8,12 +8,20 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTransactions } from '../../src/hooks/useTransactions';
 import { TransactionForm } from '../../src/components/TransactionForm';
 import { TransactionRow } from '../../src/components/TransactionRow';
+import {
+  TransactionFilters,
+  EMPTY_FILTERS,
+  countActiveFilters,
+  type TransactionFiltersState,
+} from '../../src/components/TransactionFilters';
+import { filterTransactions } from '../../src/utils/transactionFilters';
 import { useColors, spacing, typography } from '../../src/constants/theme';
 import type { TransactionWithCategory } from '../../src/models/types';
 
@@ -51,7 +59,17 @@ export default function TransactionsScreen() {
   const data = useTransactions();
   const [formVisible, setFormVisible] = useState(false);
   const [editingTx, setEditingTx] = useState<TransactionWithCategory | null>(null);
-  const grouped = useMemo(() => groupByDay(data.transactions), [data.transactions]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filtersVisible, setFiltersVisible] = useState(false);
+  const [filters, setFilters] = useState<TransactionFiltersState>(EMPTY_FILTERS);
+
+  const filteredTransactions = useMemo(
+    () => filterTransactions(data.transactions, searchQuery, filters),
+    [data.transactions, searchQuery, filters]
+  );
+  const grouped = useMemo(() => groupByDay(filteredTransactions), [filteredTransactions]);
+  const activeFilterCount = countActiveFilters(filters);
+  const hasActiveSearch = searchQuery.trim().length > 0 || activeFilterCount > 0;
 
   const handleSave = async (
     amount: number, type: string, date: string,
@@ -111,7 +129,7 @@ export default function TransactionsScreen() {
           <View>
             <Text style={styles.label}>MOVIMIENTOS</Text>
             <Text style={styles.count}>
-              {data.transactions.length} registros
+              {hasActiveSearch ? `${filteredTransactions.length} de ${data.transactions.length}` : data.transactions.length} registros
             </Text>
           </View>
           <TouchableOpacity
@@ -133,16 +151,63 @@ export default function TransactionsScreen() {
 
         <View style={styles.divider} />
 
+        {/* Búsqueda y filtros */}
+        <View style={styles.searchRow}>
+          <View style={styles.searchBox}>
+            <Ionicons name="search-outline" size={16} color={c.textTertiary} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Buscar por texto, categoría o monto"
+              placeholderTextColor={c.textTertiary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              returnKeyType="search"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={8}>
+                <Ionicons name="close-circle" size={16} color={c.textTertiary} />
+              </TouchableOpacity>
+            )}
+          </View>
+          <TouchableOpacity
+            style={[styles.filterButton, activeFilterCount > 0 && styles.filterButtonActive]}
+            onPress={() => setFiltersVisible(true)}
+          >
+            <Ionicons
+              name="options-outline"
+              size={18}
+              color={activeFilterCount > 0 ? c.blue : c.textPrimary}
+            />
+            {activeFilterCount > 0 && (
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
         {data.error && (
           <Text style={styles.errorText}>{data.error}</Text>
         )}
 
         {grouped.length === 0 ? (
           <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>Sin movimientos</Text>
-            <Text style={styles.emptySubtitle}>
-              Registra tu primer ingreso o gasto
+            <Text style={styles.emptyTitle}>
+              {hasActiveSearch ? 'Sin resultados' : 'Sin movimientos'}
             </Text>
+            <Text style={styles.emptySubtitle}>
+              {hasActiveSearch
+                ? 'Prueba con otro término o quita algún filtro'
+                : 'Registra tu primer ingreso o gasto'}
+            </Text>
+            {hasActiveSearch && (
+              <TouchableOpacity
+                style={styles.clearSearchButton}
+                onPress={() => { setSearchQuery(''); setFilters(EMPTY_FILTERS); }}
+              >
+                <Text style={styles.clearSearchButtonText}>Limpiar búsqueda y filtros</Text>
+              </TouchableOpacity>
+            )}
           </View>
         ) : (
           grouped.map((group) => (
@@ -179,6 +244,15 @@ export default function TransactionsScreen() {
         editingTransaction={editingTx}
         onClose={handleCloseForm}
         onSave={handleSave}
+      />
+
+      <TransactionFilters
+        visible={filtersVisible}
+        categories={data.categories}
+        accounts={data.accounts}
+        filters={filters}
+        onClose={() => setFiltersVisible(false)}
+        onApply={setFilters}
       />
     </SafeAreaView>
   );
@@ -220,6 +294,63 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     justifyContent: 'center',
   },
   addButtonDisabled: { opacity: 0.3 },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  searchBox: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: c.surface,
+    borderRadius: 10,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 9,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: c.textPrimary,
+    padding: 0,
+  },
+  filterButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    borderWidth: 0.5,
+    borderColor: c.borderStrong,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterButtonActive: {
+    borderColor: c.blue,
+    backgroundColor: 'rgba(0,122,255,0.1)',
+  },
+  filterBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: c.blue,
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  filterBadgeText: { fontSize: 10, fontWeight: '700', color: '#fff' },
+  clearSearchButton: {
+    marginTop: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderWidth: 0.5,
+    borderColor: c.borderStrong,
+    borderRadius: 6,
+  },
+  clearSearchButtonText: { fontSize: 13, color: c.textPrimary },
   divider: {
     height: 0.5,
     backgroundColor: c.borderStrong,
