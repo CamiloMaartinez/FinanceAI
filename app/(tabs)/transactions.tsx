@@ -50,13 +50,28 @@ export default function TransactionsScreen() {
   const styles = useMemo(() => createStyles(c), [c]);
   const data = useTransactions();
   const [formVisible, setFormVisible] = useState(false);
+  const [editingTx, setEditingTx] = useState<TransactionWithCategory | null>(null);
   const grouped = useMemo(() => groupByDay(data.transactions), [data.transactions]);
 
   const handleSave = async (
     amount: number, type: string, date: string,
     accountId: string, categoryId: string | null, notes: string
   ) => {
-    await data.addTransaction(amount, type, date, accountId, categoryId, notes);
+    if (editingTx) {
+      await data.editTransaction(editingTx, { amount, type, date, accountId, categoryId, notes });
+    } else {
+      await data.addTransaction(amount, type, date, accountId, categoryId, notes);
+    }
+  };
+
+  const handleCloseForm = () => {
+    setFormVisible(false);
+    setEditingTx(null);
+  };
+
+  const handlePress = (tx: TransactionWithCategory) => {
+    setEditingTx(tx);
+    setFormVisible(true);
   };
 
   const handleLongPress = (tx: TransactionWithCategory) => {
@@ -137,6 +152,7 @@ export default function TransactionsScreen() {
                 <View key={tx.id}>
                   <TransactionRow
                     transaction={tx}
+                    onPress={handlePress}
                     onLongPress={handleLongPress}
                   />
                   {i < group.items.length - 1 && (
@@ -151,7 +167,7 @@ export default function TransactionsScreen() {
 
         {grouped.length > 0 && (
           <Text style={styles.hint}>
-            Mantén presionado para eliminar
+            Toca para editar · mantén presionado para eliminar
           </Text>
         )}
       </ScrollView>
@@ -160,7 +176,8 @@ export default function TransactionsScreen() {
         visible={formVisible}
         accounts={data.accounts}
         categories={data.categories}
-        onClose={() => setFormVisible(false)}
+        editingTransaction={editingTx}
+        onClose={handleCloseForm}
         onSave={handleSave}
       />
     </SafeAreaView>

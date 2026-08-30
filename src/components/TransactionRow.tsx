@@ -7,6 +7,7 @@ import type { TransactionWithCategory } from '../models/types';
 
 interface TransactionRowProps {
   transaction: TransactionWithCategory;
+  onPress?: (tx: TransactionWithCategory) => void;
   onLongPress: (tx: TransactionWithCategory) => void;
 }
 
@@ -28,7 +29,7 @@ const getTypeColors = (c: ReturnType<typeof useColors>): Record<string, string> 
   payment:    c.pink,
 });
 
-export function TransactionRow({ transaction, onLongPress }: TransactionRowProps) {
+export function TransactionRow({ transaction, onPress, onLongPress }: TransactionRowProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
   const icon     = transaction.categoryIcon
@@ -40,6 +41,7 @@ export function TransactionRow({ transaction, onLongPress }: TransactionRowProps
   return (
     <TouchableOpacity
       style={styles.row}
+      onPress={onPress ? () => onPress(transaction) : undefined}
       onLongPress={() => onLongPress(transaction)}
       activeOpacity={0.7}
     >

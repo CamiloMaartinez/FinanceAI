@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,9 +12,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
+import type { Subscription } from '../models/types';
 
 interface SubscriptionFormProps {
   visible: boolean;
+  editingSubscription?: Subscription | null;
   onClose: () => void;
   onSave: (
     name: string,
@@ -48,9 +50,10 @@ function getDefaultBillingDate(): string {
   return date.toISOString();
 }
 
-export function SubscriptionForm({ visible, onClose, onSave }: SubscriptionFormProps) {
+export function SubscriptionForm({ visible, editingSubscription, onClose, onSave }: SubscriptionFormProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
+  const isEditing = !!editingSubscription;
   const [name,       setName]       = useState('');
   const [amount,     setAmount]     = useState('');
   const [frequency,  setFrequency]  = useState('monthly');
@@ -58,6 +61,22 @@ export function SubscriptionForm({ visible, onClose, onSave }: SubscriptionFormP
   const [iconName,   setIconName]   = useState('repeat-outline');
   const [daysAhead,  setDaysAhead]  = useState('15');
   const [error,      setError]      = useState('');
+
+  // Precarga los datos cuando se abre en modo edición
+  useEffect(() => {
+    if (visible && editingSubscription) {
+      setName(editingSubscription.name);
+      setAmount(String(Math.round(editingSubscription.amount)));
+      setFrequency(editingSubscription.frequency);
+      setColorHex(editingSubscription.colorHex);
+      setIconName(editingSubscription.iconName);
+
+      const diffMs = new Date(editingSubscription.nextBillingDate).getTime() - Date.now();
+      const diffDays = Math.max(Math.round(diffMs / (1000 * 60 * 60 * 24)), 0);
+      setDaysAhead(String(diffDays));
+      setError('');
+    }
+  }, [visible, editingSubscription]);
 
   const handleSelectService = (service: typeof COMMON_SERVICES[0]) => {
     setName(service.name);
@@ -115,7 +134,7 @@ export function SubscriptionForm({ visible, onClose, onSave }: SubscriptionFormP
           <TouchableOpacity onPress={handleClose}>
             <Text style={styles.cancelBtn}>Cancelar</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Nueva suscripción</Text>
+          <Text style={styles.headerTitle}>{isEditing ? 'Editar suscripción' : 'Nueva suscripción'}</Text>
           <TouchableOpacity onPress={handleSave}>
             <Text style={styles.saveBtn}>Guardar</Text>
           </TouchableOpacity>

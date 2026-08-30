@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import {
   getAllSubscriptions,
   createSubscription,
+  updateSubscription,
   deleteSubscription,
 } from '../database/db';
 import { scheduleSubscriptionReminders, cancelSubscriptionReminders } from '../services/notifications';
@@ -13,6 +14,15 @@ interface UseSubscriptionsResult {
   error: string | null;
   refresh: () => Promise<void>;
   addSubscription: (
+    name: string,
+    amount: number,
+    frequency: string,
+    nextBillingDate: string,
+    colorHex: string,
+    iconName: string
+  ) => Promise<void>;
+  editSubscription: (
+    subscription: Subscription,
     name: string,
     amount: number,
     frequency: string,
@@ -65,12 +75,29 @@ export function useSubscriptions(): UseSubscriptionsResult {
     await load();
   }, [load]);
 
+  const editSubscription = useCallback(async (
+    subscription: Subscription,
+    name: string,
+    amount: number,
+    frequency: string,
+    nextBillingDate: string,
+    colorHex: string,
+    iconName: string
+  ) => {
+    await updateSubscription(subscription.id, name, amount, frequency, nextBillingDate, colorHex, iconName);
+    // Reprograma los recordatorios porque el monto o la fecha pudieron cambiar
+    await cancelSubscriptionReminders(subscription.id);
+    await scheduleSubscriptionReminders(subscription.id, name, amount, nextBillingDate);
+    await load();
+  }, [load]);
+
   return {
     subscriptions,
     isLoading,
     error,
     refresh: load,
     addSubscription,
+    editSubscription,
     removeSubscription,
   };
 }

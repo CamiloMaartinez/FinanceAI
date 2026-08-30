@@ -26,6 +26,7 @@ export default function GoalsScreen() {
   const styles = useMemo(() => createStyles(c), [c]);
   const goals = useGoals();
   const [formVisible, setFormVisible] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [contributeGoal, setContributeGoal] = useState<Goal | null>(null);
   const [contributeAmount, setContributeAmount] = useState('');
 
@@ -33,7 +34,21 @@ export default function GoalsScreen() {
     name: string, targetAmount: number, targetDate: string,
     priority: string, colorHex: string, iconName: string
   ) => {
-    await goals.addGoal(name, targetAmount, targetDate, priority, colorHex, iconName);
+    if (editingGoal) {
+      await goals.editGoal(editingGoal.id, name, targetAmount, targetDate, priority, colorHex, iconName);
+    } else {
+      await goals.addGoal(name, targetAmount, targetDate, priority, colorHex, iconName);
+    }
+  };
+
+  const handleCloseForm = () => {
+    setFormVisible(false);
+    setEditingGoal(null);
+  };
+
+  const handleEdit = (goal: Goal) => {
+    setEditingGoal(goal);
+    setFormVisible(true);
   };
 
   const handleLongPress = (goal: Goal) => {
@@ -104,6 +119,7 @@ export default function GoalsScreen() {
               key={goal.id}
               goal={goal}
               onContribute={(g) => setContributeGoal(g)}
+              onEdit={handleEdit}
               onLongPress={handleLongPress}
             />
           ))
@@ -116,7 +132,8 @@ export default function GoalsScreen() {
 
       <GoalForm
         visible={formVisible}
-        onClose={() => setFormVisible(false)}
+        editingGoal={editingGoal}
+        onClose={handleCloseForm}
         onSave={handleSaveGoal}
       />
 

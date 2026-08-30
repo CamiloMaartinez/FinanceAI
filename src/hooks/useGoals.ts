@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import {
   getAllGoals,
   createGoal,
+  updateGoal,
   contributeToGoal,
   deleteGoal,
 } from '../database/db';
@@ -13,6 +14,15 @@ interface UseGoalsResult {
   error: string | null;
   refresh: () => Promise<void>;
   addGoal: (
+    name: string,
+    targetAmount: number,
+    targetDate: string,
+    priority: string,
+    colorHex: string,
+    iconName: string
+  ) => Promise<void>;
+  editGoal: (
+    id: string,
     name: string,
     targetAmount: number,
     targetDate: string,
@@ -58,6 +68,19 @@ export function useGoals(): UseGoalsResult {
     await load();
   }, [load]);
 
+  const editGoal = useCallback(async (
+    id: string,
+    name: string,
+    targetAmount: number,
+    targetDate: string,
+    priority: string,
+    colorHex: string,
+    iconName: string
+  ) => {
+    await updateGoal(id, name, targetAmount, targetDate, priority, colorHex, iconName);
+    await load();
+  }, [load]);
+
   const contribute = useCallback(async (id: string, amount: number) => {
     await contributeToGoal(id, amount);
     await load();
@@ -74,6 +97,7 @@ export function useGoals(): UseGoalsResult {
     error,
     refresh: load,
     addGoal,
+    editGoal,
     contribute,
     removeGoal,
   };

@@ -328,6 +328,45 @@ export async function deleteTransaction(
 
   await database.runAsync(`DELETE FROM transactions WHERE id = ?`, [id]);
 }
+
+export async function updateTransaction(
+  id: string,
+  previous: { amount: number; type: string; accountId: string },
+  updated: {
+    amount: number;
+    type: string;
+    date: string;
+    accountId: string;
+    categoryId: string | null;
+    notes: string;
+  }
+): Promise<void> {
+  const database = await getDb();
+
+  // 1) Revertir el efecto de la transacción original en su cuenta
+  const revertAmount =
+    previous.type === 'income' || previous.type === 'loan' ? -previous.amount : previous.amount;
+  await database.runAsync(
+    `UPDATE accounts SET balance = balance + ? WHERE id = ?`,
+    [revertAmount, previous.accountId]
+  );
+
+  // 2) Aplicar el efecto de la nueva versión (puede ser otra cuenta)
+  const applyAmount =
+    updated.type === 'income' || updated.type === 'loan' ? updated.amount : -updated.amount;
+  await database.runAsync(
+    `UPDATE accounts SET balance = balance + ? WHERE id = ?`,
+    [applyAmount, updated.accountId]
+  );
+
+  // 3) Actualizar la transacción en sí
+  await database.runAsync(
+    `UPDATE transactions
+     SET amount = ?, type = ?, date = ?, accountId = ?, categoryId = ?, notes = ?
+     WHERE id = ?`,
+    [updated.amount, updated.type, updated.date, updated.accountId, updated.categoryId, updated.notes, id]
+  );
+}
 // ─── Queries de Metas ───────────────────────────────────────
 
 export async function getAllGoals(): Promise<Goal[]> {
@@ -381,6 +420,24 @@ export async function deleteGoal(id: string): Promise<void> {
   const database = await getDb();
   await database.runAsync(`DELETE FROM goals WHERE id = ?`, [id]);
 }
+
+export async function updateGoal(
+  id: string,
+  name: string,
+  targetAmount: number,
+  targetDate: string,
+  priority: string,
+  colorHex: string,
+  iconName: string
+): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(
+    `UPDATE goals
+     SET name = ?, targetAmount = ?, targetDate = ?, priority = ?, colorHex = ?, iconName = ?
+     WHERE id = ?`,
+    [name, targetAmount, targetDate, priority, colorHex, iconName, id]
+  );
+}
 // ─── Queries de Suscripciones ──────────────────────────────
 
 export async function getAllSubscriptions(): Promise<Subscription[]> {
@@ -418,6 +475,24 @@ export async function deleteSubscription(id: string): Promise<void> {
   await database.runAsync(
     `UPDATE subscriptions SET isActive = 0 WHERE id = ?`,
     [id]
+  );
+}
+
+export async function updateSubscription(
+  id: string,
+  name: string,
+  amount: number,
+  frequency: string,
+  nextBillingDate: string,
+  colorHex: string,
+  iconName: string
+): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(
+    `UPDATE subscriptions
+     SET name = ?, amount = ?, frequency = ?, nextBillingDate = ?, colorHex = ?, iconName = ?
+     WHERE id = ?`,
+    [name, amount, frequency, nextBillingDate, colorHex, iconName, id]
   );
 }
 // ─── Queries de Reportes ────────────────────────────────────

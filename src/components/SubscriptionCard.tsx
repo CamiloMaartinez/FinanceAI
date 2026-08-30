@@ -12,6 +12,7 @@ import type { Subscription } from '../models/types';
 
 interface SubscriptionCardProps {
   subscription: Subscription;
+  onPress: (subscription: Subscription) => void;
   onLongPress: (subscription: Subscription) => void;
 }
 
@@ -22,7 +23,7 @@ const FREQUENCY_LABELS: Record<string, string> = {
   annual:    'Anual',
 };
 
-export function SubscriptionCard({ subscription, onLongPress }: SubscriptionCardProps) {
+export function SubscriptionCard({ subscription, onPress, onLongPress }: SubscriptionCardProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
   const daysUntil = getDaysUntilBilling(subscription);
@@ -43,6 +44,7 @@ export function SubscriptionCard({ subscription, onLongPress }: SubscriptionCard
   return (
     <TouchableOpacity
       style={styles.card}
+      onPress={() => onPress(subscription)}
       onLongPress={() => onLongPress(subscription)}
       activeOpacity={0.85}
     >

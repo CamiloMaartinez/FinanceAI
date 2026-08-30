@@ -21,10 +21,11 @@ import type { Goal } from '../models/types';
 interface GoalCardProps {
   goal: Goal;
   onContribute: (goal: Goal) => void;
+  onEdit: (goal: Goal) => void;
   onLongPress: (goal: Goal) => void;
 }
 
-export function GoalCard({ goal, onContribute, onLongPress }: GoalCardProps) {
+export function GoalCard({ goal, onContribute, onEdit, onLongPress }: GoalCardProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
   const progress       = getGoalProgress(goal);
@@ -65,6 +66,9 @@ export function GoalCard({ goal, onContribute, onLongPress }: GoalCardProps) {
         <Text style={[styles.percentage, { color: progressColor }]}>
           {percentage}%
         </Text>
+        <TouchableOpacity style={styles.editBtn} onPress={() => onEdit(goal)} hitSlop={8}>
+          <Ionicons name="pencil-outline" size={15} color={c.textTertiary} />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.progressTrack}>
@@ -120,6 +124,9 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
+  },
+  editBtn: {
+    padding: 2,
   },
   iconCircle: {
     width: 40,

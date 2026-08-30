@@ -13,12 +13,13 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
 import { ReceiptScannerButton } from './ReceiptScannerButton';
-import type { Account, Category } from '../models/types';
+import type { Account, Category, TransactionWithCategory } from '../models/types';
 
 interface TransactionFormProps {
   visible: boolean;
   accounts: Account[];
   categories: Category[];
+  editingTransaction?: TransactionWithCategory | null;
   onClose: () => void;
   onSave: (
     amount: number,
@@ -34,11 +35,13 @@ export function TransactionForm({
   visible,
   accounts,
   categories,
+  editingTransaction,
   onClose,
   onSave,
 }: TransactionFormProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
+  const isEditing = !!editingTransaction;
   const [type,       setType]       = useState<'expense' | 'income'>('expense');
   const [amount,     setAmount]     = useState('');
   const [accountId,  setAccountId]  = useState<string | null>(null);
@@ -46,12 +49,24 @@ export function TransactionForm({
   const [notes,      setNotes]      = useState('');
   const [error,      setError]      = useState('');
 
-  // Selecciona la primera cuenta automáticamente cuando se abre
+  // Selecciona la primera cuenta automáticamente cuando se abre (solo si no estamos editando)
   useEffect(() => {
-    if (visible && accounts.length > 0 && !accountId) {
+    if (visible && accounts.length > 0 && !accountId && !editingTransaction) {
       setAccountId(accounts[0].id);
     }
   }, [visible, accounts]);
+
+  // Precarga los datos cuando se abre en modo edición
+  useEffect(() => {
+    if (visible && editingTransaction) {
+      setType(editingTransaction.type as 'expense' | 'income');
+      setAmount(String(Math.round(editingTransaction.amount)));
+      setAccountId(editingTransaction.accountId);
+      setCategoryId(editingTransaction.categoryId);
+      setNotes(editingTransaction.notes ?? '');
+      setError('');
+    }
+  }, [visible, editingTransaction]);
 
   const handleSave = () => {
     const amountNum = parseFloat(amount.replace(/\./g, '').replace(',', '.'));
@@ -72,7 +87,7 @@ export function TransactionForm({
     onSave(
       amountNum,
       type,
-      new Date().toISOString(),
+      editingTransaction ? editingTransaction.date : new Date().toISOString(),
       accountId,
       type === 'expense' ? categoryId : null,
       notes.trim()
@@ -106,7 +121,7 @@ export function TransactionForm({
           <TouchableOpacity onPress={handleClose}>
             <Text style={styles.cancelBtn}>Cancelar</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Nuevo movimiento</Text>
+          <Text style={styles.headerTitle}>{isEditing ? 'Editar movimiento' : 'Nuevo movimiento'}</Text>
           <TouchableOpacity onPress={handleSave}>
             <Text style={styles.saveBtn}>Guardar</Text>
           </TouchableOpacity>
@@ -153,8 +168,8 @@ export function TransactionForm({
             </TouchableOpacity>
           </View>
 
-          {/* Escanear recibo — solo para gastos */}
-          {type === 'expense' && (
+          {/* Escanear recibo — solo para gastos nuevos, no al editar */}
+          {type === 'expense' && !isEditing && (
             <View style={styles.field}>
               <ReceiptScannerButton
                 onScanned={(amount, notes) => {

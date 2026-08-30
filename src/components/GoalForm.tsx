@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,9 +12,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
+import type { Goal } from '../models/types';
 
 interface GoalFormProps {
   visible: boolean;
+  editingGoal?: Goal | null;
   onClose: () => void;
   onSave: (
     name: string,
@@ -55,9 +57,10 @@ function getQuickDate(monthsAhead: number): string {
   return date.toISOString();
 }
 
-export function GoalForm({ visible, onClose, onSave }: GoalFormProps) {
+export function GoalForm({ visible, editingGoal, onClose, onSave }: GoalFormProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
+  const isEditing = !!editingGoal;
   const [name,         setName]         = useState('');
   const [targetAmount, setTargetAmount] = useState('');
   const [targetDate,   setTargetDate]   = useState(getQuickDate(6));
@@ -65,6 +68,19 @@ export function GoalForm({ visible, onClose, onSave }: GoalFormProps) {
   const [colorHex,     setColorHex]     = useState('#007AFF');
   const [iconName,     setIconName]     = useState('star-outline');
   const [error,        setError]        = useState('');
+
+  // Precarga los datos cuando se abre en modo edición
+  useEffect(() => {
+    if (visible && editingGoal) {
+      setName(editingGoal.name);
+      setTargetAmount(String(Math.round(editingGoal.targetAmount)));
+      setTargetDate(editingGoal.targetDate);
+      setPriority(editingGoal.priority);
+      setColorHex(editingGoal.colorHex);
+      setIconName(editingGoal.iconName);
+      setError('');
+    }
+  }, [visible, editingGoal]);
 
   const handleSave = () => {
     if (!name.trim()) {
@@ -107,7 +123,7 @@ export function GoalForm({ visible, onClose, onSave }: GoalFormProps) {
           <TouchableOpacity onPress={handleClose}>
             <Text style={styles.cancelBtn}>Cancelar</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Nueva meta</Text>
+          <Text style={styles.headerTitle}>{isEditing ? 'Editar meta' : 'Nueva meta'}</Text>
           <TouchableOpacity onPress={handleSave}>
             <Text style={styles.saveBtn}>Guardar</Text>
           </TouchableOpacity>

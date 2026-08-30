@@ -22,6 +22,7 @@ import type { Subscription } from '../../src/models/types';
 export default function SubscriptionsScreen() {
   const data = useSubscriptions();
   const [formVisible, setFormVisible] = useState(false);
+  const [editingSub, setEditingSub] = useState<Subscription | null>(null);
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
 
@@ -29,7 +30,21 @@ export default function SubscriptionsScreen() {
     name: string, amount: number, frequency: string,
     nextBillingDate: string, colorHex: string, iconName: string
   ) => {
-    await data.addSubscription(name, amount, frequency, nextBillingDate, colorHex, iconName);
+    if (editingSub) {
+      await data.editSubscription(editingSub, name, amount, frequency, nextBillingDate, colorHex, iconName);
+    } else {
+      await data.addSubscription(name, amount, frequency, nextBillingDate, colorHex, iconName);
+    }
+  };
+
+  const handleCloseForm = () => {
+    setFormVisible(false);
+    setEditingSub(null);
+  };
+
+  const handlePress = (subscription: Subscription) => {
+    setEditingSub(subscription);
+    setFormVisible(true);
   };
 
   const handleLongPress = (subscription: Subscription) => {
@@ -109,6 +124,7 @@ export default function SubscriptionsScreen() {
             <SubscriptionCard
               key={sub.id}
               subscription={sub}
+              onPress={handlePress}
               onLongPress={handleLongPress}
             />
           ))
@@ -116,14 +132,15 @@ export default function SubscriptionsScreen() {
 
         {data.subscriptions.length > 0 && (
           <Text style={styles.hint}>
-            Recibirás notificaciones 7, 3 y 1 día antes de cada cobro
+            Toca para editar · mantén presionado para eliminar. Recibirás notificaciones 7, 3 y 1 día antes de cada cobro.
           </Text>
         )}
       </ScrollView>
 
       <SubscriptionForm
         visible={formVisible}
-        onClose={() => setFormVisible(false)}
+        editingSubscription={editingSub}
+        onClose={handleCloseForm}
         onSave={handleSave}
       />
     </SafeAreaView>

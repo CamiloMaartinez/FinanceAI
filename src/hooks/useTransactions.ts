@@ -3,6 +3,7 @@ import {
   getAllTransactionsWithCategory,
   getAllCategories,
   createTransaction,
+  updateTransaction,
   deleteTransaction,
 } from '../database/db';
 import { getAllAccounts } from '../database/db';
@@ -22,6 +23,17 @@ interface UseTransactionsResult {
     accountId: string,
     categoryId: string | null,
     notes: string
+  ) => Promise<void>;
+  editTransaction: (
+    tx: TransactionWithCategory,
+    updated: {
+      amount: number;
+      type: string;
+      date: string;
+      accountId: string;
+      categoryId: string | null;
+      notes: string;
+    }
   ) => Promise<void>;
   removeTransaction: (tx: TransactionWithCategory) => Promise<void>;
 }
@@ -73,6 +85,25 @@ export function useTransactions(): UseTransactionsResult {
     await load();
   }, [load]);
 
+  const editTransaction = useCallback(async (
+    tx: TransactionWithCategory,
+    updated: {
+      amount: number;
+      type: string;
+      date: string;
+      accountId: string;
+      categoryId: string | null;
+      notes: string;
+    }
+  ) => {
+    await updateTransaction(
+      tx.id,
+      { amount: tx.amount, type: tx.type, accountId: tx.accountId },
+      updated
+    );
+    await load();
+  }, [load]);
+
   return {
     transactions,
     categories,
@@ -81,6 +112,7 @@ export function useTransactions(): UseTransactionsResult {
     error,
     refresh: load,
     addTransaction,
+    editTransaction,
     removeTransaction,
   };
 }
