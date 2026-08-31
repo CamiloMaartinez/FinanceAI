@@ -133,8 +133,13 @@ export async function suggestCategoryServer(
       0.1,
       1
     );
-    const trimmed = text.trim();
-    return availableCategories.includes(trimmed) ? trimmed : null;
+    const trimmed = text.trim().replace(/[.,]+$/, '');
+    // Comparación tolerante a mayúsculas/espacios, pero devolvemos el nombre
+    // EXACTO de la lista original para que el cliente pueda hacer match por igualdad.
+    const match = availableCategories.find(
+      (cat) => cat.trim().toLowerCase() === trimmed.toLowerCase()
+    );
+    return match ?? null;
   } catch {
     return null;
   }

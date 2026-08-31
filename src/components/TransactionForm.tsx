@@ -9,10 +9,12 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
 import { ReceiptScannerButton } from './ReceiptScannerButton';
+import { suggestCategory } from '../services/ai';
 import type { Account, Category, TransactionWithCategory } from '../models/types';
 
 interface TransactionFormProps {
@@ -48,6 +50,8 @@ export function TransactionForm({
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [notes,      setNotes]      = useState('');
   const [error,      setError]      = useState('');
+  const [categoryFromAI, setCategoryFromAI] = useState(false);
+  const [isSuggesting,   setIsSuggesting]   = useState(false);
 
   // Selecciona la primera cuenta automáticamente cuando se abre (solo si no estamos editando)
   useEffect(() => {
@@ -67,6 +71,33 @@ export function TransactionForm({
       setError('');
     }
   }, [visible, editingTransaction]);
+
+  // Categorización automática: mientras el usuario escribe la nota de un
+  // gasto NUEVO (no al editar), la IA sugiere una categoría tras una pausa
+  // de escritura. Si el usuario ya eligió una categoría a mano, no la pisamos.
+  useEffect(() => {
+    if (editingTransaction || type !== 'expense') return;
+    if (categoryId && !categoryFromAI) return; // el usuario ya eligió manualmente
+    if (notes.trim().length < 3) return;
+
+    const timeout = setTimeout(async () => {
+      setIsSuggesting(true);
+      try {
+        const suggested = await suggestCategory(notes.trim(), categories.map((c) => c.name));
+        if (suggested) {
+          const match = categories.find((c) => c.name === suggested);
+          if (match) {
+            setCategoryId(match.id);
+            setCategoryFromAI(true);
+          }
+        }
+      } finally {
+        setIsSuggesting(false);
+      }
+    }, 700);
+
+    return () => clearTimeout(timeout);
+  }, [notes, type, editingTransaction]);
 
   const handleSave = () => {
     const amountNum = parseFloat(amount.replace(/\./g, '').replace(',', '.'));
@@ -100,6 +131,7 @@ export function TransactionForm({
     setAmount('');
     setAccountId(null);
     setCategoryId(null);
+    setCategoryFromAI(false);
     setNotes('');
     setError('');
     onClose();
@@ -230,7 +262,21 @@ export function TransactionForm({
           {/* Categoría — solo para gastos */}
           {type === 'expense' && (
             <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Categoría</Text>
+              <View style={styles.categoryLabelRow}>
+                <Text style={styles.fieldLabel}>Categoría</Text>
+                {isSuggesting && (
+                  <View style={styles.aiHint}>
+                    <ActivityIndicator size="small" color={c.textTertiary} />
+                    <Text style={styles.aiHintText}>Pensando...</Text>
+                  </View>
+                )}
+                {!isSuggesting && categoryFromAI && categoryId && (
+                  <View style={styles.aiHint}>
+                    <Ionicons name="sparkles" size={12} color={c.blue} />
+                    <Text style={[styles.aiHintText, { color: c.blue }]}>Sugerido por IA</Text>
+                  </View>
+                )}
+              </View>
               <View style={styles.categoryGrid}>
                 {categories.map((cat) => (
                   <TouchableOpacity
@@ -242,7 +288,7 @@ export function TransactionForm({
                         borderColor: cat.colorHex,
                       },
                     ]}
-                    onPress={() => { setCategoryId(cat.id); setError(''); }}
+                    onPress={() => { setCategoryId(cat.id); setCategoryFromAI(false); setError(''); }}
                   >
                     <Ionicons
                       name={cat.iconName as any}
@@ -356,6 +402,21 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     marginBottom: spacing.sm,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+  },
+  categoryLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  aiHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: spacing.sm,
+  },
+  aiHintText: {
+    fontSize: 11,
+    color: c.textTertiary,
   },
   amountWrapper: {
     flexDirection: 'row',
