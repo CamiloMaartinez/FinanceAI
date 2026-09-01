@@ -226,6 +226,40 @@ Escribe en español, tono cercano y motivador (no alarmista), destacando el patr
   );
 }
 
+export interface MonthPredictionContext {
+  spentSoFar: number;
+  projectedTotal: number;
+  historicalAverage: number | null;
+  budgetLimit: number | null;
+  dayOfMonth: number;
+  daysInMonth: number;
+}
+
+export async function generateMonthPredictionServer(context: MonthPredictionContext): Promise<string> {
+  const fmt = (n: number) => `$${Math.round(n).toLocaleString('es-CO')}`;
+
+  const historicalText = context.historicalAverage !== null
+    ? `Su promedio de gasto en los últimos meses es ${fmt(context.historicalAverage)}.`
+    : 'No hay suficiente historial de meses anteriores para comparar.';
+
+  const budgetText = context.budgetLimit !== null
+    ? `Su presupuesto para este mes es ${fmt(context.budgetLimit)}.`
+    : 'No tiene un presupuesto definido para este mes.';
+
+  const prompt = `Eres el asistente financiero de la app FinanceAI. Vas ${context.dayOfMonth} de ${context.daysInMonth} días del mes. El usuario lleva gastados ${fmt(context.spentSoFar)} hasta hoy. Si sigue gastando al mismo ritmo, terminaría el mes en aproximadamente ${fmt(context.projectedTotal)}.
+
+${historicalText}
+${budgetText}
+
+Escribe una sola oración breve (máximo 2 líneas), en español, texto plano sin markdown, con un consejo o comentario útil sobre esta proyección — compárala con su historial o presupuesto si aplica, y sé constructivo, no alarmista.`;
+
+  return callGeminiWithRetry(
+    [{ role: 'user', parts: [{ text: prompt }] }],
+    120,
+    0.6
+  );
+}
+
 export interface ScannedReceipt {
   amount: number | null;
   merchant: string | null;

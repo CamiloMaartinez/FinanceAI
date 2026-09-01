@@ -79,3 +79,17 @@ export async function generateWeeklySummary(context: WeeklySummaryContext): Prom
   const { text } = await postJson<{ text: string }>('/api/weekly-summary', context);
   return text;
 }
+
+export interface MonthPredictionContext {
+  spentSoFar: number;
+  projectedTotal: number;
+  historicalAverage: number | null;
+  budgetLimit: number | null;
+  dayOfMonth: number;
+  daysInMonth: number;
+}
+
+export async function generateMonthPrediction(context: MonthPredictionContext): Promise<string> {
+  const { text } = await postJson<{ text: string }>('/api/month-prediction', context);
+  return text;
+}

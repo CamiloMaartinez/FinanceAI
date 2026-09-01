@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useReports } from '../../src/hooks/useReports';
 import { CategoryPieChart } from '../../src/components/CategoryPieChart';
 import { MonthComparisonCard } from '../../src/components/MonthComparisonCard';
+import { MonthPredictionCard } from '../../src/components/MonthPredictionCard';
 import { useColors, spacing, typography } from '../../src/constants/theme';
 import { exportReportToPdf } from '../../src/services/pdfExport';
 
@@ -84,6 +85,10 @@ export default function ReportsScreen() {
         />
 
         <View style={{ height: spacing.xl }} />
+
+        {reports.prediction && (
+          <MonthPredictionCard prediction={reports.prediction} />
+        )}
 
         <CategoryPieChart data={reports.breakdown} />
 
