@@ -188,6 +188,44 @@ Usa "si" si la compra no compromete su presupuesto ni sus metas. Usa "con_cuidad
   }
 }
 
+export interface WeeklySummaryContext {
+  weekStartLabel: string;
+  weekEndLabel: string;
+  totalSpent: number;
+  totalIncome: number;
+  topCategories: { name: string; amount: number }[];
+  previousWeekSpent: number | null;
+}
+
+export async function generateWeeklySummaryServer(context: WeeklySummaryContext): Promise<string> {
+  const categoriesText = context.topCategories.length > 0
+    ? context.topCategories.map((c) => `- ${c.name}: $${Math.round(c.amount).toLocaleString('es-CO')}`).join('\n')
+    : 'Sin gastos categorizados esta semana';
+
+  const comparisonText = context.previousWeekSpent !== null
+    ? `La semana pasada gastó $${Math.round(context.previousWeekSpent).toLocaleString('es-CO')} (para comparar si quieres).`
+    : 'No hay datos de la semana anterior para comparar.';
+
+  const prompt = `Eres el asistente financiero de la app FinanceAI. Genera un resumen breve y cercano (máximo 4-5 oraciones, texto plano sin markdown) de la semana financiera del usuario, del ${context.weekStartLabel} al ${context.weekEndLabel}.
+
+Datos de la semana:
+- Gastó en total: $${Math.round(context.totalSpent).toLocaleString('es-CO')}
+- Ingresó en total: $${Math.round(context.totalIncome).toLocaleString('es-CO')}
+
+Top categorías de gasto:
+${categoriesText}
+
+${comparisonText}
+
+Escribe en español, tono cercano y motivador (no alarmista), destacando el patrón más notable de la semana (una categoría que resalte, si ahorró o gastó de más, etc). Si no hay suficientes datos, dilo brevemente y anima al usuario a seguir registrando sus movimientos.`;
+
+  return callGeminiWithRetry(
+    [{ role: 'user', parts: [{ text: prompt }] }],
+    350,
+    0.7
+  );
+}
+
 export interface ScannedReceipt {
   amount: number | null;
   merchant: string | null;

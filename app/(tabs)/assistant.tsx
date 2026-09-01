@@ -94,6 +94,12 @@ export default function AssistantScreen() {
               {msg.role === 'assistant' && (
                 <Text style={styles.bubbleRole}>AI</Text>
               )}
+              {msg.isSummary && (
+                <View style={styles.summaryBadge}>
+                  <Ionicons name="calendar-outline" size={13} color={c.blue} />
+                  <Text style={styles.summaryBadgeText}>Resumen de la semana</Text>
+                </View>
+              )}
               {msg.verdict && (
                 <View style={[styles.verdictBadge, { backgroundColor: VERDICT_CONFIG[msg.verdict].color + '20' }]}>
                   <Ionicons
@@ -217,6 +223,18 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     marginBottom: spacing.sm,
   },
   verdictBadgeText: { fontSize: 12.5, fontWeight: '700' },
+  summaryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    alignSelf: 'flex-start',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,122,255,0.12)',
+    marginBottom: spacing.sm,
+  },
+  summaryBadgeText: { fontSize: 12, fontWeight: '700', color: c.blue },
   label: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
   title: { fontSize: 22, fontWeight: '200', color: c.textPrimary, letterSpacing: -0.5 },
   divider: { height: 0.5, backgroundColor: c.borderStrong, marginHorizontal: spacing.xl },

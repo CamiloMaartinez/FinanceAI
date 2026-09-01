@@ -175,6 +175,64 @@ export async function getMonthlyTotals(
   };
 }
 
+// Igual que getMonthlyTotals, pero para un rango de fechas arbitrario
+// (usado por el resumen financiero semanal, que no calza con meses calendario)
+export async function getTotalsInRange(
+  startISO: string,
+  endISO: string
+): Promise<{ income: number; expense: number }> {
+  const database = await getDb();
+
+  const incomeRow = await database.getFirstAsync<{ total: number | null }>(
+    `SELECT SUM(amount) as total
+     FROM transactions
+     WHERE type = 'income' AND date >= ? AND date < ?`,
+    [startISO, endISO]
+  );
+
+  const expenseRow = await database.getFirstAsync<{ total: number | null }>(
+    `SELECT SUM(amount) as total
+     FROM transactions
+     WHERE type IN ('expense','payment') AND date >= ? AND date < ?`,
+    [startISO, endISO]
+  );
+
+  return {
+    income: incomeRow?.total ?? 0,
+    expense: expenseRow?.total ?? 0,
+  };
+}
+
+// Igual que getCategoryBreakdown, pero para un rango de fechas arbitrario
+export async function getCategoryBreakdownInRange(
+  startISO: string,
+  endISO: string
+): Promise<{ categoryId: string; categoryName: string; categoryColor: string; total: number }[]> {
+  const database = await getDb();
+
+  const rows = await database.getAllAsync<{
+    categoryId: string;
+    categoryName: string;
+    categoryColor: string;
+    total: number;
+  }>(
+    `SELECT
+       c.id as categoryId,
+       c.name as categoryName,
+       c.colorHex as categoryColor,
+       SUM(t.amount) as total
+     FROM transactions t
+     INNER JOIN categories c ON c.id = t.categoryId
+     WHERE t.type IN ('expense','payment')
+       AND t.date >= ? AND t.date < ?
+     GROUP BY c.id
+     ORDER BY total DESC`,
+    [startISO, endISO]
+  );
+
+  return rows;
+}
+
 export async function getRecentTransactions(
   limit: number = 5
 ): Promise<TransactionWithCategory[]> {

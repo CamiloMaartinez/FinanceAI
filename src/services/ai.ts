@@ -65,3 +65,17 @@ export async function evaluatePurchase(
 ): Promise<PurchaseEvaluation> {
   return postJson<PurchaseEvaluation>('/api/evaluate-purchase', { itemDescription, price, context });
 }
+
+export interface WeeklySummaryContext {
+  weekStartLabel: string;
+  weekEndLabel: string;
+  totalSpent: number;
+  totalIncome: number;
+  topCategories: { name: string; amount: number }[];
+  previousWeekSpent: number | null;
+}
+
+export async function generateWeeklySummary(context: WeeklySummaryContext): Promise<string> {
+  const { text } = await postJson<{ text: string }>('/api/weekly-summary', context);
+  return text;
+}
