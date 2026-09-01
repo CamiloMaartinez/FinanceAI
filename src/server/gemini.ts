@@ -145,6 +145,49 @@ export async function suggestCategoryServer(
   }
 }
 
+export interface PurchaseEvaluation {
+  verdict: 'si' | 'con_cuidado' | 'mejor_espera';
+  reasoning: string;
+}
+
+export async function evaluatePurchaseServer(
+  itemDescription: string,
+  price: number,
+  context: FinancialContext
+): Promise<PurchaseEvaluation> {
+  const systemContext = buildSystemContext(context);
+  const prompt = `${systemContext}
+
+El usuario quiere saber si puede comprar lo siguiente:
+Artículo: ${itemDescription || 'Sin descripción específica'}
+Precio: ${Math.round(price)} pesos colombianos
+
+Evalúa considerando su saldo actual, sus gastos e ingresos del mes, y si tiene metas de ahorro activas que se verían comprometidas. Responde ÚNICAMENTE con este JSON exacto, sin texto adicional ni backticks:
+{"verdict": "si" | "con_cuidado" | "mejor_espera", "reasoning": "explicación breve en 2-3 oraciones, en español, sin formato markdown"}
+
+Usa "si" si la compra no compromete su presupuesto ni sus metas. Usa "con_cuidado" si es posible pero representa una porción importante de su saldo o afecta parcialmente sus metas. Usa "mejor_espera" si comprometería seriamente su saldo, sus gastos básicos o sus metas de ahorro.`;
+
+  const text = await callGeminiWithRetry(
+    [{ role: 'user', parts: [{ text: prompt }] }],
+    300,
+    0.3
+  );
+
+  const cleanText = text.replace(/```json|```/g, '').trim();
+
+  try {
+    const parsed = JSON.parse(cleanText);
+    const verdict: PurchaseEvaluation['verdict'] =
+      ['si', 'con_cuidado', 'mejor_espera'].includes(parsed.verdict) ? parsed.verdict : 'con_cuidado';
+    return {
+      verdict,
+      reasoning: typeof parsed.reasoning === 'string' ? parsed.reasoning : 'No se pudo generar una explicación.',
+    };
+  } catch {
+    throw new Error('No se pudo interpretar la evaluación de la IA');
+  }
+}
+
 export interface ScannedReceipt {
   amount: number | null;
   merchant: string | null;

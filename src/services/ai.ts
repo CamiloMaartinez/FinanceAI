@@ -12,6 +12,11 @@ interface FinancialContext {
   activeGoals: { name: string; targetAmount: number; currentAmount: number; targetDate: string }[];
 }
 
+export interface PurchaseEvaluation {
+  verdict: 'si' | 'con_cuidado' | 'mejor_espera';
+  reasoning: string;
+}
+
 async function postJson<T>(path: string, body: unknown): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: 'POST',
@@ -50,4 +55,13 @@ export async function suggestCategory(
   } catch {
     return null;
   }
+}
+
+// Evalúa si el usuario puede comprar algo, según su situación financiera actual
+export async function evaluatePurchase(
+  itemDescription: string,
+  price: number,
+  context: FinancialContext
+): Promise<PurchaseEvaluation> {
+  return postJson<PurchaseEvaluation>('/api/evaluate-purchase', { itemDescription, price, context });
 }

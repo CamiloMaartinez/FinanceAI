@@ -13,7 +13,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFinancialAssistant } from '../../src/hooks/useFinancialAssistant';
+import { PurchaseEvaluatorModal } from '../../src/components/PurchaseEvaluatorModal';
 import { useColors, spacing, typography } from '../../src/constants/theme';
+
+const VERDICT_CONFIG = {
+  si:            { label: 'Sí puedes comprarlo',  color: '#34C759', icon: 'checkmark-circle' as const },
+  con_cuidado:   { label: 'Con cuidado',           color: '#FF9500', icon: 'alert-circle' as const },
+  mejor_espera:  { label: 'Mejor espera',          color: '#FF3B30', icon: 'close-circle' as const },
+};
 
 const SUGGESTED_QUESTIONS = [
   '¿Estoy gastando demasiado?',
@@ -24,9 +31,15 @@ const SUGGESTED_QUESTIONS = [
 export default function AssistantScreen() {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
-  const { messages, isLoading, sendMessage } = useFinancialAssistant();
+  const { messages, isLoading, sendMessage, evaluatePurchase } = useFinancialAssistant();
   const [input, setInput] = useState('');
+  const [evaluatorVisible, setEvaluatorVisible] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
+
+  const handleEvaluate = async (itemDescription: string, price: number) => {
+    await evaluatePurchase(itemDescription, price);
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+  };
 
   const handleSend = async (text?: string) => {
     const question = text ?? input;
@@ -44,8 +57,17 @@ export default function AssistantScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.label}>ASISTENTE</Text>
-          <Text style={styles.title}>FinanceAI</Text>
+          <View>
+            <Text style={styles.label}>ASISTENTE</Text>
+            <Text style={styles.title}>FinanceAI</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.evaluatorButton}
+            onPress={() => setEvaluatorVisible(true)}
+          >
+            <Ionicons name="calculator-outline" size={16} color={c.textPrimary} />
+            <Text style={styles.evaluatorButtonText}>¿Puedo comprarlo?</Text>
+          </TouchableOpacity>
         </View>
         <View style={styles.divider} />
 
@@ -71,6 +93,18 @@ export default function AssistantScreen() {
             >
               {msg.role === 'assistant' && (
                 <Text style={styles.bubbleRole}>AI</Text>
+              )}
+              {msg.verdict && (
+                <View style={[styles.verdictBadge, { backgroundColor: VERDICT_CONFIG[msg.verdict].color + '20' }]}>
+                  <Ionicons
+                    name={VERDICT_CONFIG[msg.verdict].icon}
+                    size={14}
+                    color={VERDICT_CONFIG[msg.verdict].color}
+                  />
+                  <Text style={[styles.verdictBadgeText, { color: VERDICT_CONFIG[msg.verdict].color }]}>
+                    {VERDICT_CONFIG[msg.verdict].label}
+                  </Text>
+                </View>
               )}
               <Text style={[
                 styles.bubbleText,
@@ -141,13 +175,48 @@ export default function AssistantScreen() {
           </View>
         </View>
       </KeyboardAvoidingView>
+
+      <PurchaseEvaluatorModal
+        visible={evaluatorVisible}
+        onClose={() => setEvaluatorVisible(false)}
+        onEvaluate={handleEvaluate}
+      />
     </SafeAreaView>
   );
 }
 
 const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   container: { flex: 1, backgroundColor: c.background },
-  header: { paddingHorizontal: spacing.xl, paddingTop: spacing.lg, paddingBottom: spacing.sm },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.sm,
+  },
+  evaluatorButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    borderRadius: 20,
+    borderWidth: 0.5,
+    borderColor: c.borderStrong,
+  },
+  evaluatorButtonText: { fontSize: 12, fontWeight: '500', color: c.textPrimary },
+  verdictBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    alignSelf: 'flex-start',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    marginBottom: spacing.sm,
+  },
+  verdictBadgeText: { fontSize: 12.5, fontWeight: '700' },
   label: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
   title: { fontSize: 22, fontWeight: '200', color: c.textPrimary, letterSpacing: -0.5 },
   divider: { height: 0.5, backgroundColor: c.borderStrong, marginHorizontal: spacing.xl },
