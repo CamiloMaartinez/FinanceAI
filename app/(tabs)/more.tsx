@@ -2,11 +2,11 @@ import React, { useMemo } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useColors, spacing, typography } from '../../src/constants/theme';
@@ -50,8 +50,8 @@ const MENU_ITEMS: MenuItem[] = [
     route: '/(tabs)/assistant',
   },
   {
-    label: 'Comparador de Tarjetas',
-    description: 'Compara cuotas, cashback e intereses',
+    label: 'Tarjetas e Inversiones',
+    description: 'Compara tarjetas, CDT, fondos y más',
     icon: 'layers-outline',
     route: '/(tabs)/cards',
   },
@@ -68,7 +68,7 @@ export default function MoreScreen() {
   const styles = useMemo(() => createStyles(c), [c]);
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
+      <Animated.ScrollView entering={FadeIn.duration(350)}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
@@ -99,7 +99,7 @@ export default function MoreScreen() {
             <Ionicons name="chevron-forward-outline" size={14} color={c.textTertiary} />
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </Animated.ScrollView>
     </SafeAreaView>
   );
 }

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
@@ -12,6 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../../src/hooks/useProfile';
 import { useTheme } from '../../src/context/ThemeContext';
@@ -192,7 +192,7 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={s.container}>
-      <ScrollView
+      <Animated.ScrollView entering={FadeIn.duration(350)}
         contentContainerStyle={s.content}
         showsVerticalScrollIndicator={false}
       >
@@ -329,7 +329,7 @@ export default function ProfileScreen() {
           </View>
           <Ionicons name="chevron-forward" size={18} color={c.textTertiary} />
         </TouchableOpacity>
-      </ScrollView>
+      </Animated.ScrollView>
 
       {/* Modal editar nombre */}
       <Modal

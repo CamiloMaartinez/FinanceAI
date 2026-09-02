@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
@@ -11,10 +10,12 @@ import {
   TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useTransactions } from '../../src/hooks/useTransactions';
 import { TransactionForm } from '../../src/components/TransactionForm';
 import { TransactionRow } from '../../src/components/TransactionRow';
+import { SwipeToDelete } from '../../src/components/SwipeToDelete';
 import {
   TransactionFilters,
   EMPTY_FILTERS,
@@ -22,6 +23,7 @@ import {
   type TransactionFiltersState,
 } from '../../src/components/TransactionFilters';
 import { filterTransactions } from '../../src/utils/transactionFilters';
+import { hapticSave } from '../../src/utils/haptics';
 import { useColors, spacing, typography } from '../../src/constants/theme';
 import type { TransactionWithCategory } from '../../src/models/types';
 
@@ -80,6 +82,7 @@ export default function TransactionsScreen() {
     } else {
       await data.addTransaction(amount, type, date, accountId, categoryId, notes);
     }
+    hapticSave();
   };
 
   const handleCloseForm = () => {
@@ -92,15 +95,8 @@ export default function TransactionsScreen() {
     setFormVisible(true);
   };
 
-  const handleLongPress = (tx: TransactionWithCategory) => {
-    Alert.alert(
-      'Eliminar movimiento',
-      `¿Eliminar "${tx.notes || tx.categoryName || 'este movimiento'}"?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Eliminar', style: 'destructive', onPress: () => data.removeTransaction(tx) },
-      ]
-    );
+  const handleSwipeDelete = (tx: TransactionWithCategory) => {
+    data.removeTransaction(tx);
   };
 
   if (data.isLoading && data.transactions.length === 0) {
@@ -113,7 +109,7 @@ export default function TransactionsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
+      <Animated.ScrollView entering={FadeIn.duration(350)}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -215,11 +211,12 @@ export default function TransactionsScreen() {
               <Text style={styles.groupLabel}>{group.label}</Text>
               {group.items.map((tx, i) => (
                 <View key={tx.id}>
-                  <TransactionRow
-                    transaction={tx}
-                    onPress={handlePress}
-                    onLongPress={handleLongPress}
-                  />
+                  <SwipeToDelete onDelete={() => handleSwipeDelete(tx)}>
+                    <TransactionRow
+                      transaction={tx}
+                      onPress={handlePress}
+                    />
+                  </SwipeToDelete>
                   {i < group.items.length - 1 && (
                     <View style={styles.rowDivider} />
                   )}
@@ -232,10 +229,10 @@ export default function TransactionsScreen() {
 
         {grouped.length > 0 && (
           <Text style={styles.hint}>
-            Toca para editar · mantén presionado para eliminar
+            Toca para editar · desliza a la izquierda para eliminar
           </Text>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
 
       <TransactionForm
         visible={formVisible}

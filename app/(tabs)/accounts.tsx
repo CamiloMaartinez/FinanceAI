@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
@@ -10,6 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useAccounts } from '../../src/hooks/useAccounts';
 import { AccountCard } from '../../src/components/AccountCard';
@@ -26,9 +26,9 @@ export default function AccountsScreen() {
 
   const handleSave = async (
     name: string, type: string, balance: number,
-    colorHex: string, iconName: string
+    colorHex: string, iconName: string, currency: string
   ) => {
-    await accounts.addAccount(name, type, balance, colorHex, iconName);
+    await accounts.addAccount(name, type, balance, colorHex, iconName, currency);
   };
 
   const handleLongPress = (account: Account) => {
@@ -69,7 +69,7 @@ export default function AccountsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
+      <Animated.ScrollView entering={FadeIn.duration(350)}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -130,7 +130,7 @@ export default function AccountsScreen() {
             </Text>
           </>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
 
       <AccountForm
         visible={formVisible}

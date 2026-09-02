@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
@@ -10,6 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useSubscriptions } from '../../src/hooks/useSubscriptions';
 import { SubscriptionCard } from '../../src/components/SubscriptionCard';
@@ -17,6 +17,7 @@ import { SubscriptionForm } from '../../src/components/SubscriptionForm';
 import { useColors, spacing, typography } from '../../src/constants/theme';
 import { formatCurrency } from '../../src/utils/currency';
 import { getTotalAnnualCost, getTotalMonthlyCost } from '../../src/utils/subscriptionCalculations';
+import { hapticSave } from '../../src/utils/haptics';
 import type { Subscription } from '../../src/models/types';
 
 export default function SubscriptionsScreen() {
@@ -35,6 +36,7 @@ export default function SubscriptionsScreen() {
     } else {
       await data.addSubscription(name, amount, frequency, nextBillingDate, colorHex, iconName);
     }
+    hapticSave();
   };
 
   const handleCloseForm = () => {
@@ -71,7 +73,7 @@ export default function SubscriptionsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
+      <Animated.ScrollView entering={FadeIn.duration(350)}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -135,7 +137,7 @@ export default function SubscriptionsScreen() {
             Toca para editar · mantén presionado para eliminar. Recibirás notificaciones 7, 3 y 1 día antes de cada cobro.
           </Text>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
 
       <SubscriptionForm
         visible={formVisible}

@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
@@ -12,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
+  FadeIn,
   useSharedValue,
   useAnimatedStyle,
   withTiming,
@@ -25,6 +25,7 @@ import {
   getBudgetBarWidth,
   getBudgetRemaining,
 } from '../../src/utils/budgetCalculations';
+import { hapticSave } from '../../src/utils/haptics';
 import type { Category } from '../../src/models/types';
 
 const MONTH_NAMES = [
@@ -68,6 +69,7 @@ export default function BudgetsScreen() {
   const handleSave = useCallback(
     async (totalLimit: number, categoryLimits: Record<string, number>) => {
       await budgets.saveBudget(totalLimit, categoryLimits);
+      hapticSave();
       setFormVisible(false);
     },
     [budgets]
@@ -99,7 +101,7 @@ export default function BudgetsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
+      <Animated.ScrollView entering={FadeIn.duration(350)}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -189,7 +191,7 @@ export default function BudgetsScreen() {
             </TouchableOpacity>
           </>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
 
       <BudgetForm
         visible={formVisible}

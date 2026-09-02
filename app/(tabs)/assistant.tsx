@@ -5,12 +5,12 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useFinancialAssistant } from '../../src/hooks/useFinancialAssistant';
 import { PurchaseEvaluatorModal } from '../../src/components/PurchaseEvaluatorModal';
@@ -34,7 +34,7 @@ export default function AssistantScreen() {
   const { messages, isLoading, sendMessage, evaluatePurchase } = useFinancialAssistant();
   const [input, setInput] = useState('');
   const [evaluatorVisible, setEvaluatorVisible] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<Animated.ScrollView>(null);
 
   const handleEvaluate = async (itemDescription: string, price: number) => {
     await evaluatePurchase(itemDescription, price);
@@ -72,7 +72,8 @@ export default function AssistantScreen() {
         <View style={styles.divider} />
 
         {/* Chat */}
-        <ScrollView
+        <Animated.ScrollView
+          entering={FadeIn.duration(350)}
           ref={scrollRef}
           style={styles.chatArea}
           contentContainerStyle={styles.chatContent}
@@ -148,7 +149,7 @@ export default function AssistantScreen() {
               ))}
             </View>
           )}
-        </ScrollView>
+        </Animated.ScrollView>
 
         {/* Input */}
         <View style={styles.inputArea}>

@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
@@ -10,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useReports } from '../../src/hooks/useReports';
 import { CategoryPieChart } from '../../src/components/CategoryPieChart';
@@ -51,7 +51,7 @@ export default function ReportsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
+      <Animated.ScrollView entering={FadeIn.duration(350)}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -92,7 +92,7 @@ export default function ReportsScreen() {
 
         <CategoryPieChart data={reports.breakdown} />
 
-      </ScrollView>
+      </Animated.ScrollView>
     </SafeAreaView>
   );
 }

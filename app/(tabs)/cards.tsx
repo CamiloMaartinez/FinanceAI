@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
@@ -10,18 +9,24 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useCards } from '../../src/hooks/useCards';
 import { CardItem } from '../../src/components/CardItem';
 import { CardForm } from '../../src/components/CardForm';
-import { useColors, spacing, typography } from '../../src/constants/theme';
+import { InvestmentCard } from '../../src/components/InvestmentCard';
+import { INVESTMENT_OPTIONS } from '../../src/data/investmentOptions';
+import { useColors, spacing, typography, radius } from '../../src/constants/theme';
 import type { Card } from '../../src/models/types';
+
+type Segment = 'cards' | 'investments';
 
 export default function CardsScreen() {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
   const data = useCards();
   const [formVisible, setFormVisible] = useState(false);
+  const [segment, setSegment] = useState<Segment>('cards');
 
   const handleSave = async (
     name: string, bank: string, annualFee: number,
@@ -55,7 +60,7 @@ export default function CardsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
+      <Animated.ScrollView entering={FadeIn.duration(350)}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -70,17 +75,52 @@ export default function CardsScreen() {
           <View>
             <Text style={styles.label}>COMPARADOR</Text>
             <Text style={styles.count}>
-              {data.cards.length} tarjeta{data.cards.length !== 1 ? 's' : ''}
+              {segment === 'cards'
+                ? `${data.cards.length} tarjeta${data.cards.length !== 1 ? 's' : ''}`
+                : `${INVESTMENT_OPTIONS.length} opciones`}
             </Text>
           </View>
-          <TouchableOpacity style={styles.addButton} onPress={() => setFormVisible(true)}>
-            <Ionicons name="add" size={20} color={c.textPrimary} />
+          {segment === 'cards' && (
+            <TouchableOpacity style={styles.addButton} onPress={() => setFormVisible(true)}>
+              <Ionicons name="add" size={20} color={c.textPrimary} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <View style={styles.segmentedControl}>
+          <TouchableOpacity
+            style={[styles.segmentButton, segment === 'cards' && styles.segmentButtonActive]}
+            onPress={() => setSegment('cards')}
+          >
+            <Text style={[styles.segmentText, segment === 'cards' && styles.segmentTextActive]}>
+              Tarjetas
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.segmentButton, segment === 'investments' && styles.segmentButtonActive]}
+            onPress={() => setSegment('investments')}
+          >
+            <Text style={[styles.segmentText, segment === 'investments' && styles.segmentTextActive]}>
+              Inversiones
+            </Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.divider} />
 
-        {data.cards.length === 0 ? (
+        {segment === 'investments' ? (
+          <>
+            <View style={styles.disclaimerBox}>
+              <Ionicons name="information-circle-outline" size={15} color={c.textTertiary} />
+              <Text style={styles.disclaimerText}>
+                Rangos de referencia según comportamiento histórico típico del mercado. Las tasas reales cambian constantemente — verifica siempre con la entidad antes de invertir. Esto no es asesoría financiera.
+              </Text>
+            </View>
+            {INVESTMENT_OPTIONS.map((option) => (
+              <InvestmentCard key={option.id} option={option} />
+            ))}
+          </>
+        ) : data.cards.length === 0 ? (
           <View style={styles.empty}>
             <Text style={styles.emptyTitle}>Sin tarjetas</Text>
             <Text style={styles.emptySubtitle}>
@@ -130,7 +170,7 @@ export default function CardsScreen() {
             </Text>
           </>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
 
       <CardForm
         visible={formVisible}
@@ -164,6 +204,33 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   divider: { height: 0.5, backgroundColor: c.borderStrong, marginBottom: spacing.xl },
+  segmentedControl: {
+    flexDirection: 'row',
+    backgroundColor: c.surfaceSecondary,
+    borderRadius: 10,
+    padding: 3,
+    marginBottom: spacing.lg,
+  },
+  segmentButton: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  segmentButtonActive: {
+    backgroundColor: c.surface,
+  },
+  segmentText: { fontSize: 13, fontWeight: '500', color: c.textTertiary },
+  segmentTextActive: { color: c.textPrimary, fontWeight: '600' },
+  disclaimerBox: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    backgroundColor: c.surfaceSecondary,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  disclaimerText: { flex: 1, fontSize: 11.5, color: c.textTertiary, lineHeight: 16 },
   empty: { paddingVertical: spacing.xxl * 2, alignItems: 'center', gap: spacing.sm },
   emptyTitle: { fontSize: 16, fontWeight: '300', color: c.textPrimary },
   emptySubtitle: {

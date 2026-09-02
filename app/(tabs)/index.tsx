@@ -2,13 +2,13 @@ import React from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
   RefreshControl,
   StatusBar,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { useDashboard } from '../../src/hooks/useDashboard';
 import { BalanceCard } from '../../src/components/dashboard/BalanceCard';
 import { NetWorthChart } from '../../src/components/dashboard/NetWorthChart';
@@ -56,7 +56,7 @@ export default function DashboardScreen() {
   return (
     <SafeAreaView style={s.container}>
       <StatusBar barStyle={c.background === '#000000' ? 'light-content' : 'dark-content'} backgroundColor={c.background} />
-      <ScrollView
+      <Animated.ScrollView entering={FadeIn.duration(350)}
         contentContainerStyle={s.content}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -78,7 +78,7 @@ export default function DashboardScreen() {
         <SummaryCards income={dashboard.monthlyIncome} expenses={dashboard.monthlyExpenses} />
         {dashboard.monthlyChart.length > 0 && <MonthlyBarChart data={dashboard.monthlyChart} />}
         <RecentTransactions transactions={dashboard.recentTransactions} />
-      </ScrollView>
+      </Animated.ScrollView>
     </SafeAreaView>
   );
 }

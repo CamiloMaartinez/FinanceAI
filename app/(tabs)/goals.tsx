@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
@@ -14,11 +13,13 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useGoals } from '../../src/hooks/useGoals';
 import { GoalCard } from '../../src/components/GoalCard';
 import { GoalForm } from '../../src/components/GoalForm';
 import { useColors, spacing, typography } from '../../src/constants/theme';
+import { hapticSave, hapticSuccess } from '../../src/utils/haptics';
 import type { Goal } from '../../src/models/types';
 
 export default function GoalsScreen() {
@@ -39,6 +40,7 @@ export default function GoalsScreen() {
     } else {
       await goals.addGoal(name, targetAmount, targetDate, priority, colorHex, iconName);
     }
+    hapticSave();
   };
 
   const handleCloseForm = () => {
@@ -65,7 +67,17 @@ export default function GoalsScreen() {
       Alert.alert('Monto inválido', 'Ingresa un monto válido');
       return;
     }
+    const wasCompleted = contributeGoal.currentAmount >= contributeGoal.targetAmount;
+    const willComplete = contributeGoal.currentAmount + amount >= contributeGoal.targetAmount;
+
     await goals.contribute(contributeGoal.id, amount);
+
+    if (!wasCompleted && willComplete) {
+      hapticSuccess(); // 🎉 la meta se acaba de completar con este aporte
+    } else {
+      hapticSave();
+    }
+
     setContributeGoal(null);
     setContributeAmount('');
   };
@@ -80,7 +92,7 @@ export default function GoalsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
+      <Animated.ScrollView entering={FadeIn.duration(350)}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -128,7 +140,7 @@ export default function GoalsScreen() {
         {goals.goals.length > 0 && (
           <Text style={styles.hint}>Mantén presionada una meta para eliminarla</Text>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
 
       <GoalForm
         visible={formVisible}
