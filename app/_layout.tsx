@@ -8,6 +8,8 @@ import { ThemeProvider } from '../src/context/ThemeContext';
 import { evaluateAlerts } from '../src/services/alertEngine';
 import { useColors } from '../src/constants/theme';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
+import { Onboarding } from '../src/components/Onboarding';
+import { hasSeenOnboarding } from '../src/services/onboarding';
 
 LogBox.ignoreLogs(['A props object containing a "key" prop']);
 
@@ -23,14 +25,18 @@ export default function RootLayout() {
 
 function RootLayoutInner() {
   const c = useColors();
-  const [isReady,      setIsReady]      = useState(false);
-  const [isUnlocked,   setIsUnlocked]   = useState(false);
+  const [isReady,        setIsReady]        = useState(false);
+  const [isUnlocked,     setIsUnlocked]     = useState(false);
   const [needsBiometric, setNeedsBiometric] = useState(false);
+  const [onboardingSeen, setOnboardingSeen] = useState(false);
 
   useEffect(() => {
     const init = async () => {
       await seedIfEmpty();
       await evaluateAlerts();
+
+      const seen = await hasSeenOnboarding();
+      setOnboardingSeen(seen);
 
       const available = await isBiometricAvailable();
       setNeedsBiometric(available);
@@ -47,6 +53,10 @@ function RootLayoutInner() {
         <ActivityIndicator size="large" color={c.blue} />
       </View>
     );
+  }
+
+  if (!onboardingSeen) {
+    return <Onboarding onFinish={() => setOnboardingSeen(true)} />;
   }
 
   if (needsBiometric && !isUnlocked) {
