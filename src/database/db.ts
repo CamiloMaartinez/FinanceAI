@@ -10,6 +10,7 @@ import type {
   Alert,
   Budget,
 } from '../models/types';
+import { getExchangeRates, convertToCOP } from '../services/exchangeRates';
 
 // Filas crudas de SQLite: los campos que se guardan como JSON en texto
 // (tags, subcategories, benefits) llegan como string y hay que parsearlos.
@@ -38,6 +39,7 @@ async function initDb(database: SQLite.SQLiteDatabase) {
       name      TEXT NOT NULL,
       type      TEXT NOT NULL,
       balance   REAL NOT NULL DEFAULT 0,
+      currency  TEXT NOT NULL DEFAULT 'COP',
       colorHex  TEXT NOT NULL,
       iconName  TEXT NOT NULL,
       isActive  INTEGER NOT NULL DEFAULT 1,
@@ -133,16 +135,56 @@ async function initDb(database: SQLite.SQLiteDatabase) {
     CREATE INDEX IF NOT EXISTS idx_transactions_category
       ON transactions(categoryId);
   `);
+
+  // ── Migraciones para bases de datos creadas antes de esta versión ──
+  // CREATE TABLE IF NOT EXISTS no agrega columnas a tablas que ya existen,
+  // así que las columnas nuevas se agregan aquí con ALTER TABLE. SQLite no
+  // soporta "ADD COLUMN IF NOT EXISTS", por eso el try/catch: si la columna
+  // ya existe (apps más nuevas, o esta migración ya corrió antes), el error
+  // se ignora sin problema.
+  try {
+    await database.execAsync(`ALTER TABLE accounts ADD COLUMN currency TEXT NOT NULL DEFAULT 'COP';`);
+  } catch {
+    // La columna ya existe — no hay nada que hacer
+  }
 }
 
 // ─── Queries del Dashboard ──────────────────────────────────
 
 export async function getTotalBalance(): Promise<number> {
   const database = await getDb();
-  const row = await database.getFirstAsync<{ total: number | null }>(
-    `SELECT SUM(balance) as total FROM accounts WHERE isActive = 1`
+  const rows = await database.getAllAsync<{ balance: number; currency: string }>(
+    `SELECT balance, currency FROM accounts WHERE isActive = 1`
   );
-  return row?.total ?? 0;
+
+  const rates = await getExchangeRates();
+  return rows.reduce((sum, acc) => sum + convertToCOP(acc.balance, acc.currency, rates), 0);
+}
+
+const MONTH_ABBR = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+// Reconstruye el patrimonio total al inicio de cada uno de los últimos
+// `monthsBack` meses, retrocediendo desde el saldo actual usando los
+// ingresos/gastos reales de cada mes. Como el saldo de las cuentas SOLO
+// cambia a través de transacciones registradas en la app, esta reconstrucción
+// es exacta, no una aproximación.
+export async function getNetWorthHistory(
+  monthsBack: number = 6
+): Promise<{ label: string; value: number }[]> {
+  const now = new Date();
+  const currentTotal = await getTotalBalance();
+
+  const points: { label: string; value: number }[] = [{ label: 'Hoy', value: currentTotal }];
+  let runningTotal = currentTotal;
+
+  for (let i = 0; i < monthsBack; i++) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const totals = await getMonthlyTotals(date.getMonth() + 1, date.getFullYear());
+    runningTotal = runningTotal - (totals.income - totals.expense);
+    points.unshift({ label: MONTH_ABBR[date.getMonth()], value: runningTotal });
+  }
+
+  return points;
 }
 
 export async function getMonthlyTotals(
@@ -271,16 +313,17 @@ export async function createAccount(
   type: string,
   balance: number,
   colorHex: string,
-  iconName: string
+  iconName: string,
+  currency: string = 'COP'
 ): Promise<void> {
   const database = await getDb();
   const id = `acc-${Date.now()}`;
   const now = new Date().toISOString();
 
   await database.runAsync(
-    `INSERT INTO accounts (id, name, type, balance, colorHex, iconName, isActive, createdAt)
-     VALUES (?, ?, ?, ?, ?, ?, 1, ?)`,
-    [id, name, type, balance, colorHex, iconName, now]
+    `INSERT INTO accounts (id, name, type, balance, currency, colorHex, iconName, isActive, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+    [id, name, type, balance, currency, colorHex, iconName, now]
   );
 }
 

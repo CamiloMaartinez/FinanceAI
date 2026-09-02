@@ -12,6 +12,7 @@ export interface Account {
   name: string;
   type: AccountType;
   balance: number;
+  currency: string; // 'COP' | 'USD' | 'EUR'
   colorHex: string;
   iconName: string;
   isActive: boolean;
@@ -114,6 +115,7 @@ export interface DashboardData {
   monthlyNet: number;
   savingsRate: number;
   monthlyChart: MonthlyChartPoint[];
+  netWorthHistory: { label: string; value: number }[];
   recentTransactions: TransactionWithCategory[];
   isLoading: boolean;
   error: string | null;

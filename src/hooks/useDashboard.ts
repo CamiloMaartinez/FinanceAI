@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { getTotalBalance, getMonthlyTotals, getRecentTransactions } from '../database/db';
+import { getTotalBalance, getMonthlyTotals, getRecentTransactions, getNetWorthHistory } from '../database/db';
 import type { DashboardData, MonthlyChartPoint } from '../models/types';
 
 const MONTH_NAMES = [
@@ -12,6 +12,7 @@ export function useDashboard(): DashboardData {
   const [monthlyIncome,      setMonthlyIncome]      = useState(0);
   const [monthlyExpenses,    setMonthlyExpenses]    = useState(0);
   const [monthlyChart,       setMonthlyChart]       = useState<MonthlyChartPoint[]>([]);
+  const [netWorthHistory,    setNetWorthHistory]    = useState<{ label: string; value: number }[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<DashboardData['recentTransactions']>([]);
   const [isLoading,          setIsLoading]          = useState(true);
   const [error,              setError]              = useState<string | null>(null);
@@ -58,6 +59,10 @@ export function useDashboard(): DashboardData {
 
       setMonthlyChart(chartData);
 
+      // Evolución del patrimonio total (últimos 6 meses + hoy)
+      const netWorth = await getNetWorthHistory(6);
+      setNetWorthHistory(netWorth);
+
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Error cargando datos'
@@ -84,6 +89,7 @@ export function useDashboard(): DashboardData {
     monthlyNet,
     savingsRate,
     monthlyChart,
+    netWorthHistory,
     recentTransactions,
     isLoading,
     error,
