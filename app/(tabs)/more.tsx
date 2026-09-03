@@ -26,6 +26,12 @@ const MENU_ITEMS: MenuItem[] = [
     route: '/(tabs)/budgets',
   },
   {
+    label: 'Retos financieros',
+    description: 'Ponte a prueba y gana disciplina',
+    icon: 'flag-outline',
+    route: '/(tabs)/challenges',
+  },
+  {
     label: 'Cuentas',
     description: 'Gestiona tus cuentas bancarias',
     icon: 'card-outline',

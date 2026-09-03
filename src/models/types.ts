@@ -155,3 +155,17 @@ export interface Alert {
   lastTriggered: string | null;
   createdAt: string;
 }
+
+// ─── Retos financieros ───────────────────────────────────────
+export type ChallengeStatus = 'active' | 'completed' | 'failed';
+
+export interface Challenge {
+  id: string;
+  title: string;
+  description: string;
+  categoryId: string;
+  startDate: string;
+  endDate: string;
+  status: ChallengeStatus;
+  createdAt: string;
+}

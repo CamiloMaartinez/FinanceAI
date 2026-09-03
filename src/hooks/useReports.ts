@@ -19,9 +19,10 @@ export interface MonthPrediction {
   daysInMonth: number;
 }
 
-interface UseReportsResult {
+export interface UseReportsResult {
   breakdown: CategoryBreakdownItem[];
   currentMonthExpense: number;
+  currentMonthIncome: number;
   previousMonthExpense: number;
   monthOverMonthChange: number;
   prediction: MonthPrediction | null;
@@ -33,6 +34,7 @@ interface UseReportsResult {
 export function useReports(): UseReportsResult {
   const [breakdown,             setBreakdown]             = useState<CategoryBreakdownItem[]>([]);
   const [currentMonthExpense,   setCurrentMonthExpense]   = useState(0);
+  const [currentMonthIncome,    setCurrentMonthIncome]    = useState(0);
   const [previousMonthExpense,  setPreviousMonthExpense]  = useState(0);
   const [prediction,            setPrediction]            = useState<MonthPrediction | null>(null);
   const [isLoading,             setIsLoading]             = useState(true);
@@ -73,6 +75,7 @@ export function useReports(): UseReportsResult {
 
       setBreakdown(breakdownWithPercentage);
       setCurrentMonthExpense(currentTotals.expense);
+      setCurrentMonthIncome(currentTotals.income);
       setPreviousMonthExpense(previousTotals.expense);
 
       // Predicción del mes: proyección lineal según el ritmo de gasto actual
@@ -110,6 +113,7 @@ export function useReports(): UseReportsResult {
   return {
     breakdown,
     currentMonthExpense,
+    currentMonthIncome,
     previousMonthExpense,
     monthOverMonthChange,
     prediction,

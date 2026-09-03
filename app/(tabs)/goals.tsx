@@ -11,6 +11,7 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
+  Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -69,17 +70,39 @@ export default function GoalsScreen() {
     }
     const wasCompleted = contributeGoal.currentAmount >= contributeGoal.targetAmount;
     const willComplete = contributeGoal.currentAmount + amount >= contributeGoal.targetAmount;
+    const goalName = contributeGoal.name;
+    const goalTarget = contributeGoal.targetAmount;
 
     await goals.contribute(contributeGoal.id, amount);
 
     if (!wasCompleted && willComplete) {
       hapticSuccess(); // 🎉 la meta se acaba de completar con este aporte
+      setTimeout(() => {
+        Alert.alert(
+          '¡Meta completada! 🎉',
+          `Lograste ahorrar $${Math.round(goalTarget).toLocaleString('es-CO')} para "${goalName}"`,
+          [
+            { text: 'Ahora no', style: 'cancel' },
+            { text: 'Compartir', onPress: () => shareAchievement(goalName, goalTarget) },
+          ]
+        );
+      }, 400);
     } else {
       hapticSave();
     }
 
     setContributeGoal(null);
     setContributeAmount('');
+  };
+
+  const shareAchievement = async (goalName: string, targetAmount: number) => {
+    try {
+      await Share.share({
+        message: `🎉 ¡Acabo de completar mi meta "${goalName}" de $${Math.round(targetAmount).toLocaleString('es-CO')} en FinanceAI! 💰`,
+      });
+    } catch {
+      // El usuario canceló el share o hubo un error del sistema — no hacemos nada
+    }
   };
 
   if (goals.isLoading && goals.goals.length === 0) {

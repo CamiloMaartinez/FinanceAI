@@ -15,6 +15,7 @@ import { useReports } from '../../src/hooks/useReports';
 import { CategoryPieChart } from '../../src/components/CategoryPieChart';
 import { MonthComparisonCard } from '../../src/components/MonthComparisonCard';
 import { MonthPredictionCard } from '../../src/components/MonthPredictionCard';
+import { ComparativeStats } from '../../src/components/ComparativeStats';
 import { useColors, spacing, typography } from '../../src/constants/theme';
 import { exportReportToPdf } from '../../src/services/pdfExport';
 
@@ -89,6 +90,8 @@ export default function ReportsScreen() {
         {reports.prediction && (
           <MonthPredictionCard prediction={reports.prediction} />
         )}
+
+        <ComparativeStats breakdown={reports.breakdown} monthlyIncome={reports.currentMonthIncome} />
 
         <CategoryPieChart data={reports.breakdown} />
 

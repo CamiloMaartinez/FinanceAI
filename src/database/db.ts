@@ -9,6 +9,7 @@ import type {
   Card,
   Alert,
   Budget,
+  Challenge,
 } from '../models/types';
 import { getExchangeRates, convertToCOP } from '../services/exchangeRates';
 
@@ -129,6 +130,16 @@ async function initDb(database: SQLite.SQLiteDatabase) {
       isAIGenerated  INTEGER NOT NULL DEFAULT 0,
       createdAt      TEXT NOT NULL,
       UNIQUE(month, year)
+    );
+    CREATE TABLE IF NOT EXISTS challenges (
+      id          TEXT PRIMARY KEY NOT NULL,
+      title       TEXT NOT NULL,
+      description TEXT NOT NULL,
+      categoryId  TEXT NOT NULL,
+      startDate   TEXT NOT NULL,
+      endDate     TEXT NOT NULL,
+      status      TEXT NOT NULL DEFAULT 'active',
+      createdAt   TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_transactions_account
       ON transactions(accountId);
@@ -865,4 +876,59 @@ export async function upsertBudget(
 export async function deleteBudget(id: string): Promise<void> {
   const database = await getDb();
   await database.runAsync(`DELETE FROM budgets WHERE id = ?`, [id]);
+}
+
+// ─── Queries de Retos Financieros ────────────────────────────
+
+export async function getAllChallenges(): Promise<Challenge[]> {
+  const database = await getDb();
+  const rows = await database.getAllAsync<Challenge>(
+    `SELECT * FROM challenges ORDER BY createdAt DESC`
+  );
+  return rows;
+}
+
+export async function createChallenge(
+  title: string,
+  description: string,
+  categoryId: string,
+  startDate: string,
+  endDate: string
+): Promise<void> {
+  const database = await getDb();
+  const id = `challenge-${Date.now()}`;
+  const now = new Date().toISOString();
+
+  await database.runAsync(
+    `INSERT INTO challenges (id, title, description, categoryId, startDate, endDate, status, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, 'active', ?)`,
+    [id, title, description, categoryId, startDate, endDate, now]
+  );
+}
+
+export async function updateChallengeStatus(id: string, status: string): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(`UPDATE challenges SET status = ? WHERE id = ?`, [status, id]);
+}
+
+export async function deleteChallenge(id: string): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(`DELETE FROM challenges WHERE id = ?`, [id]);
+}
+
+// Suma de gastos de una categoría dentro de un rango de fechas (para
+// evaluar si un reto de "no gastar en X" sigue en pie)
+export async function getCategorySpentInRange(
+  categoryId: string,
+  startISO: string,
+  endISO: string
+): Promise<number> {
+  const database = await getDb();
+  const row = await database.getFirstAsync<{ total: number | null }>(
+    `SELECT SUM(amount) as total
+     FROM transactions
+     WHERE categoryId = ? AND type IN ('expense','payment') AND date >= ? AND date < ?`,
+    [categoryId, startISO, endISO]
+  );
+  return row?.total ?? 0;
 }
