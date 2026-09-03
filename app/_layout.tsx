@@ -10,6 +10,8 @@ import { useColors } from '../src/constants/theme';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { Onboarding } from '../src/components/Onboarding';
 import { hasSeenOnboarding } from '../src/services/onboarding';
+import { getActiveProfile } from '../src/services/profiles';
+import { setDatabaseFileName } from '../src/database/db';
 
 LogBox.ignoreLogs(['A props object containing a "key" prop']);
 
@@ -32,6 +34,11 @@ function RootLayoutInner() {
 
   useEffect(() => {
     const init = async () => {
+      // Debe ser lo PRIMERO: define qué archivo de base de datos se abre
+      // antes de que cualquier otra parte de la app intente usarlo.
+      const activeProfile = await getActiveProfile();
+      setDatabaseFileName(activeProfile.dbFileName);
+
       await seedIfEmpty();
       await evaluateAlerts();
 

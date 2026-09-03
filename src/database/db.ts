@@ -21,11 +21,20 @@ type CardRow = Omit<Card, 'benefits'> & { benefits: string };
 
 // Variable que guarda la conexión abierta a la base de datos
 let db: SQLite.SQLiteDatabase | null = null;
+let activeDbFileName = 'financeai.db';
+
+// Debe llamarse ANTES de la primera llamada a getDb() (típicamente al
+// arrancar la app, tras leer el perfil activo de AsyncStorage). Si se
+// llama después de que la conexión ya está abierta, no tiene efecto —
+// cambiar de perfil requiere reiniciar la app.
+export function setDatabaseFileName(fileName: string): void {
+  activeDbFileName = fileName;
+}
 
 // ─── Obtener o crear la conexión ───────────────────────────
 export async function getDb(): Promise<SQLite.SQLiteDatabase> {
   if (db) return db; // Si ya está abierta, la reutilizamos
-  db = await SQLite.openDatabaseAsync('financeai.db');
+  db = await SQLite.openDatabaseAsync(activeDbFileName);
   await initDb(db);
   return db;
 }

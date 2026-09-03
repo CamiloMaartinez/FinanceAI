@@ -21,6 +21,7 @@ import { ExchangeRatesModal } from '../../src/components/ExchangeRatesModal';
 import { PinSetupModal } from '../../src/components/PinSetupModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { exportBackup, pickBackupFile, restoreBackup } from '../../src/services/backup';
+import { ProfileSwitcherModal } from '../../src/components/ProfileSwitcherModal';
 import type { Achievement } from '../../src/hooks/useProfile';
 
 export default function ProfileScreen() {
@@ -32,6 +33,7 @@ export default function ProfileScreen() {
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [profileModalVisible, setProfileModalVisible] = useState(false);
   const [newName, setNewName] = useState('');
 
   const s = StyleSheet.create({
@@ -361,6 +363,14 @@ export default function ProfileScreen() {
           />
         </View>
         <View style={s.settingDivider} />
+        <TouchableOpacity style={s.settingRow} onPress={() => setProfileModalVisible(true)}>
+          <View>
+            <Text style={s.settingLabel}>Perfiles</Text>
+            <Text style={s.settingDesc}>Cambiar o crear un perfil</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={c.textTertiary} />
+        </TouchableOpacity>
+        <View style={s.settingDivider} />
         <TouchableOpacity style={s.settingRow} onPress={() => setRatesModalVisible(true)}>
           <View>
             <Text style={s.settingLabel}>Tasas de cambio</Text>
@@ -443,6 +453,11 @@ export default function ProfileScreen() {
       <PinSetupModal
         visible={pinModalVisible}
         onClose={() => setPinModalVisible(false)}
+      />
+
+      <ProfileSwitcherModal
+        visible={profileModalVisible}
+        onClose={() => setProfileModalVisible(false)}
       />
     </SafeAreaView>
   );
