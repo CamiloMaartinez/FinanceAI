@@ -20,6 +20,7 @@ import { hapticToggle } from '../../src/utils/haptics';
 import { ExchangeRatesModal } from '../../src/components/ExchangeRatesModal';
 import { PinSetupModal } from '../../src/components/PinSetupModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { exportBackup, pickBackupFile, restoreBackup } from '../../src/services/backup';
 import type { Achievement } from '../../src/hooks/useProfile';
 
 export default function ProfileScreen() {
@@ -29,6 +30,8 @@ export default function ProfileScreen() {
   const [editNameVisible, setEditNameVisible] = useState(false);
   const [ratesModalVisible, setRatesModalVisible] = useState(false);
   const [pinModalVisible, setPinModalVisible] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [newName, setNewName] = useState('');
 
   const s = StyleSheet.create({
@@ -166,6 +169,50 @@ export default function ProfileScreen() {
         },
       ]
     );
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      await exportBackup();
+    } catch (err) {
+      Alert.alert('Error', err instanceof Error ? err.message : 'No se pudo exportar el respaldo');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImport = async () => {
+    try {
+      const picked = await pickBackupFile();
+      if (!picked) return; // el usuario canceló la selección
+
+      Alert.alert(
+        'Restaurar respaldo',
+        `Esto REEMPLAZARÁ todos tus datos actuales con los del respaldo del ${new Date(picked.data.exportedAt).toLocaleDateString('es-CO')}. Esta acción no se puede deshacer. ¿Continuar?`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Restaurar', style: 'destructive', onPress: async () => {
+              setIsImporting(true);
+              try {
+                await restoreBackup(picked.data);
+                Alert.alert(
+                  'Listo',
+                  'Tus datos fueron restaurados. Cierra y vuelve a abrir la app para ver los cambios.'
+                );
+              } catch (err) {
+                Alert.alert('Error', err instanceof Error ? err.message : 'No se pudo restaurar el respaldo');
+              } finally {
+                setIsImporting(false);
+              }
+            },
+          },
+        ]
+      );
+    } catch (err) {
+      Alert.alert('Error', err instanceof Error ? err.message : 'No se pudo leer el archivo');
+    }
   };
 
   if (isLoading) {
@@ -328,6 +375,30 @@ export default function ProfileScreen() {
             <Text style={s.settingDesc}>Las pantallas de bienvenida</Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={c.textTertiary} />
+        </TouchableOpacity>
+        <View style={s.settingDivider} />
+        <TouchableOpacity style={s.settingRow} onPress={handleExport} disabled={isExporting}>
+          <View>
+            <Text style={s.settingLabel}>Exportar respaldo</Text>
+            <Text style={s.settingDesc}>Guarda tus datos como archivo</Text>
+          </View>
+          {isExporting ? (
+            <ActivityIndicator size="small" color={c.textTertiary} />
+          ) : (
+            <Ionicons name="share-outline" size={18} color={c.textTertiary} />
+          )}
+        </TouchableOpacity>
+        <View style={s.settingDivider} />
+        <TouchableOpacity style={s.settingRow} onPress={handleImport} disabled={isImporting}>
+          <View>
+            <Text style={s.settingLabel}>Importar respaldo</Text>
+            <Text style={s.settingDesc}>Restaura desde un archivo</Text>
+          </View>
+          {isImporting ? (
+            <ActivityIndicator size="small" color={c.textTertiary} />
+          ) : (
+            <Ionicons name="download-outline" size={18} color={c.textTertiary} />
+          )}
         </TouchableOpacity>
       </Animated.ScrollView>
 
