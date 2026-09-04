@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SQLite from 'expo-sqlite';
 
 const PROFILES_KEY = 'app-profiles';
 const ACTIVE_PROFILE_KEY = 'active-profile-id';
@@ -84,7 +85,6 @@ export async function deleteProfile(id: string): Promise<void> {
   await saveProfiles(profiles.filter((p) => p.id !== id));
 
   if (profile) {
-    const SQLite = await import('expo-sqlite');
     try {
       await SQLite.deleteDatabaseAsync(profile.dbFileName);
     } catch {
