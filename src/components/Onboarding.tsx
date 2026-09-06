@@ -7,6 +7,7 @@ import { useColors, spacing, radius } from '../constants/theme';
 import { markOnboardingSeen } from '../services/onboarding';
 
 interface OnboardingProps {
+  profileId: string;
   onFinish: () => void;
 }
 
@@ -37,7 +38,7 @@ const SLIDES = [
   },
 ];
 
-export function Onboarding({ onFinish }: OnboardingProps) {
+export function Onboarding({ profileId, onFinish }: OnboardingProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
   const [index, setIndex] = useState(0);
@@ -54,7 +55,7 @@ export function Onboarding({ onFinish }: OnboardingProps) {
   };
 
   const handleFinish = async () => {
-    await markOnboardingSeen();
+    await markOnboardingSeen(profileId);
     onFinish();
   };
 

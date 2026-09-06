@@ -22,6 +22,7 @@ import { PinSetupModal } from '../../src/components/PinSetupModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { exportBackup, pickBackupFile, restoreBackup } from '../../src/services/backup';
 import { ProfileSwitcherModal } from '../../src/components/ProfileSwitcherModal';
+import { getActiveProfileId } from '../../src/services/profiles';
 import type { Achievement } from '../../src/hooks/useProfile';
 
 export default function ProfileScreen() {
@@ -166,7 +167,8 @@ export default function ProfileScreen() {
       [
         {
           text: 'Entendido', onPress: async () => {
-            await AsyncStorage.removeItem('onboarding-completed');
+            const activeId = await getActiveProfileId();
+            await AsyncStorage.removeItem(`onboarding-completed:${activeId}`);
           },
         },
       ]

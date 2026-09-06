@@ -31,6 +31,7 @@ function RootLayoutInner() {
   const [isUnlocked,     setIsUnlocked]     = useState(false);
   const [needsBiometric, setNeedsBiometric] = useState(false);
   const [onboardingSeen, setOnboardingSeen] = useState(false);
+  const [activeProfileId, setActiveProfileId] = useState('default');
 
   useEffect(() => {
     const init = async () => {
@@ -38,11 +39,12 @@ function RootLayoutInner() {
       // antes de que cualquier otra parte de la app intente usarlo.
       const activeProfile = await getActiveProfile();
       setDatabaseFileName(activeProfile.dbFileName);
+      setActiveProfileId(activeProfile.id);
 
       await seedIfEmpty();
       await evaluateAlerts();
 
-      const seen = await hasSeenOnboarding();
+      const seen = await hasSeenOnboarding(activeProfile.id);
       setOnboardingSeen(seen);
 
       const available = await isBiometricAvailable();
@@ -63,7 +65,7 @@ function RootLayoutInner() {
   }
 
   if (!onboardingSeen) {
-    return <Onboarding onFinish={() => setOnboardingSeen(true)} />;
+    return <Onboarding profileId={activeProfileId} onFinish={() => setOnboardingSeen(true)} />;
   }
 
   if (needsBiometric && !isUnlocked) {
