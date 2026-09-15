@@ -8,7 +8,7 @@ import type { TransactionWithCategory } from '../models/types';
 interface TransactionRowProps {
   transaction: TransactionWithCategory;
   onPress?: (tx: TransactionWithCategory) => void;
-  onLongPress: (tx: TransactionWithCategory) => void;
+  onLongPress?: (tx: TransactionWithCategory) => void;
 }
 
 const TYPE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -42,7 +42,7 @@ export function TransactionRow({ transaction, onPress, onLongPress }: Transactio
     <TouchableOpacity
       style={styles.row}
       onPress={onPress ? () => onPress(transaction) : undefined}
-      onLongPress={() => onLongPress(transaction)}
+      onLongPress={onLongPress ? () => onLongPress(transaction) : undefined}
       activeOpacity={0.7}
     >
       <View style={[styles.iconCircle, { backgroundColor: color + '20' }]}>

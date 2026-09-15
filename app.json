@@ -32,7 +32,7 @@
         "backgroundColor": "#000000"
       },
       "package": "com.camilomartinez.financeai",
-      "versionCode": 1,
+      "versionCode": 2,
       "edgeToEdgeEnabled": true,
       "permissions": [
         "android.permission.CAMERA",
@@ -77,7 +77,8 @@
           "photosPermission": "FinanceAI necesita acceso a tus fotos para seleccionar recibos guardados previamente.",
           "cameraPermission": "FinanceAI necesita acceso a la cámara para capturar fotos de tus recibos."
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "extra": {
       "router": {},

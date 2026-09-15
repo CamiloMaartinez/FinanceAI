@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
+import { SUPPORTED_CURRENCIES, getCurrencyInfo } from '../constants/currencies';
 
 interface AccountFormProps {
   visible: boolean;
@@ -21,7 +22,8 @@ interface AccountFormProps {
     type: string,
     balance: number,
     colorHex: string,
-    iconName: string
+    iconName: string,
+    currency: string
   ) => void;
 }
 
@@ -56,6 +58,7 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
   const [type,       setType]       = useState('digital');
   const [balance,    setBalance]    = useState('');
   const [colorHex,   setColorHex]   = useState('#007AFF');
+  const [currency,   setCurrency]   = useState('COP');
   const [error,      setError]      = useState('');
 
   const handleSave = () => {
@@ -70,7 +73,7 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
       return;
     }
 
-    onSave(name.trim(), type, balanceNum, colorHex, 'wallet-outline');
+    onSave(name.trim(), type, balanceNum, colorHex, 'wallet-outline', currency);
     handleClose();
   };
 
@@ -79,6 +82,7 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
     setType('digital');
     setBalance('');
     setColorHex('#007AFF');
+    setCurrency('COP');
     setError('');
     onClose();
   };
@@ -125,6 +129,35 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
               onChangeText={(text) => { setName(text); setError(''); }}
               autoFocus
             />
+          </View>
+
+          {/* Moneda */}
+          <View style={styles.field}>
+            <Text style={styles.fieldLabel}>Moneda</Text>
+            <View style={styles.typeGrid}>
+              {SUPPORTED_CURRENCIES.map((cur) => (
+                <TouchableOpacity
+                  key={cur.code}
+                  style={[
+                    styles.typeOption,
+                    currency === cur.code && styles.typeOptionSelected,
+                  ]}
+                  onPress={() => setCurrency(cur.code)}
+                >
+                  <Text style={[
+                    styles.typeLabel,
+                    currency === cur.code && styles.typeLabelSelected,
+                  ]}>
+                    {cur.symbol} {cur.code}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            {currency !== 'COP' && (
+              <Text style={styles.currencyHint}>
+                Se sumará al saldo total del dashboard usando la tasa de cambio que configures en tu perfil.
+              </Text>
+            )}
           </View>
 
           {/* Saldo inicial */}
@@ -199,7 +232,7 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
                 {name || 'Nombre de la cuenta'}
               </Text>
               <Text style={styles.previewBalance}>
-                ${balance || '0'}
+                {getCurrencyInfo(currency).symbol}{balance || '0'}
               </Text>
             </View>
           </View>
@@ -294,6 +327,12 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   typeLabelSelected: {
     color:      c.blue,
     fontWeight: '500',
+  },
+  currencyHint: {
+    fontSize: 11.5,
+    color: c.textTertiary,
+    marginTop: spacing.sm,
+    lineHeight: 16,
   },
   colorGrid: {
     flexDirection: 'row',

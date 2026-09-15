@@ -4,6 +4,7 @@ import {
   createAccount,
   updateAccount,
   deleteAccount,
+  getTotalBalance,
 } from '../database/db';
 import type { Account } from '../models/types';
 
@@ -18,7 +19,8 @@ interface UseAccountsResult {
     type: string,
     balance: number,
     colorHex: string,
-    iconName: string
+    iconName: string,
+    currency: string
   ) => Promise<void>;
   editAccount: (
     id: string,
@@ -31,16 +33,24 @@ interface UseAccountsResult {
 }
 
 export function useAccounts(): UseAccountsResult {
-  const [accounts,  setAccounts]  = useState<Account[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error,     setError]     = useState<string | null>(null);
+  const [accounts,     setAccounts]     = useState<Account[]>([]);
+  const [totalBalance, setTotalBalance] = useState(0);
+  const [isLoading,    setIsLoading]    = useState(true);
+  const [error,        setError]        = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const rows = await getAllAccounts();
+      // getTotalBalance ya convierte cuentas en USD/EUR a pesos usando las
+      // tasas de cambio guardadas, así que el total siempre queda correcto
+      // aunque mezcles monedas entre tus cuentas.
+      const [rows, total] = await Promise.all([
+        getAllAccounts(),
+        getTotalBalance(),
+      ]);
       setAccounts(rows);
+      setTotalBalance(total);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error cargando cuentas');
     } finally {
@@ -57,9 +67,10 @@ export function useAccounts(): UseAccountsResult {
     type: string,
     balance: number,
     colorHex: string,
-    iconName: string
+    iconName: string,
+    currency: string
   ) => {
-    await createAccount(name, type, balance, colorHex, iconName);
+    await createAccount(name, type, balance, colorHex, iconName, currency);
     await load();
   }, [load]);
 
@@ -78,8 +89,6 @@ export function useAccounts(): UseAccountsResult {
     await deleteAccount(id);
     await load();
   }, [load]);
-
-  const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
 
   return {
     accounts,

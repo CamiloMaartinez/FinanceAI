@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,16 +9,29 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
 import { authenticateWithBiometrics } from '../services/biometricAuth';
+import { hasPinSet, verifyPin } from '../services/pinAuth';
+import { PinPad } from './PinPad';
+import { hapticDelete, hapticSuccess } from '../utils/haptics';
 
 interface LockScreenProps {
   onUnlock: () => void;
 }
 
+type LockMode = 'faceid' | 'pin';
+
 export function LockScreen({ onUnlock }: LockScreenProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
+  const [mode, setMode] = useState<LockMode>('faceid');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [failedOnce, setFailedOnce] = useState(false);
+  const [pinAvailable, setPinAvailable] = useState(false);
+  const [pinError, setPinError] = useState(false);
+  const [pinAttempt, setPinAttempt] = useState(0); // cambia para forzar remount del PinPad
+
+  useEffect(() => {
+    hasPinSet().then(setPinAvailable);
+  }, []);
 
   const handleUnlock = async () => {
     setIsAuthenticating(true);
@@ -31,6 +44,45 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
       setFailedOnce(true);
     }
   };
+
+  const handlePinComplete = useCallback(async (pin: string) => {
+    const correct = await verifyPin(pin);
+    if (correct) {
+      hapticSuccess();
+      onUnlock();
+    } else {
+      hapticDelete();
+      setPinError(true);
+      setTimeout(() => {
+        setPinError(false);
+        setPinAttempt((n) => n + 1); // fuerza reinicio del teclado
+      }, 500);
+    }
+  }, [onUnlock]);
+
+  if (mode === 'pin') {
+    return (
+      <View style={styles.container}>
+        <View style={styles.iconCircle}>
+          <Ionicons name="keypad" size={32} color={c.blue} />
+        </View>
+        <Text style={styles.title}>Ingresa tu PIN</Text>
+        <Text style={styles.subtitle}>Tu PIN de respaldo de 4 dígitos</Text>
+
+        {pinError && (
+          <Text style={styles.failedText}>PIN incorrecto. Intenta de nuevo.</Text>
+        )}
+
+        <View style={{ marginTop: spacing.lg }}>
+          <PinPad key={pinAttempt} onComplete={handlePinComplete} error={pinError} />
+        </View>
+
+        <TouchableOpacity style={styles.switchLink} onPress={() => setMode('faceid')}>
+          <Text style={styles.switchLinkText}>Usar Face ID en su lugar</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -63,6 +115,12 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
           </>
         )}
       </TouchableOpacity>
+
+      {pinAvailable && (
+        <TouchableOpacity style={styles.switchLink} onPress={() => setMode('pin')}>
+          <Text style={styles.switchLinkText}>¿Falló Face ID? Usar PIN</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -117,4 +175,6 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     fontWeight: '600',
     fontSize: 15,
   },
+  switchLink: { marginTop: spacing.xl, padding: spacing.sm },
+  switchLinkText: { fontSize: 13, color: c.blue, fontWeight: '500' },
 });

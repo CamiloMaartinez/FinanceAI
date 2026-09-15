@@ -8,6 +8,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
 import { formatCurrency } from '../utils/currency';
+import { formatWithCurrency } from '../constants/currencies';
 import type { Account } from '../models/types';
 
 interface AccountCardProps {
@@ -62,7 +63,9 @@ export function AccountCard({ account, onPress, onLongPress }: AccountCardProps)
 
         {/* Saldo */}
         <Text style={styles.balance}>
-          {formatCurrency(account.balance)}
+          {account.currency && account.currency !== 'COP'
+            ? formatWithCurrency(account.balance, account.currency)
+            : formatCurrency(account.balance)}
         </Text>
       </View>
     </TouchableOpacity>

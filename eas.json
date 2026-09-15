@@ -24,14 +24,23 @@
         "buildType": "apk"
       }
     },
+    "apk": {
+      "extends": "production",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
     "production": {
       "ios": {
         "buildConfiguration": "Release",
         "credentialsSource": "remote"
       },
       "android": {
-        "buildType": "app-bundle"
-      }
+        "buildType": "app-bundle",
+        "autoIncrement": true
+      },
+      "environment": "production"
     }
   },
   "submit": {
