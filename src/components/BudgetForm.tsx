@@ -4,15 +4,18 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
   Modal,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { useAnimatedStyle, useSharedValue, interpolateColor, withSpring } from 'react-native-reanimated';
 import { useColors, spacing, radius } from '../constants/theme';
+import { springDefault } from '../constants/motion';
 import type { Category } from '../models/types';
+import { AnimatedPressable } from './ui/AnimatedPressable';
+import { hapticSave } from '../utils/haptics';
 
 interface BudgetFormProps {
   visible: boolean;
@@ -30,6 +33,52 @@ function parseAmount(text: string): number {
   return isNaN(value) ? 0 : value;
 }
 
+// Anillo de foco animado (§4/§15 apple-design).
+function useFocusRing(c: ReturnType<typeof useColors>) {
+  const focus = useSharedValue(0);
+  const style = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(focus.value, [0, 1], [c.border, c.accent]),
+  }));
+  return {
+    style,
+    onFocus: () => { focus.value = withSpring(1, springDefault); },
+    onBlur: () => { focus.value = withSpring(0, springDefault); },
+  };
+}
+
+function CategoryLimitRow({
+  cat, value, onChangeText, styles, c,
+}: {
+  cat: Category;
+  value: string;
+  onChangeText: (text: string) => void;
+  styles: ReturnType<typeof createStyles>;
+  c: ReturnType<typeof useColors>;
+}) {
+  const ring = useFocusRing(c);
+  return (
+    <View style={styles.categoryRow}>
+      <View style={[styles.categoryIcon, { backgroundColor: cat.colorHex + '20' }]}>
+        <Ionicons name={cat.iconName as any} size={16} color={cat.colorHex} />
+      </View>
+      <Text style={styles.categoryName} numberOfLines={1}>{cat.name}</Text>
+      <Animated.View style={[styles.categoryInputWrap, ring.style]}>
+        <Text style={styles.categoryInputPrefix}>$</Text>
+        <TextInput
+          style={styles.categoryInput}
+          placeholder="0"
+          placeholderTextColor={c.textTertiary}
+          value={value}
+          onChangeText={onChangeText}
+          onFocus={ring.onFocus}
+          onBlur={ring.onBlur}
+          keyboardType="numeric"
+        />
+      </Animated.View>
+    </View>
+  );
+}
+
 export function BudgetForm({
   visible,
   categories,
@@ -40,6 +89,7 @@ export function BudgetForm({
 }: BudgetFormProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
+  const totalRing = useFocusRing(c);
 
   const [totalLimit, setTotalLimit] = useState('');
   const [categoryInputs, setCategoryInputs] = useState<Record<string, string>>({});
@@ -96,13 +146,13 @@ export function BudgetForm({
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose}>
+          <AnimatedPressable onPress={onClose}>
             <Text style={styles.cancelBtn}>Cancelar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
           <Text style={styles.headerTitle}>Presupuesto del mes</Text>
-          <TouchableOpacity onPress={handleSave}>
+          <AnimatedPressable onPress={handleSave} onPressFeedback={hapticSave}>
             <Text style={styles.saveBtn}>Guardar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
@@ -114,7 +164,7 @@ export function BudgetForm({
 
           <View style={styles.field}>
             <Text style={styles.fieldLabel}>Límite total del mes</Text>
-            <View style={styles.totalInputRow}>
+            <Animated.View style={[styles.totalInputRow, totalRing.style]}>
               <Text style={styles.totalPrefix}>$</Text>
               <TextInput
                 style={styles.totalInput}
@@ -122,10 +172,12 @@ export function BudgetForm({
                 placeholderTextColor={c.textTertiary}
                 value={totalLimit}
                 onChangeText={(t) => { setTotalLimit(t); setError(''); }}
+                onFocus={totalRing.onFocus}
+                onBlur={totalRing.onBlur}
                 keyboardType="numeric"
                 autoFocus
               />
-            </View>
+            </Animated.View>
           </View>
 
           <View style={styles.field}>
@@ -142,23 +194,14 @@ export function BudgetForm({
             </Text>
 
             {categories.map((cat) => (
-              <View key={cat.id} style={styles.categoryRow}>
-                <View style={[styles.categoryIcon, { backgroundColor: cat.colorHex + '20' }]}>
-                  <Ionicons name={cat.iconName as any} size={16} color={cat.colorHex} />
-                </View>
-                <Text style={styles.categoryName} numberOfLines={1}>{cat.name}</Text>
-                <View style={styles.categoryInputWrap}>
-                  <Text style={styles.categoryInputPrefix}>$</Text>
-                  <TextInput
-                    style={styles.categoryInput}
-                    placeholder="0"
-                    placeholderTextColor={c.textTertiary}
-                    value={categoryInputs[cat.id] ?? ''}
-                    onChangeText={(t) => setCategoryValue(cat.id, t)}
-                    keyboardType="numeric"
-                  />
-                </View>
-              </View>
+              <CategoryLimitRow
+                key={cat.id}
+                cat={cat}
+                value={categoryInputs[cat.id] ?? ''}
+                onChangeText={(t) => setCategoryValue(cat.id, t)}
+                styles={styles}
+                c={c}
+              />
             ))}
           </View>
         </ScrollView>
@@ -192,13 +235,13 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   saveBtn: {
     fontSize: 16,
     fontWeight: '600',
-    color: c.blue,
+    color: c.accent,
   },
   form: {
     padding: spacing.lg,
   },
   errorBox: {
-    backgroundColor: 'rgba(255,59,48,0.15)',
+    backgroundColor: c.expense + '26',
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -228,6 +271,8 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     alignItems: 'center',
     backgroundColor: c.surface,
     borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: c.border,
     paddingHorizontal: spacing.lg,
   },
   totalPrefix: {
@@ -277,6 +322,8 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     alignItems: 'center',
     backgroundColor: c.surface,
     borderRadius: radius.sm,
+    borderWidth: 1.5,
+    borderColor: c.border,
     paddingHorizontal: spacing.sm,
     minWidth: 110,
   },

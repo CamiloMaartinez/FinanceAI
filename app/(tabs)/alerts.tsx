@@ -3,18 +3,20 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useAlerts } from '../../src/hooks/useAlerts';
 import { useTransactions } from '../../src/hooks/useTransactions';
 import { AlertForm } from '../../src/components/AlertForm';
 import { useColors, spacing, typography } from '../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
+import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { hapticSave } from '../../src/utils/haptics';
 import { ALERT_TYPE_LABELS, ALERT_TYPE_UNITS } from '../../src/hooks/useAlerts';
 import type { Alert as AlertRecord, AlertType } from '../../src/hooks/useAlerts';
 
@@ -86,12 +88,13 @@ export default function AlertsScreen() {
               {alerts.alerts.length} activa{alerts.alerts.length !== 1 ? 's' : ''}
             </Text>
           </View>
-          <TouchableOpacity
+          <AnimatedPressable
             style={styles.addButton}
             onPress={() => setFormVisible(true)}
+            onPressFeedback={hapticSave}
           >
             <Ionicons name="add" size={20} color={c.textPrimary} />
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <View style={styles.divider} />
@@ -102,12 +105,13 @@ export default function AlertsScreen() {
             <Text style={styles.emptySubtitle}>
               Crea alertas para que la app te avise automáticamente sobre tu situación financiera
             </Text>
-            <TouchableOpacity
+            <AnimatedPressable
               style={styles.emptyButton}
               onPress={() => setFormVisible(true)}
+              onPressFeedback={hapticSave}
             >
               <Text style={styles.emptyButtonText}>+ Nueva alerta</Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           </View>
         ) : (
           <>
@@ -117,42 +121,43 @@ export default function AlertsScreen() {
               const wasTriggered = alert.lastTriggered !== null;
 
               return (
-                <TouchableOpacity
-                  key={alert.id}
-                  style={[
-                    styles.alertRow,
-                    index < alerts.alerts.length - 1 && styles.alertRowBorder,
-                  ]}
-                  onLongPress={() => handleLongPress(alert)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.alertIcon}>
+                <Animated.View key={alert.id} entering={FadeInDown.duration(300).delay(index * 60)}>
+                  <AnimatedPressable
+                    style={[
+                      styles.alertRow,
+                      index < alerts.alerts.length - 1 && styles.alertRowBorder,
+                    ]}
+                    onLongPress={() => handleLongPress(alert)}
+                    pressScale={0.99}
+                  >
+                    <View style={styles.alertIcon}>
+                      <Ionicons
+                        name={icon}
+                        size={16}
+                        color={wasTriggered ? c.income : c.textTertiary}
+                      />
+                    </View>
+                    <View style={styles.alertInfo}>
+                      <Text style={styles.alertTitle}>
+                        {ALERT_TYPE_LABELS[alert.type]}
+                      </Text>
+                      <Text style={styles.alertThreshold}>
+                        {unit}{Math.round(alert.threshold).toLocaleString('es-CO')}
+                      </Text>
+                      {alert.lastTriggered && (
+                        <Text style={styles.alertTriggered}>
+                          Última vez:{' '}
+                          {new Date(alert.lastTriggered).toLocaleDateString('es-CO')}
+                        </Text>
+                      )}
+                    </View>
                     <Ionicons
-                      name={icon}
-                      size={16}
+                      name="notifications-outline"
+                      size={14}
                       color={wasTriggered ? c.income : c.textTertiary}
                     />
-                  </View>
-                  <View style={styles.alertInfo}>
-                    <Text style={styles.alertTitle}>
-                      {ALERT_TYPE_LABELS[alert.type]}
-                    </Text>
-                    <Text style={styles.alertThreshold}>
-                      {unit}{Math.round(alert.threshold).toLocaleString('es-CO')}
-                    </Text>
-                    {alert.lastTriggered && (
-                      <Text style={styles.alertTriggered}>
-                        Última vez:{' '}
-                        {new Date(alert.lastTriggered).toLocaleDateString('es-CO')}
-                      </Text>
-                    )}
-                  </View>
-                  <Ionicons
-                    name="notifications-outline"
-                    size={14}
-                    color={wasTriggered ? c.income : c.textTertiary}
-                  />
-                </TouchableOpacity>
+                  </AnimatedPressable>
+                </Animated.View>
               );
             })}
 
@@ -179,7 +184,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   container: { flex: 1, backgroundColor: c.background },
-  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

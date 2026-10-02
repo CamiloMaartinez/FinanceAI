@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
+import { AnimatedPressable } from './ui/AnimatedPressable';
 import type { InvestmentOption, InvestmentRisk } from '../data/investmentOptions';
 
 const RISK_LABELS: Record<InvestmentRisk, string> = {
@@ -11,12 +12,12 @@ const RISK_LABELS: Record<InvestmentRisk, string> = {
   muy_alto: 'Riesgo muy alto',
 };
 
-const RISK_COLORS: Record<InvestmentRisk, string> = {
-  bajo: '#34C759',
-  medio: '#FF9500',
-  alto: '#FF3B30',
-  muy_alto: '#AF52DE',
-};
+const getRiskColors = (c: ReturnType<typeof useColors>): Record<InvestmentRisk, string> => ({
+  bajo: c.income,
+  medio: c.orange,
+  alto: c.expense,
+  muy_alto: c.purple,
+});
 
 interface InvestmentCardProps {
   option: InvestmentOption;
@@ -26,13 +27,13 @@ export function InvestmentCard({ option }: InvestmentCardProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
   const [expanded, setExpanded] = useState(false);
-  const riskColor = RISK_COLORS[option.risk];
+  const riskColor = getRiskColors(c)[option.risk];
 
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       style={styles.card}
       onPress={() => setExpanded((v) => !v)}
-      activeOpacity={0.85}
+      pressScale={0.98}
     >
       <View style={styles.header}>
         <View style={[styles.iconCircle, { backgroundColor: riskColor + '20' }]}>
@@ -88,7 +89,7 @@ export function InvestmentCard({ option }: InvestmentCardProps) {
           </View>
         </View>
       )}
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 }
 
@@ -98,6 +99,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     borderRadius: radius.lg,
     padding: spacing.lg,
     marginBottom: spacing.md,
+    ...c.shadow.sm,
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   iconCircle: {

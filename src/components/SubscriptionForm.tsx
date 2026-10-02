@@ -4,15 +4,18 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
   Modal,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { useAnimatedStyle, useSharedValue, interpolateColor, withSpring } from 'react-native-reanimated';
 import { useColors, spacing, radius } from '../constants/theme';
+import { springDefault } from '../constants/motion';
 import type { Subscription } from '../models/types';
+import { AnimatedPressable } from './ui/AnimatedPressable';
+import { hapticSave, hapticToggle } from '../utils/haptics';
 
 interface SubscriptionFormProps {
   visible: boolean;
@@ -50,6 +53,19 @@ function getDefaultBillingDate(): string {
   return date.toISOString();
 }
 
+// Anillo de foco animado (§4/§15 apple-design).
+function useFocusRing(c: ReturnType<typeof useColors>) {
+  const focus = useSharedValue(0);
+  const style = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(focus.value, [0, 1], [c.border, c.accent]),
+  }));
+  return {
+    style,
+    onFocus: () => { focus.value = withSpring(1, springDefault); },
+    onBlur: () => { focus.value = withSpring(0, springDefault); },
+  };
+}
+
 export function SubscriptionForm({ visible, editingSubscription, onClose, onSave }: SubscriptionFormProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
@@ -61,6 +77,10 @@ export function SubscriptionForm({ visible, editingSubscription, onClose, onSave
   const [iconName,   setIconName]   = useState('repeat-outline');
   const [daysAhead,  setDaysAhead]  = useState('15');
   const [error,      setError]      = useState('');
+
+  const nameRing = useFocusRing(c);
+  const amountRing = useFocusRing(c);
+  const daysRing = useFocusRing(c);
 
   // Precarga los datos cuando se abre en modo edición
   useEffect(() => {
@@ -131,13 +151,13 @@ export function SubscriptionForm({ visible, editingSubscription, onClose, onSave
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleClose}>
+          <AnimatedPressable onPress={handleClose}>
             <Text style={styles.cancelBtn}>Cancelar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
           <Text style={styles.headerTitle}>{isEditing ? 'Editar suscripción' : 'Nueva suscripción'}</Text>
-          <TouchableOpacity onPress={handleSave}>
+          <AnimatedPressable onPress={handleSave} onPressFeedback={hapticSave}>
             <Text style={styles.saveBtn}>Guardar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
@@ -153,8 +173,9 @@ export function SubscriptionForm({ visible, editingSubscription, onClose, onSave
             <Text style={styles.fieldLabel}>Servicios populares</Text>
             <View style={styles.servicesGrid}>
               {COMMON_SERVICES.map((service) => (
-                <TouchableOpacity
+                <AnimatedPressable
                   key={service.name}
+                  pressScale={0.97}
                   style={[
                     styles.serviceOption,
                     name === service.name && {
@@ -163,10 +184,11 @@ export function SubscriptionForm({ visible, editingSubscription, onClose, onSave
                     },
                   ]}
                   onPress={() => handleSelectService(service)}
+                  onPressFeedback={hapticToggle}
                 >
                   <Ionicons name={service.icon as any} size={20} color={service.color} />
                   <Text style={styles.serviceLabel}>{service.name}</Text>
-                </TouchableOpacity>
+                </AnimatedPressable>
               ))}
             </View>
           </View>
@@ -174,19 +196,23 @@ export function SubscriptionForm({ visible, editingSubscription, onClose, onSave
           {/* Nombre */}
           <View style={styles.field}>
             <Text style={styles.fieldLabel}>Nombre</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ej: Netflix"
-              placeholderTextColor={c.textTertiary}
-              value={name}
-              onChangeText={(text) => { setName(text); setError(''); }}
-            />
+            <Animated.View style={[styles.input, nameRing.style]}>
+              <TextInput
+                style={styles.inputText}
+                placeholder="Ej: Netflix"
+                placeholderTextColor={c.textTertiary}
+                value={name}
+                onChangeText={(text) => { setName(text); setError(''); }}
+                onFocus={nameRing.onFocus}
+                onBlur={nameRing.onBlur}
+              />
+            </Animated.View>
           </View>
 
           {/* Monto */}
           <View style={styles.field}>
             <Text style={styles.fieldLabel}>Monto</Text>
-            <View style={styles.amountWrapper}>
+            <Animated.View style={[styles.amountWrapper, amountRing.style]}>
               <Text style={styles.amountPrefix}>$</Text>
               <TextInput
                 style={styles.amountInput}
@@ -194,9 +220,11 @@ export function SubscriptionForm({ visible, editingSubscription, onClose, onSave
                 placeholderTextColor={c.textTertiary}
                 value={amount}
                 onChangeText={(text) => { setAmount(text); setError(''); }}
+                onFocus={amountRing.onFocus}
+                onBlur={amountRing.onBlur}
                 keyboardType="numeric"
               />
-            </View>
+            </Animated.View>
           </View>
 
           {/* Frecuencia */}
@@ -204,15 +232,17 @@ export function SubscriptionForm({ visible, editingSubscription, onClose, onSave
             <Text style={styles.fieldLabel}>Frecuencia de cobro</Text>
             <View style={styles.chipRow}>
               {FREQUENCIES.map((f) => (
-                <TouchableOpacity
+                <AnimatedPressable
                   key={f.value}
+                  pressScale={0.97}
                   style={[styles.chip, frequency === f.value && styles.chipSelected]}
                   onPress={() => setFrequency(f.value)}
+                  onPressFeedback={hapticToggle}
                 >
                   <Text style={[styles.chipLabel, frequency === f.value && styles.chipLabelSelected]}>
                     {f.label}
                   </Text>
-                </TouchableOpacity>
+                </AnimatedPressable>
               ))}
             </View>
           </View>
@@ -220,14 +250,18 @@ export function SubscriptionForm({ visible, editingSubscription, onClose, onSave
           {/* Próximo cobro */}
           <View style={styles.field}>
             <Text style={styles.fieldLabel}>Próximo cobro (días desde hoy)</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="15"
-              placeholderTextColor={c.textTertiary}
-              value={daysAhead}
-              onChangeText={(text) => { setDaysAhead(text); setError(''); }}
-              keyboardType="numeric"
-            />
+            <Animated.View style={[styles.input, daysRing.style]}>
+              <TextInput
+                style={styles.inputText}
+                placeholder="15"
+                placeholderTextColor={c.textTertiary}
+                value={daysAhead}
+                onChangeText={(text) => { setDaysAhead(text); setError(''); }}
+                onFocus={daysRing.onFocus}
+                onBlur={daysRing.onBlur}
+                keyboardType="numeric"
+              />
+            </Animated.View>
           </View>
 
         </ScrollView>
@@ -248,10 +282,10 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   },
   headerTitle: { fontSize: 17, fontWeight: '600', color: c.textPrimary },
   cancelBtn: { fontSize: 16, color: c.textSecondary },
-  saveBtn: { fontSize: 16, fontWeight: '600', color: c.blue },
+  saveBtn: { fontSize: 16, fontWeight: '600', color: c.accent },
   form: { padding: spacing.lg },
   errorBox: {
-    backgroundColor: 'rgba(255,59,48,0.15)',
+    backgroundColor: c.expense + '26',
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -269,6 +303,10 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   input: {
     backgroundColor: c.surface,
     borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: c.border,
+  },
+  inputText: {
     padding: spacing.lg,
     fontSize: 16,
     color: c.textPrimary,
@@ -278,6 +316,8 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     alignItems: 'center',
     backgroundColor: c.surface,
     borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: c.border,
     paddingHorizontal: spacing.lg,
   },
   amountPrefix: {
@@ -319,9 +359,9 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     borderColor: 'transparent',
   },
   chipSelected: {
-    borderColor: c.blue,
-    backgroundColor: 'rgba(0,122,255,0.1)',
+    borderColor: c.accent,
+    backgroundColor: c.accent + '1A',
   },
   chipLabel: { fontSize: 13, color: c.textSecondary },
-  chipLabelSelected: { color: c.blue, fontWeight: '600' },
+  chipLabelSelected: { color: c.accent, fontWeight: '600' },
 });

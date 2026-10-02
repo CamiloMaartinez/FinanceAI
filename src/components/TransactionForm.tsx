@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
   Modal,
   ScrollView,
   KeyboardAvoidingView,
@@ -12,9 +11,13 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { useAnimatedStyle, useSharedValue, interpolateColor, withSpring } from 'react-native-reanimated';
 import { useColors, spacing, radius } from '../constants/theme';
+import { springDefault } from '../constants/motion';
 import { ReceiptScannerButton } from './ReceiptScannerButton';
 import { suggestCategory } from '../services/ai';
+import { AnimatedPressable } from './ui/AnimatedPressable';
+import { hapticSave, hapticToggle } from '../utils/haptics';
 import type { Account, Category, TransactionWithCategory } from '../models/types';
 
 interface TransactionFormProps {
@@ -31,6 +34,20 @@ interface TransactionFormProps {
     categoryId: string | null,
     notes: string
   ) => void;
+}
+
+// Anillo de foco animado (§4/§15 apple-design): interpola el borde entre
+// c.border y c.accent con un resorte crítico, sin desplazar el layout.
+function useFocusRing(c: ReturnType<typeof useColors>) {
+  const focus = useSharedValue(0);
+  const style = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(focus.value, [0, 1], [c.border, c.accent]),
+  }));
+  return {
+    style,
+    onFocus: () => { focus.value = withSpring(1, springDefault); },
+    onBlur: () => { focus.value = withSpring(0, springDefault); },
+  };
 }
 
 export function TransactionForm({
@@ -52,6 +69,9 @@ export function TransactionForm({
   const [error,      setError]      = useState('');
   const [categoryFromAI, setCategoryFromAI] = useState(false);
   const [isSuggesting,   setIsSuggesting]   = useState(false);
+
+  const amountRing = useFocusRing(c);
+  const notesRing = useFocusRing(c);
 
   // Selecciona la primera cuenta automáticamente cuando se abre (solo si no estamos editando)
   useEffect(() => {
@@ -150,13 +170,13 @@ export function TransactionForm({
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleClose}>
+          <AnimatedPressable onPress={handleClose}>
             <Text style={styles.cancelBtn}>Cancelar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
           <Text style={styles.headerTitle}>{isEditing ? 'Editar movimiento' : 'Nuevo movimiento'}</Text>
-          <TouchableOpacity onPress={handleSave}>
+          <AnimatedPressable onPress={handleSave} onPressFeedback={hapticSave}>
             <Text style={styles.saveBtn}>Guardar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
@@ -170,12 +190,14 @@ export function TransactionForm({
 
           {/* Selector Ingreso / Gasto */}
           <View style={styles.typeSwitch}>
-            <TouchableOpacity
+            <AnimatedPressable
+              pressScale={0.98}
               style={[
                 styles.typeSwitchOption,
                 type === 'expense' && styles.typeSwitchExpenseActive,
               ]}
               onPress={() => { setType('expense'); setError(''); }}
+              onPressFeedback={hapticToggle}
             >
               <Text style={[
                 styles.typeSwitchLabel,
@@ -183,13 +205,15 @@ export function TransactionForm({
               ]}>
                 Gasto
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </AnimatedPressable>
+            <AnimatedPressable
+              pressScale={0.98}
               style={[
                 styles.typeSwitchOption,
                 type === 'income' && styles.typeSwitchIncomeActive,
               ]}
               onPress={() => { setType('income'); setCategoryId(null); setError(''); }}
+              onPressFeedback={hapticToggle}
             >
               <Text style={[
                 styles.typeSwitchLabel,
@@ -197,7 +221,7 @@ export function TransactionForm({
               ]}>
                 Ingreso
               </Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           </View>
 
           {/* Escanear recibo — solo para gastos nuevos, no al editar */}
@@ -220,7 +244,7 @@ export function TransactionForm({
           {/* Monto */}
           <View style={styles.field}>
             <Text style={styles.fieldLabel}>Monto</Text>
-            <View style={styles.amountWrapper}>
+            <Animated.View style={[styles.amountWrapper, amountRing.style]}>
               <Text style={styles.amountPrefix}>$</Text>
               <TextInput
                 style={styles.amountInput}
@@ -228,10 +252,12 @@ export function TransactionForm({
                 placeholderTextColor={c.textTertiary}
                 value={amount}
                 onChangeText={(text) => { setAmount(text); setError(''); }}
+                onFocus={amountRing.onFocus}
+                onBlur={amountRing.onBlur}
                 keyboardType="numeric"
                 autoFocus
               />
-            </View>
+            </Animated.View>
           </View>
 
           {/* Cuenta */}
@@ -240,8 +266,9 @@ export function TransactionForm({
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.chipRow}>
                 {accounts.map((acc) => (
-                  <TouchableOpacity
+                  <AnimatedPressable
                     key={acc.id}
+                    pressScale={0.97}
                     style={[
                       styles.chip,
                       accountId === acc.id && {
@@ -250,10 +277,11 @@ export function TransactionForm({
                       },
                     ]}
                     onPress={() => { setAccountId(acc.id); setError(''); }}
+                    onPressFeedback={hapticToggle}
                   >
                     <View style={[styles.chipDot, { backgroundColor: acc.colorHex }]} />
                     <Text style={styles.chipLabel}>{acc.name}</Text>
-                  </TouchableOpacity>
+                  </AnimatedPressable>
                 ))}
               </View>
             </ScrollView>
@@ -272,15 +300,16 @@ export function TransactionForm({
                 )}
                 {!isSuggesting && categoryFromAI && categoryId && (
                   <View style={styles.aiHint}>
-                    <Ionicons name="sparkles" size={12} color={c.blue} />
-                    <Text style={[styles.aiHintText, { color: c.blue }]}>Sugerido por IA</Text>
+                    <Ionicons name="sparkles" size={12} color={c.accent} />
+                    <Text style={[styles.aiHintText, { color: c.accent }]}>Sugerido por IA</Text>
                   </View>
                 )}
               </View>
               <View style={styles.categoryGrid}>
                 {categories.map((cat) => (
-                  <TouchableOpacity
+                  <AnimatedPressable
                     key={cat.id}
+                    pressScale={0.97}
                     style={[
                       styles.categoryOption,
                       categoryId === cat.id && {
@@ -289,6 +318,7 @@ export function TransactionForm({
                       },
                     ]}
                     onPress={() => { setCategoryId(cat.id); setCategoryFromAI(false); setError(''); }}
+                    onPressFeedback={hapticToggle}
                   >
                     <Ionicons
                       name={cat.iconName as any}
@@ -301,7 +331,7 @@ export function TransactionForm({
                     ]}>
                       {cat.name}
                     </Text>
-                  </TouchableOpacity>
+                  </AnimatedPressable>
                 ))}
               </View>
             </View>
@@ -310,13 +340,17 @@ export function TransactionForm({
           {/* Nota */}
           <View style={styles.field}>
             <Text style={styles.fieldLabel}>Nota (opcional)</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ej: Almuerzo con amigos"
-              placeholderTextColor={c.textTertiary}
-              value={notes}
-              onChangeText={setNotes}
-            />
+            <Animated.View style={[styles.input, notesRing.style]}>
+              <TextInput
+                style={styles.inputText}
+                placeholder="Ej: Almuerzo con amigos"
+                placeholderTextColor={c.textTertiary}
+                value={notes}
+                onChangeText={setNotes}
+                onFocus={notesRing.onFocus}
+                onBlur={notesRing.onBlur}
+              />
+            </Animated.View>
           </View>
 
         </ScrollView>
@@ -350,13 +384,13 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   saveBtn: {
     fontSize: 16,
     fontWeight: '600',
-    color: c.blue,
+    color: c.accent,
   },
   form: {
     padding: spacing.lg,
   },
   errorBox: {
-    backgroundColor: 'rgba(255,59,48,0.15)',
+    backgroundColor: c.expense + '26',
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -379,10 +413,10 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     alignItems: 'center',
   },
   typeSwitchExpenseActive: {
-    backgroundColor: 'rgba(255,59,48,0.2)',
+    backgroundColor: c.expense + '33',
   },
   typeSwitchIncomeActive: {
-    backgroundColor: 'rgba(52,199,89,0.2)',
+    backgroundColor: c.income + '33',
   },
   typeSwitchLabel: {
     fontSize: 14,
@@ -423,6 +457,8 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     alignItems: 'center',
     backgroundColor: c.surface,
     borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: c.border,
     paddingHorizontal: spacing.lg,
   },
   amountPrefix: {
@@ -441,6 +477,10 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   input: {
     backgroundColor: c.surface,
     borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: c.border,
+  },
+  inputText: {
     padding: spacing.lg,
     fontSize: 16,
     color: c.textPrimary,

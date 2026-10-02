@@ -1,8 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Modal, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
 import type { Category } from '../models/types';
+import { AnimatedPressable } from './ui/AnimatedPressable';
+import { hapticSave, hapticToggle } from '../utils/haptics';
 
 interface ChallengeFormProps {
   visible: boolean;
@@ -46,13 +48,13 @@ export function ChallengeForm({ visible, categories, onClose, onSave }: Challeng
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={handleClose}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleClose}>
+          <AnimatedPressable onPress={handleClose}>
             <Text style={styles.cancelBtn}>Cancelar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
           <Text style={styles.headerTitle}>Nuevo reto</Text>
-          <TouchableOpacity onPress={handleCreate} disabled={!categoryId}>
+          <AnimatedPressable onPress={handleCreate} disabled={!categoryId} onPressFeedback={hapticSave}>
             <Text style={[styles.createBtn, !categoryId && styles.createBtnDisabled]}>Crear</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
@@ -62,10 +64,12 @@ export function ChallengeForm({ visible, categories, onClose, onSave }: Challeng
               {categories.map((cat) => {
                 const selected = categoryId === cat.id;
                 return (
-                  <TouchableOpacity
+                  <AnimatedPressable
                     key={cat.id}
+                    pressScale={0.97}
                     style={[styles.chip, selected && { backgroundColor: cat.colorHex + '25', borderColor: cat.colorHex }]}
                     onPress={() => setCategoryId(cat.id)}
+                    onPressFeedback={hapticToggle}
                   >
                     <Ionicons
                       name={cat.iconName as any}
@@ -76,7 +80,7 @@ export function ChallengeForm({ visible, categories, onClose, onSave }: Challeng
                     <Text style={[styles.chipLabel, selected && { color: cat.colorHex, fontWeight: '600' }]}>
                       {cat.name}
                     </Text>
-                  </TouchableOpacity>
+                  </AnimatedPressable>
                 );
               })}
             </View>
@@ -88,15 +92,17 @@ export function ChallengeForm({ visible, categories, onClose, onSave }: Challeng
               {DURATIONS.map((d) => {
                 const selected = days === d.days;
                 return (
-                  <TouchableOpacity
+                  <AnimatedPressable
                     key={d.days}
+                    pressScale={0.97}
                     style={[styles.durationChip, selected && styles.durationChipSelected]}
                     onPress={() => setDays(d.days)}
+                    onPressFeedback={hapticToggle}
                   >
                     <Text style={[styles.chipLabel, selected && styles.durationLabelSelected]}>
                       {d.label}
                     </Text>
-                  </TouchableOpacity>
+                  </AnimatedPressable>
                 );
               })}
             </View>
@@ -124,7 +130,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   },
   headerTitle: { fontSize: 17, fontWeight: '600', color: c.textPrimary },
   cancelBtn: { fontSize: 16, color: c.textSecondary },
-  createBtn: { fontSize: 16, fontWeight: '600', color: c.blue },
+  createBtn: { fontSize: 16, fontWeight: '600', color: c.accent },
   createBtnDisabled: { color: c.textTertiary },
   form: { padding: spacing.lg },
   field: { marginBottom: spacing.xl },
@@ -147,11 +153,11 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     paddingVertical: spacing.md,
     borderWidth: 1.5, borderColor: 'transparent',
   },
-  durationChipSelected: { borderColor: c.blue, backgroundColor: 'rgba(0,122,255,0.1)' },
-  durationLabelSelected: { color: c.blue, fontWeight: '600' },
+  durationChipSelected: { borderColor: c.accent, backgroundColor: c.accent + '1A' },
+  durationLabelSelected: { color: c.accent, fontWeight: '600' },
   previewBox: {
     flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
-    backgroundColor: 'rgba(255,149,0,0.1)', borderRadius: radius.md, padding: spacing.md,
+    backgroundColor: c.orange + '1A', borderRadius: radius.md, padding: spacing.md,
   },
   previewText: { flex: 1, fontSize: 12.5, color: c.textSecondary, lineHeight: 17 },
 });

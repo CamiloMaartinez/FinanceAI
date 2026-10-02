@@ -15,7 +15,7 @@ export function RecentTransactions({ transactions }: Props) {
   const TYPE_COLORS: Record<string, string> = {
     income:     c.income,
     expense:    c.expense,
-    transfer:   'rgba(128,128,128,0.5)',
+    transfer:   c.textSecondary,
     investment: c.income,
     loan:       c.income,
     payment:    c.expense,

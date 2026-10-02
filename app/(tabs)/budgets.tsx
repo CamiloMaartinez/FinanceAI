@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
   Alert,
@@ -12,20 +11,24 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeIn,
+  FadeInDown,
   useSharedValue,
   useAnimatedStyle,
-  withTiming,
+  withSpring,
 } from 'react-native-reanimated';
 import { useBudgets } from '../../src/hooks/useBudgets';
 import { BudgetForm } from '../../src/components/BudgetForm';
 import { getAllCategories } from '../../src/database/db';
 import { useColors, spacing, typography, radius } from '../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
+import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { springDefault } from '../../src/constants/motion';
 import {
   getBudgetProgressColor,
   getBudgetBarWidth,
   getBudgetRemaining,
 } from '../../src/utils/budgetCalculations';
-import { hapticSave } from '../../src/utils/haptics';
+import { hapticSave, hapticToggle } from '../../src/utils/haptics';
 import type { Category } from '../../src/models/types';
 
 const MONTH_NAMES = [
@@ -39,7 +42,7 @@ function ProgressBar({ percent, color, height = 8 }: { percent: number; color: s
   const animatedWidth = useSharedValue(0);
 
   useEffect(() => {
-    animatedWidth.value = withTiming(getBudgetBarWidth(percent), { duration: 700 });
+    animatedWidth.value = withSpring(getBudgetBarWidth(percent), springDefault);
   }, [percent]);
 
   const barStyle = useAnimatedStyle(() => ({
@@ -114,9 +117,9 @@ export default function BudgetsScreen() {
             <Text style={styles.count}>Capitalizado en {monthLabel}</Text>
           </View>
           {budgets.budget && (
-            <TouchableOpacity style={styles.editButton} onPress={() => setFormVisible(true)}>
+            <AnimatedPressable style={styles.editButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticToggle}>
               <Ionicons name="pencil-outline" size={16} color={c.textPrimary} />
-            </TouchableOpacity>
+            </AnimatedPressable>
           )}
         </View>
 
@@ -129,9 +132,9 @@ export default function BudgetsScreen() {
             <Text style={styles.emptySubtitle}>
               Define un límite mensual para organizar tus gastos y recibir alertas antes de excederte
             </Text>
-            <TouchableOpacity style={styles.emptyButton} onPress={() => setFormVisible(true)}>
+            <AnimatedPressable style={styles.emptyButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
               <Text style={styles.emptyButtonText}>+ Crear presupuesto</Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           </View>
         ) : (
           <>
@@ -161,10 +164,10 @@ export default function BudgetsScreen() {
             {budgets.categories.length > 0 && (
               <View style={styles.categoriesSection}>
                 <Text style={styles.sectionLabel}>POR CATEGORÍA</Text>
-                {budgets.categories.map((cat) => {
+                {budgets.categories.map((cat, i) => {
                   const color = getBudgetProgressColor(cat.percent);
                   return (
-                    <View key={cat.categoryId} style={styles.categoryCard}>
+                    <Animated.View key={cat.categoryId} entering={FadeInDown.duration(300).delay(i * 60)} style={styles.categoryCard}>
                       <View style={styles.categoryRow}>
                         <View style={[styles.categoryIcon, { backgroundColor: cat.categoryColor + '20' }]}>
                           <Ionicons name={cat.categoryIcon as any} size={16} color={cat.categoryColor} />
@@ -180,15 +183,15 @@ export default function BudgetsScreen() {
                         </Text>
                       </View>
                       <ProgressBar percent={cat.percent} color={color} height={6} />
-                    </View>
+                    </Animated.View>
                   );
                 })}
               </View>
             )}
 
-            <TouchableOpacity style={styles.deleteLink} onPress={handleDelete}>
+            <AnimatedPressable style={styles.deleteLink} onPress={handleDelete}>
               <Text style={styles.deleteLinkText}>Eliminar presupuesto de este mes</Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           </>
         )}
       </Animated.ScrollView>
@@ -208,7 +211,7 @@ export default function BudgetsScreen() {
 const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   loadingContainer: { flex: 1, backgroundColor: c.background, alignItems: 'center', justifyContent: 'center' },
   container: { flex: 1, backgroundColor: c.background },
-  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

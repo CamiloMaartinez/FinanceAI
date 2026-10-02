@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
   RefreshControl,
@@ -23,8 +22,10 @@ import {
   type TransactionFiltersState,
 } from '../../src/components/TransactionFilters';
 import { filterTransactions } from '../../src/utils/transactionFilters';
-import { hapticSave } from '../../src/utils/haptics';
+import { hapticSave, hapticToggle } from '../../src/utils/haptics';
 import { useColors, spacing, typography } from '../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
+import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
 import type { TransactionWithCategory } from '../../src/models/types';
 
 function groupByDay(transactions: TransactionWithCategory[]) {
@@ -128,7 +129,7 @@ export default function TransactionsScreen() {
               {hasActiveSearch ? `${filteredTransactions.length} de ${data.transactions.length}` : data.transactions.length} registros
             </Text>
           </View>
-          <TouchableOpacity
+          <AnimatedPressable
             style={[
               styles.addButton,
               data.accounts.length === 0 && styles.addButtonDisabled,
@@ -140,9 +141,10 @@ export default function TransactionsScreen() {
               }
               setFormVisible(true);
             }}
+            onPressFeedback={hapticSave}
           >
             <Ionicons name="add" size={20} color={c.textPrimary} />
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <View style={styles.divider} />
@@ -160,14 +162,15 @@ export default function TransactionsScreen() {
               returnKeyType="search"
             />
             {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={8}>
+              <AnimatedPressable onPress={() => setSearchQuery('')} hitSlop={8}>
                 <Ionicons name="close-circle" size={16} color={c.textTertiary} />
-              </TouchableOpacity>
+              </AnimatedPressable>
             )}
           </View>
-          <TouchableOpacity
+          <AnimatedPressable
             style={[styles.filterButton, activeFilterCount > 0 && styles.filterButtonActive]}
             onPress={() => setFiltersVisible(true)}
+            onPressFeedback={hapticToggle}
           >
             <Ionicons
               name="options-outline"
@@ -179,7 +182,7 @@ export default function TransactionsScreen() {
                 <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
               </View>
             )}
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         {data.error && (
@@ -197,12 +200,13 @@ export default function TransactionsScreen() {
                 : 'Registra tu primer ingreso o gasto'}
             </Text>
             {hasActiveSearch && (
-              <TouchableOpacity
+              <AnimatedPressable
                 style={styles.clearSearchButton}
                 onPress={() => { setSearchQuery(''); setFilters(EMPTY_FILTERS); }}
+                onPressFeedback={hapticToggle}
               >
                 <Text style={styles.clearSearchButtonText}>Limpiar búsqueda y filtros</Text>
-              </TouchableOpacity>
+              </AnimatedPressable>
             )}
           </View>
         ) : (
@@ -263,7 +267,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     justifyContent: 'center',
   },
   container: { flex: 1, backgroundColor: c.background },
-  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -324,7 +328,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   },
   filterButtonActive: {
     borderColor: c.blue,
-    backgroundColor: 'rgba(0,122,255,0.1)',
+    backgroundColor: c.accent + '1A',
   },
   filterBadge: {
     position: 'absolute',

@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,7 +10,8 @@ import { useColors, spacing, radius } from '../constants/theme';
 import { authenticateWithBiometrics } from '../services/biometricAuth';
 import { hasPinSet, verifyPin } from '../services/pinAuth';
 import { PinPad } from './PinPad';
-import { hapticDelete, hapticSuccess } from '../utils/haptics';
+import { hapticDelete, hapticSuccess, hapticSave, hapticToggle } from '../utils/haptics';
+import { AnimatedPressable } from './ui/AnimatedPressable';
 
 interface LockScreenProps {
   onUnlock: () => void;
@@ -77,9 +77,9 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
           <PinPad key={pinAttempt} onComplete={handlePinComplete} error={pinError} />
         </View>
 
-        <TouchableOpacity style={styles.switchLink} onPress={() => setMode('faceid')}>
+        <AnimatedPressable style={styles.switchLink} onPress={() => setMode('faceid')} onPressFeedback={hapticToggle}>
           <Text style={styles.switchLinkText}>Usar Face ID en su lugar</Text>
-        </TouchableOpacity>
+        </AnimatedPressable>
       </View>
     );
   }
@@ -101,9 +101,10 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
         </Text>
       )}
 
-      <TouchableOpacity
+      <AnimatedPressable
         style={styles.unlockButton}
         onPress={handleUnlock}
+        onPressFeedback={isAuthenticating ? undefined : hapticSave}
         disabled={isAuthenticating}
       >
         {isAuthenticating ? (
@@ -114,12 +115,12 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
             <Text style={styles.unlockText}>Desbloquear</Text>
           </>
         )}
-      </TouchableOpacity>
+      </AnimatedPressable>
 
       {pinAvailable && (
-        <TouchableOpacity style={styles.switchLink} onPress={() => setMode('pin')}>
+        <AnimatedPressable style={styles.switchLink} onPress={() => setMode('pin')} onPressFeedback={hapticToggle}>
           <Text style={styles.switchLinkText}>¿Falló Face ID? Usar PIN</Text>
-        </TouchableOpacity>
+        </AnimatedPressable>
       )}
     </View>
   );
@@ -138,7 +139,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(0,122,255,0.12)',
+    backgroundColor: c.accent + '20',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.lg,

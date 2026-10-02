@@ -1,7 +1,18 @@
-import React, { useRef, useState } from 'react';
-import { Animated, PanResponder, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { StyleSheet, View, Text, type LayoutChangeEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { useColors } from '../constants/theme';
+import { springDefault, springMomentum, projectMomentum, rubberband } from '../constants/motion';
+import { hapticDelete, hapticToggle } from '../utils/haptics';
+import { AnimatedPressable } from './ui/AnimatedPressable';
 
 const SWIPE_THRESHOLD = -70; // qué tanto hay que deslizar para que "abra"
 const MAX_SWIPE = -90;       // dónde queda enganchado el panel de eliminar
@@ -11,58 +22,70 @@ interface SwipeToDeleteProps {
   onDelete: () => void;
 }
 
-// Envoltura reutilizable: desliza hacia la izquierda para revelar un botón
-// de "Eliminar". No depende de react-native-gesture-handler — usa solo
-// PanResponder y Animated, que ya vienen incluidos en React Native.
+/**
+ * Desliza hacia la izquierda para revelar "Eliminar". Reescrito sobre
+ * gesture-handler + reanimated (antes PanResponder/Animated legacy):
+ * seguimiento 1:1, resistencia progresiva al pasar los límites (§9) y
+ * proyección de momentum para decidir abrir/cerrar en vez de un umbral
+ * fijo desde el punto de soltar (§5-6).
+ */
 export function SwipeToDelete({ children, onDelete }: SwipeToDeleteProps) {
   const c = useColors();
-  const translateX = useRef(new Animated.Value(0)).current;
-  const isOpenRef = useRef(false);
+  const translateX = useSharedValue(0);
+  const isOpen = useSharedValue(false);
+  const rowWidth = useSharedValue(360);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gesture) =>
-        Math.abs(gesture.dx) > 8 && Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.5,
-      onPanResponderMove: (_, gesture) => {
-        const base = isOpenRef.current ? MAX_SWIPE : 0;
-        const next = base + gesture.dx;
-        translateX.setValue(Math.max(MAX_SWIPE, Math.min(0, next)));
-      },
-      onPanResponderRelease: (_, gesture) => {
-        const base = isOpenRef.current ? MAX_SWIPE : 0;
-        const finalDX = base + gesture.dx;
+  const onRowLayout = (e: LayoutChangeEvent) => {
+    rowWidth.value = e.nativeEvent.layout.width || rowWidth.value;
+  };
 
-        if (finalDX < SWIPE_THRESHOLD) {
-          isOpenRef.current = true;
-          Animated.spring(translateX, { toValue: MAX_SWIPE, useNativeDriver: true, bounciness: 4 }).start();
-        } else {
-          isOpenRef.current = false;
-          Animated.spring(translateX, { toValue: 0, useNativeDriver: true, bounciness: 4 }).start();
-        }
-      },
+  const pan = Gesture.Pan()
+    .activeOffsetX([-10, 10])
+    .failOffsetY([-10, 10])
+    .onUpdate((e) => {
+      const base = isOpen.value ? MAX_SWIPE : 0;
+      const next = base + e.translationX;
+      if (next > 0) {
+        translateX.value = rubberband(next, rowWidth.value);
+      } else if (next < MAX_SWIPE) {
+        translateX.value = MAX_SWIPE - rubberband(MAX_SWIPE - next, rowWidth.value);
+      } else {
+        translateX.value = next;
+      }
     })
-  ).current;
+    .onEnd((e) => {
+      const base = isOpen.value ? MAX_SWIPE : 0;
+      const projected = base + e.translationX + projectMomentum(e.velocityX);
+      const nextOpen = projected < SWIPE_THRESHOLD;
+      if (nextOpen !== isOpen.value) runOnJS(hapticToggle)();
+      isOpen.value = nextOpen;
+      translateX.value = withSpring(nextOpen ? MAX_SWIPE : 0, nextOpen ? springMomentum : springDefault);
+    });
 
   const handleDelete = () => {
-    Animated.timing(translateX, { toValue: -420, duration: 200, useNativeDriver: true }).start(() => {
-      onDelete();
+    hapticDelete();
+    translateX.value = withTiming(-420, { duration: 200 }, (finished) => {
+      if (finished) runOnJS(onDelete)();
     });
   };
 
+  const rowStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
+
   return (
-    <View style={styles.wrapper}>
+    <View style={styles.wrapper} onLayout={onRowLayout}>
       <View style={[StyleSheet.absoluteFill, styles.deleteBg, { backgroundColor: c.expense }]}>
-        <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete} hitSlop={8}>
+        <AnimatedPressable style={styles.deleteBtn} onPress={handleDelete} hitSlop={8} onPressFeedback={undefined}>
           <Ionicons name="trash-outline" size={18} color="#fff" />
           <Text style={styles.deleteText}>Eliminar</Text>
-        </TouchableOpacity>
+        </AnimatedPressable>
       </View>
-      <Animated.View
-        style={[styles.foreground, { backgroundColor: c.background, transform: [{ translateX }] }]}
-        {...panResponder.panHandlers}
-      >
-        {children}
-      </Animated.View>
+      <GestureDetector gesture={pan}>
+        <Animated.View style={[styles.foreground, { backgroundColor: c.background }, rowStyle]}>
+          {children}
+        </Animated.View>
+      </GestureDetector>
     </View>
   );
 }

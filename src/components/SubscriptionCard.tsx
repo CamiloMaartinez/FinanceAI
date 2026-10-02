@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
 import { formatCurrency } from '../utils/currency';
@@ -8,6 +8,7 @@ import {
   isUrgent,
   isUpcoming,
 } from '../utils/subscriptionCalculations';
+import { AnimatedPressable } from './ui/AnimatedPressable';
 import type { Subscription } from '../models/types';
 
 interface SubscriptionCardProps {
@@ -42,11 +43,11 @@ export function SubscriptionCard({ subscription, onPress, onLongPress }: Subscri
   }
 
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       style={styles.card}
       onPress={() => onPress(subscription)}
       onLongPress={() => onLongPress(subscription)}
-      activeOpacity={0.85}
+      pressScale={0.98}
     >
       <View style={[styles.iconCircle, { backgroundColor: subscription.colorHex + '20' }]}>
         <Ionicons name={subscription.iconName as any} size={22} color={subscription.colorHex} />
@@ -75,7 +76,7 @@ export function SubscriptionCard({ subscription, onPress, onLongPress }: Subscri
           </Text>
         </View>
       </View>
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 }
 
@@ -88,6 +89,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     padding: spacing.lg,
     marginBottom: spacing.md,
     gap: spacing.md,
+    ...c.shadow.sm,
   },
   iconCircle: {
     width: 44,
@@ -125,10 +127,10 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     backgroundColor: c.surfaceSecondary,
   },
   badgeUrgent: {
-    backgroundColor: 'rgba(255,59,48,0.15)',
+    backgroundColor: c.expense + '26',
   },
   badgeUpcoming: {
-    backgroundColor: 'rgba(255,149,0,0.15)',
+    backgroundColor: c.orange + '26',
   },
   badgeText: {
     fontSize: 11,

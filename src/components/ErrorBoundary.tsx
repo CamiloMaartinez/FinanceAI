@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { AnimatedPressable } from './ui/AnimatedPressable';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -55,9 +56,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               {this.state.error.message}
             </Text>
           )}
-          <TouchableOpacity style={styles.button} onPress={this.handleReset}>
+          <AnimatedPressable style={styles.button} onPress={this.handleReset}>
             <Text style={styles.buttonText}>Reintentar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
       );
     }

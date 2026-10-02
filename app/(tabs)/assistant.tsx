@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
@@ -15,6 +14,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFinancialAssistant } from '../../src/hooks/useFinancialAssistant';
 import { PurchaseEvaluatorModal } from '../../src/components/PurchaseEvaluatorModal';
 import { useColors, spacing, typography } from '../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
+import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { hapticSave, hapticToggle } from '../../src/utils/haptics';
 
 const VERDICT_CONFIG = {
   si:            { label: 'Sí puedes comprarlo',  color: '#34C759', icon: 'checkmark-circle' as const },
@@ -61,13 +63,14 @@ export default function AssistantScreen() {
             <Text style={styles.label}>ASISTENTE</Text>
             <Text style={styles.title}>FinanceAI</Text>
           </View>
-          <TouchableOpacity
+          <AnimatedPressable
             style={styles.evaluatorButton}
             onPress={() => setEvaluatorVisible(true)}
+            onPressFeedback={hapticSave}
           >
             <Ionicons name="calculator-outline" size={16} color={c.textPrimary} />
             <Text style={styles.evaluatorButtonText}>¿Puedo comprarlo?</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
         <View style={styles.divider} />
 
@@ -134,10 +137,11 @@ export default function AssistantScreen() {
             <View style={styles.suggestions}>
               <Text style={styles.suggestionsLabel}>SUGERENCIAS</Text>
               {SUGGESTED_QUESTIONS.map((q) => (
-                <TouchableOpacity
+                <AnimatedPressable
                   key={q}
                   style={styles.suggestionChip}
                   onPress={() => handleSend(q)}
+                  onPressFeedback={hapticToggle}
                 >
                   <Text style={styles.suggestionText}>{q}</Text>
                   <Ionicons
@@ -145,7 +149,7 @@ export default function AssistantScreen() {
                     size={12}
                     color={c.textTertiary}
                   />
-                </TouchableOpacity>
+                </AnimatedPressable>
               ))}
             </View>
           )}
@@ -165,12 +169,13 @@ export default function AssistantScreen() {
               editable={!isLoading}
               multiline
             />
-            <TouchableOpacity
+            <AnimatedPressable
               style={[
                 styles.sendButton,
                 (!input.trim() || isLoading) && styles.sendButtonDisabled,
               ]}
               onPress={() => handleSend()}
+              onPressFeedback={hapticSave}
               disabled={!input.trim() || isLoading}
             >
               <Ionicons
@@ -178,7 +183,7 @@ export default function AssistantScreen() {
                 size={16}
                 color={input.trim() ? c.background : c.textTertiary}
               />
-            </TouchableOpacity>
+            </AnimatedPressable>
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -232,7 +237,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 12,
-    backgroundColor: 'rgba(0,122,255,0.12)',
+    backgroundColor: c.accent + '20',
     marginBottom: spacing.sm,
   },
   summaryBadgeText: { fontSize: 12, fontWeight: '700', color: c.blue },
@@ -273,7 +278,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     borderBottomColor: c.border,
   },
   suggestionText: { fontSize: 13, fontWeight: '300', color: c.textSecondary },
-  inputArea: { paddingBottom: spacing.xl },
+  inputArea: { paddingBottom: TAB_BAR_HEIGHT + spacing.sm },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',

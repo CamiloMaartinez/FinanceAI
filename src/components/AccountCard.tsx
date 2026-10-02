@@ -3,12 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
 import { formatCurrency } from '../utils/currency';
 import { formatWithCurrency } from '../constants/currencies';
+import { AnimatedPressable } from './ui/AnimatedPressable';
 import type { Account } from '../models/types';
 
 interface AccountCardProps {
@@ -33,51 +33,60 @@ export function AccountCard({ account, onPress, onLongPress }: AccountCardProps)
   const cardColor = account.colorHex ?? c.blue;
 
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       style={styles.card}
       onPress={() => onPress(account)}
       onLongPress={() => onLongPress(account)}
-      activeOpacity={0.85}
+      pressScale={0.98}
     >
-      {/* Fondo de color de la cuenta */}
-      <View style={[styles.colorBar, { backgroundColor: cardColor }]} />
+      {/* Envoltura interna: overflow hidden recorta el círculo decorativo
+          sin recortar también la sombra del wrapper exterior (iOS clipa
+          shadowOffset/-Radius si overflow:hidden vive en la misma capa). */}
+      <View style={styles.cardInner}>
+        {/* Fondo de color de la cuenta */}
+        <View style={[styles.colorBar, { backgroundColor: cardColor }]} />
 
-      {/* Círculo decorativo */}
-      <View style={[styles.circle, { backgroundColor: cardColor + '30' }]} />
+        {/* Círculo decorativo */}
+        <View style={[styles.circle, { backgroundColor: cardColor + '30' }]} />
 
-      <View style={styles.content}>
-        {/* Fila superior: ícono + nombre */}
-        <View style={styles.header}>
-          <View style={[styles.iconCircle, { backgroundColor: cardColor + '25' }]}>
-            <Ionicons
-              name="wallet-outline"
-              size={20}
-              color={cardColor}
-            />
+        <View style={styles.content}>
+          {/* Fila superior: ícono + nombre */}
+          <View style={styles.header}>
+            <View style={[styles.iconCircle, { backgroundColor: cardColor + '25' }]}>
+              <Ionicons
+                name="wallet-outline"
+                size={20}
+                color={cardColor}
+              />
+            </View>
+            <View style={styles.headerText}>
+              <Text style={styles.accountName}>{account.name}</Text>
+              <Text style={styles.accountType}>{typeLabel}</Text>
+            </View>
           </View>
-          <View style={styles.headerText}>
-            <Text style={styles.accountName}>{account.name}</Text>
-            <Text style={styles.accountType}>{typeLabel}</Text>
-          </View>
+
+          {/* Saldo */}
+          <Text style={styles.balance}>
+            {account.currency && account.currency !== 'COP'
+              ? formatWithCurrency(account.balance, account.currency)
+              : formatCurrency(account.balance)}
+          </Text>
         </View>
-
-        {/* Saldo */}
-        <Text style={styles.balance}>
-          {account.currency && account.currency !== 'COP'
-            ? formatWithCurrency(account.balance, account.currency)
-            : formatCurrency(account.balance)}
-        </Text>
       </View>
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 }
 
 const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   card: {
+    borderRadius:    radius.lg,
+    marginBottom:    spacing.md,
+    ...c.shadow.sm,
+  },
+  cardInner: {
     backgroundColor: c.surface,
     borderRadius:    radius.lg,
     overflow:        'hidden',
-    marginBottom:    spacing.md,
   },
   colorBar: {
     position: 'absolute',

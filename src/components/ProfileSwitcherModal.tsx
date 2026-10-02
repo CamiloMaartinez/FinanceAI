@@ -1,14 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
-  TextInput,
-  Alert,
-  ScrollView,
-} from 'react-native';
+import { View, Text, StyleSheet, TextInput, Alert, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
 import {
@@ -19,6 +10,10 @@ import {
   deleteProfile,
   type AppProfile,
 } from '../services/profiles';
+import { Sheet } from './ui/Sheet';
+import { Button } from './ui/Button';
+import { AnimatedPressable } from './ui/AnimatedPressable';
+import { hapticToggle } from '../utils/haptics';
 
 interface ProfileSwitcherModalProps {
   visible: boolean;
@@ -94,82 +89,73 @@ export function ProfileSwitcherModal({ visible, onClose }: ProfileSwitcherModalP
   };
 
   return (
-    <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <View style={styles.modalBox}>
-          <View style={styles.headerRow}>
-            <Text style={styles.title}>{step === 'list' ? 'Perfiles' : 'Nuevo perfil'}</Text>
-            <TouchableOpacity onPress={onClose} hitSlop={8}>
-              <Ionicons name="close" size={22} color={c.textTertiary} />
-            </TouchableOpacity>
-          </View>
-
-          {step === 'list' ? (
-            <>
-              <Text style={styles.subtitle}>
-                Cada perfil tiene sus propios datos, completamente separados. Cambiar de perfil requiere reiniciar la app.
-              </Text>
-
-              <ScrollView style={styles.list}>
-                {profiles.map((profile) => {
-                  const isActive = profile.id === activeId;
-                  return (
-                    <TouchableOpacity
-                      key={profile.id}
-                      style={styles.profileRow}
-                      onPress={() => handleSwitch(profile)}
-                      onLongPress={() => profile.id !== 'default' && handleDelete(profile)}
-                    >
-                      <View style={[styles.radio, isActive && styles.radioActive]}>
-                        {isActive && <View style={styles.radioDot} />}
-                      </View>
-                      <Text style={styles.profileName}>{profile.name}</Text>
-                      {isActive && <Text style={styles.activeLabel}>Activo</Text>}
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-
-              <TouchableOpacity style={styles.addBtn} onPress={() => setStep('create')}>
-                <Ionicons name="add" size={18} color={c.blue} />
-                <Text style={styles.addBtnText}>Nuevo perfil</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <Text style={styles.subtitle}>Dale un nombre a este perfil (ej. tu nombre, o "Negocio")</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Nombre del perfil"
-                placeholderTextColor={c.textTertiary}
-                value={newName}
-                onChangeText={setNewName}
-                autoFocus
-              />
-              <View style={styles.buttonsRow}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => setStep('list')}>
-                  <Text style={styles.cancelBtnText}>Cancelar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.primaryBtn} onPress={handleCreate}>
-                  <Text style={styles.primaryBtnText}>Crear</Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
+    <Sheet visible={visible} onClose={onClose}>
+      <View style={styles.content}>
+        <View style={styles.headerRow}>
+          <Text style={styles.title}>{step === 'list' ? 'Perfiles' : 'Nuevo perfil'}</Text>
+          <AnimatedPressable onPress={onClose} hitSlop={8} onPressFeedback={hapticToggle}>
+            <Ionicons name="close" size={22} color={c.textTertiary} />
+          </AnimatedPressable>
         </View>
+
+        {step === 'list' ? (
+          <>
+            <Text style={styles.subtitle}>
+              Cada perfil tiene sus propios datos, completamente separados. Cambiar de perfil requiere reiniciar la app.
+            </Text>
+
+            <ScrollView style={styles.list}>
+              {profiles.map((profile) => {
+                const isActive = profile.id === activeId;
+                return (
+                  <AnimatedPressable
+                    key={profile.id}
+                    style={styles.profileRow}
+                    onPress={() => handleSwitch(profile)}
+                    onLongPress={() => profile.id !== 'default' && handleDelete(profile)}
+                    onPressFeedback={hapticToggle}
+                    pressScale={0.99}
+                  >
+                    <View style={[styles.radio, isActive && styles.radioActive]}>
+                      {isActive && <View style={styles.radioDot} />}
+                    </View>
+                    <Text style={styles.profileName}>{profile.name}</Text>
+                    {isActive && <Text style={styles.activeLabel}>Activo</Text>}
+                  </AnimatedPressable>
+                );
+              })}
+            </ScrollView>
+
+            <Button label="Nuevo perfil" variant="plain" onPress={() => setStep('create')} haptic={null} />
+          </>
+        ) : (
+          <>
+            <Text style={styles.subtitle}>Dale un nombre a este perfil (ej. tu nombre, o "Negocio")</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nombre del perfil"
+              placeholderTextColor={c.textTertiary}
+              value={newName}
+              onChangeText={setNewName}
+              autoFocus
+            />
+            <View style={styles.buttonsRow}>
+              <Button label="Cancelar" variant="secondary" onPress={() => setStep('list')} haptic={null} style={styles.flexBtn} />
+              <Button label="Crear" variant="primary" onPress={handleCreate} style={styles.flexBtn} />
+            </View>
+          </>
+        )}
       </View>
-    </Modal>
+    </Sheet>
   );
 }
 
 const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
-  overlay: {
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center', padding: spacing.xl,
-  },
-  modalBox: {
-    backgroundColor: c.surface, borderRadius: radius.lg, padding: spacing.xl,
-    gap: spacing.md, borderWidth: 0.5, borderColor: c.borderStrong, maxHeight: '75%',
+  content: {
+    padding: spacing.xl,
+    paddingTop: spacing.sm,
+    gap: spacing.md,
+    maxHeight: '85%',
   },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   title: { fontSize: 18, fontWeight: '700', color: c.textPrimary },
@@ -185,29 +171,15 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     borderWidth: 1.5, borderColor: c.borderStrong,
     alignItems: 'center', justifyContent: 'center',
   },
-  radioActive: { borderColor: c.blue },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: c.blue },
+  radioActive: { borderColor: c.accent },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: c.accent },
   profileName: { flex: 1, fontSize: 14, color: c.textPrimary },
-  activeLabel: { fontSize: 11, fontWeight: '600', color: c.blue },
-  addBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    paddingVertical: spacing.md, marginTop: spacing.xs,
-  },
-  addBtnText: { fontSize: 14, fontWeight: '600', color: c.blue },
+  activeLabel: { fontSize: 11, fontWeight: '600', color: c.accent },
   input: {
     backgroundColor: c.surfaceSecondary, borderRadius: radius.md,
     paddingHorizontal: spacing.md, paddingVertical: spacing.md,
     fontSize: 15, color: c.textPrimary,
   },
   buttonsRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
-  cancelBtn: {
-    flex: 1, paddingVertical: spacing.md, borderRadius: radius.md,
-    borderWidth: 0.5, borderColor: c.borderStrong, alignItems: 'center',
-  },
-  cancelBtnText: { fontSize: 14, color: c.textSecondary },
-  primaryBtn: {
-    flex: 1, paddingVertical: spacing.md, borderRadius: radius.md,
-    backgroundColor: c.blue, alignItems: 'center',
-  },
-  primaryBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+  flexBtn: { flex: 1 },
 });

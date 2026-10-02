@@ -4,15 +4,18 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
   Modal,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { useAnimatedStyle, useSharedValue, interpolateColor, withSpring } from 'react-native-reanimated';
 import { useColors, spacing, radius } from '../constants/theme';
+import { springDefault } from '../constants/motion';
 import type { Goal } from '../models/types';
+import { AnimatedPressable } from './ui/AnimatedPressable';
+import { hapticSave, hapticToggle } from '../utils/haptics';
 
 interface GoalFormProps {
   visible: boolean;
@@ -57,6 +60,19 @@ function getQuickDate(monthsAhead: number): string {
   return date.toISOString();
 }
 
+// Anillo de foco animado (§4/§15 apple-design).
+function useFocusRing(c: ReturnType<typeof useColors>) {
+  const focus = useSharedValue(0);
+  const style = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(focus.value, [0, 1], [c.border, c.accent]),
+  }));
+  return {
+    style,
+    onFocus: () => { focus.value = withSpring(1, springDefault); },
+    onBlur: () => { focus.value = withSpring(0, springDefault); },
+  };
+}
+
 export function GoalForm({ visible, editingGoal, onClose, onSave }: GoalFormProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
@@ -68,6 +84,9 @@ export function GoalForm({ visible, editingGoal, onClose, onSave }: GoalFormProp
   const [colorHex,     setColorHex]     = useState('#007AFF');
   const [iconName,     setIconName]     = useState('star-outline');
   const [error,        setError]        = useState('');
+
+  const nameRing = useFocusRing(c);
+  const amountRing = useFocusRing(c);
 
   // Precarga los datos cuando se abre en modo edición
   useEffect(() => {
@@ -120,13 +139,13 @@ export function GoalForm({ visible, editingGoal, onClose, onSave }: GoalFormProp
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleClose}>
+          <AnimatedPressable onPress={handleClose}>
             <Text style={styles.cancelBtn}>Cancelar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
           <Text style={styles.headerTitle}>{isEditing ? 'Editar meta' : 'Nueva meta'}</Text>
-          <TouchableOpacity onPress={handleSave}>
+          <AnimatedPressable onPress={handleSave} onPressFeedback={hapticSave}>
             <Text style={styles.saveBtn}>Guardar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
@@ -140,20 +159,24 @@ export function GoalForm({ visible, editingGoal, onClose, onSave }: GoalFormProp
           {/* Nombre */}
           <View style={styles.field}>
             <Text style={styles.fieldLabel}>Nombre de la meta</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ej: Fondo de emergencia"
-              placeholderTextColor={c.textTertiary}
-              value={name}
-              onChangeText={(text) => { setName(text); setError(''); }}
-              autoFocus
-            />
+            <Animated.View style={[styles.input, nameRing.style]}>
+              <TextInput
+                style={styles.inputText}
+                placeholder="Ej: Fondo de emergencia"
+                placeholderTextColor={c.textTertiary}
+                value={name}
+                onChangeText={(text) => { setName(text); setError(''); }}
+                onFocus={nameRing.onFocus}
+                onBlur={nameRing.onBlur}
+                autoFocus
+              />
+            </Animated.View>
           </View>
 
           {/* Monto objetivo */}
           <View style={styles.field}>
             <Text style={styles.fieldLabel}>Monto objetivo</Text>
-            <View style={styles.amountWrapper}>
+            <Animated.View style={[styles.amountWrapper, amountRing.style]}>
               <Text style={styles.amountPrefix}>$</Text>
               <TextInput
                 style={styles.amountInput}
@@ -161,9 +184,11 @@ export function GoalForm({ visible, editingGoal, onClose, onSave }: GoalFormProp
                 placeholderTextColor={c.textTertiary}
                 value={targetAmount}
                 onChangeText={(text) => { setTargetAmount(text); setError(''); }}
+                onFocus={amountRing.onFocus}
+                onBlur={amountRing.onBlur}
                 keyboardType="numeric"
               />
-            </View>
+            </Animated.View>
           </View>
 
           {/* Fecha objetivo - selección rápida */}
@@ -174,15 +199,17 @@ export function GoalForm({ visible, editingGoal, onClose, onSave }: GoalFormProp
                 const dateStr = getQuickDate(months);
                 const isSelected = targetDate === dateStr;
                 return (
-                  <TouchableOpacity
+                  <AnimatedPressable
                     key={months}
+                    pressScale={0.97}
                     style={[styles.chip, isSelected && styles.chipSelected]}
                     onPress={() => setTargetDate(dateStr)}
+                    onPressFeedback={hapticToggle}
                   >
                     <Text style={[styles.chipLabel, isSelected && styles.chipLabelSelected]}>
                       {months} meses
                     </Text>
-                  </TouchableOpacity>
+                  </AnimatedPressable>
                 );
               })}
             </View>
@@ -193,15 +220,17 @@ export function GoalForm({ visible, editingGoal, onClose, onSave }: GoalFormProp
             <Text style={styles.fieldLabel}>Prioridad</Text>
             <View style={styles.chipRow}>
               {PRIORITIES.map((p) => (
-                <TouchableOpacity
+                <AnimatedPressable
                   key={p.value}
+                  pressScale={0.97}
                   style={[styles.chip, priority === p.value && styles.chipSelected]}
                   onPress={() => setPriority(p.value)}
+                  onPressFeedback={hapticToggle}
                 >
                   <Text style={[styles.chipLabel, priority === p.value && styles.chipLabelSelected]}>
                     {p.label}
                   </Text>
-                </TouchableOpacity>
+                </AnimatedPressable>
               ))}
             </View>
           </View>
@@ -211,8 +240,9 @@ export function GoalForm({ visible, editingGoal, onClose, onSave }: GoalFormProp
             <Text style={styles.fieldLabel}>Ícono</Text>
             <View style={styles.iconGrid}>
               {GOAL_ICONS.map((icon) => (
-                <TouchableOpacity
+                <AnimatedPressable
                   key={icon.value}
+                  pressScale={0.94}
                   style={[
                     styles.iconOption,
                     iconName === icon.value && {
@@ -221,13 +251,14 @@ export function GoalForm({ visible, editingGoal, onClose, onSave }: GoalFormProp
                     },
                   ]}
                   onPress={() => setIconName(icon.value)}
+                  onPressFeedback={hapticToggle}
                 >
                   <Ionicons
                     name={icon.value as any}
                     size={22}
                     color={iconName === icon.value ? colorHex : c.textSecondary}
                   />
-                </TouchableOpacity>
+                </AnimatedPressable>
               ))}
             </View>
           </View>
@@ -237,17 +268,19 @@ export function GoalForm({ visible, editingGoal, onClose, onSave }: GoalFormProp
             <Text style={styles.fieldLabel}>Color</Text>
             <View style={styles.colorGrid}>
               {GOAL_COLORS.map((hex) => (
-                <TouchableOpacity
+                <AnimatedPressable
                   key={hex}
+                  pressScale={0.9}
                   style={[
                     styles.colorDot,
                     { backgroundColor: hex },
                     colorHex === hex && styles.colorDotSelected,
                   ]}
                   onPress={() => setColorHex(hex)}
+                  onPressFeedback={hapticToggle}
                 >
                   {colorHex === hex && <Ionicons name="checkmark" size={16} color="#fff" />}
-                </TouchableOpacity>
+                </AnimatedPressable>
               ))}
             </View>
           </View>
@@ -270,10 +303,10 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   },
   headerTitle: { fontSize: 17, fontWeight: '600', color: c.textPrimary },
   cancelBtn: { fontSize: 16, color: c.textSecondary },
-  saveBtn: { fontSize: 16, fontWeight: '600', color: c.blue },
+  saveBtn: { fontSize: 16, fontWeight: '600', color: c.accent },
   form: { padding: spacing.lg },
   errorBox: {
-    backgroundColor: 'rgba(255,59,48,0.15)',
+    backgroundColor: c.expense + '26',
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -291,6 +324,10 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   input: {
     backgroundColor: c.surface,
     borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: c.border,
+  },
+  inputText: {
     padding: spacing.lg,
     fontSize: 16,
     color: c.textPrimary,
@@ -300,6 +337,8 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     alignItems: 'center',
     backgroundColor: c.surface,
     borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: c.border,
     paddingHorizontal: spacing.lg,
   },
   amountPrefix: {
@@ -325,11 +364,11 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     borderColor: 'transparent',
   },
   chipSelected: {
-    borderColor: c.blue,
-    backgroundColor: 'rgba(0,122,255,0.1)',
+    borderColor: c.accent,
+    backgroundColor: c.accent + '1A',
   },
   chipLabel: { fontSize: 13, color: c.textSecondary },
-  chipLabelSelected: { color: c.blue, fontWeight: '600' },
+  chipLabelSelected: { color: c.accent, fontWeight: '600' },
   iconGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   iconOption: {
     width: 48,

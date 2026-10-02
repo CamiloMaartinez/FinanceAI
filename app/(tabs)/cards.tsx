@@ -3,13 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useCards } from '../../src/hooks/useCards';
 import { CardItem } from '../../src/components/CardItem';
@@ -17,6 +16,9 @@ import { CardForm } from '../../src/components/CardForm';
 import { InvestmentCard } from '../../src/components/InvestmentCard';
 import { INVESTMENT_OPTIONS } from '../../src/data/investmentOptions';
 import { useColors, spacing, typography, radius } from '../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
+import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { hapticSave, hapticToggle } from '../../src/utils/haptics';
 import type { Card } from '../../src/models/types';
 
 type Segment = 'cards' | 'investments';
@@ -81,29 +83,33 @@ export default function CardsScreen() {
             </Text>
           </View>
           {segment === 'cards' && (
-            <TouchableOpacity style={styles.addButton} onPress={() => setFormVisible(true)}>
+            <AnimatedPressable style={styles.addButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
               <Ionicons name="add" size={20} color={c.textPrimary} />
-            </TouchableOpacity>
+            </AnimatedPressable>
           )}
         </View>
 
         <View style={styles.segmentedControl}>
-          <TouchableOpacity
+          <AnimatedPressable
             style={[styles.segmentButton, segment === 'cards' && styles.segmentButtonActive]}
             onPress={() => setSegment('cards')}
+            onPressFeedback={hapticToggle}
+            pressScale={0.99}
           >
             <Text style={[styles.segmentText, segment === 'cards' && styles.segmentTextActive]}>
               Tarjetas
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </AnimatedPressable>
+          <AnimatedPressable
             style={[styles.segmentButton, segment === 'investments' && styles.segmentButtonActive]}
             onPress={() => setSegment('investments')}
+            onPressFeedback={hapticToggle}
+            pressScale={0.99}
           >
             <Text style={[styles.segmentText, segment === 'investments' && styles.segmentTextActive]}>
               Inversiones
             </Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <View style={styles.divider} />
@@ -116,8 +122,10 @@ export default function CardsScreen() {
                 Rangos de referencia según comportamiento histórico típico del mercado. Las tasas reales cambian constantemente — verifica siempre con la entidad antes de invertir. Esto no es asesoría financiera.
               </Text>
             </View>
-            {INVESTMENT_OPTIONS.map((option) => (
-              <InvestmentCard key={option.id} option={option} />
+            {INVESTMENT_OPTIONS.map((option, i) => (
+              <Animated.View key={option.id} entering={FadeInDown.duration(300).delay(i * 60)}>
+                <InvestmentCard option={option} />
+              </Animated.View>
             ))}
           </>
         ) : data.cards.length === 0 ? (
@@ -126,25 +134,27 @@ export default function CardsScreen() {
             <Text style={styles.emptySubtitle}>
               Agrega tus tarjetas para comparar cuotas, cashback e intereses
             </Text>
-            <TouchableOpacity
+            <AnimatedPressable
               style={styles.emptyButton}
               onPress={() => setFormVisible(true)}
+              onPressFeedback={hapticSave}
             >
               <Text style={styles.emptyButtonText}>+ Nueva tarjeta</Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           </View>
         ) : (
           <>
             {favorites.length > 0 && (
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>FAVORITAS</Text>
-                {favorites.map((card) => (
-                  <CardItem
-                    key={card.id}
-                    card={card}
-                    onToggleFavorite={handleToggleFavorite}
-                    onLongPress={handleLongPress}
-                  />
+                {favorites.map((card, i) => (
+                  <Animated.View key={card.id} entering={FadeInDown.duration(300).delay(i * 60)}>
+                    <CardItem
+                      card={card}
+                      onToggleFavorite={handleToggleFavorite}
+                      onLongPress={handleLongPress}
+                    />
+                  </Animated.View>
                 ))}
               </View>
             )}
@@ -154,13 +164,14 @@ export default function CardsScreen() {
                 {favorites.length > 0 && (
                   <Text style={styles.sectionLabel}>TODAS</Text>
                 )}
-                {nonFavorites.map((card) => (
-                  <CardItem
-                    key={card.id}
-                    card={card}
-                    onToggleFavorite={handleToggleFavorite}
-                    onLongPress={handleLongPress}
-                  />
+                {nonFavorites.map((card, i) => (
+                  <Animated.View key={card.id} entering={FadeInDown.duration(300).delay(i * 60)}>
+                    <CardItem
+                      card={card}
+                      onToggleFavorite={handleToggleFavorite}
+                      onLongPress={handleLongPress}
+                    />
+                  </Animated.View>
                 ))}
               </View>
             )}
@@ -189,7 +200,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     justifyContent: 'center',
   },
   container: { flex: 1, backgroundColor: c.background },
-  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

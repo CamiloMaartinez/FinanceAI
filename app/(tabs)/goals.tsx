@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
   RefreshControl,
@@ -14,12 +13,15 @@ import {
   Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useGoals } from '../../src/hooks/useGoals';
 import { GoalCard } from '../../src/components/GoalCard';
 import { GoalForm } from '../../src/components/GoalForm';
-import { useColors, spacing, typography } from '../../src/constants/theme';
+import { useColors, spacing, typography, radius } from '../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
+import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { Button } from '../../src/components/ui/Button';
 import { hapticSave, hapticSuccess } from '../../src/utils/haptics';
 import type { Goal } from '../../src/models/types';
 
@@ -133,9 +135,9 @@ export default function GoalsScreen() {
               {goals.goals.length} activa{goals.goals.length !== 1 ? 's' : ''}
             </Text>
           </View>
-          <TouchableOpacity style={styles.addButton} onPress={() => setFormVisible(true)}>
+          <AnimatedPressable style={styles.addButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
             <Ionicons name="add" size={20} color={c.textPrimary} />
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <View style={styles.divider} />
@@ -144,19 +146,20 @@ export default function GoalsScreen() {
           <View style={styles.empty}>
             <Text style={styles.emptyTitle}>Sin metas activas</Text>
             <Text style={styles.emptySubtitle}>Define tu primer objetivo financiero</Text>
-            <TouchableOpacity style={styles.emptyButton} onPress={() => setFormVisible(true)}>
+            <AnimatedPressable style={styles.emptyButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
               <Text style={styles.emptyButtonText}>+ Nueva meta</Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           </View>
         ) : (
-          goals.goals.map((goal) => (
-            <GoalCard
-              key={goal.id}
-              goal={goal}
-              onContribute={(g) => setContributeGoal(g)}
-              onEdit={handleEdit}
-              onLongPress={handleLongPress}
-            />
+          goals.goals.map((goal, i) => (
+            <Animated.View key={goal.id} entering={FadeInDown.duration(300).delay(i * 60)}>
+              <GoalCard
+                goal={goal}
+                onContribute={(g) => setContributeGoal(g)}
+                onEdit={handleEdit}
+                onLongPress={handleLongPress}
+              />
+            </Animated.View>
           ))
         )}
 
@@ -198,15 +201,19 @@ export default function GoalsScreen() {
               />
             </View>
             <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.cancelBtn}
+              <Button
+                label="Cancelar"
+                variant="secondary"
                 onPress={() => { setContributeGoal(null); setContributeAmount(''); }}
-              >
-                <Text style={styles.cancelText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.confirmBtn} onPress={handleConfirmContribute}>
-                <Text style={styles.confirmText}>Abonar</Text>
-              </TouchableOpacity>
+                haptic={null}
+                style={styles.flexBtn}
+              />
+              <Button
+                label="Abonar"
+                variant="primary"
+                onPress={handleConfirmContribute}
+                style={[styles.flexBtn, { backgroundColor: c.income }]}
+              />
             </View>
           </KeyboardAvoidingView>
         </View>
@@ -218,7 +225,7 @@ export default function GoalsScreen() {
 const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   loadingContainer: { flex: 1, backgroundColor: c.background, alignItems: 'center', justifyContent: 'center' },
   container: { flex: 1, backgroundColor: c.background },
-  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -242,11 +249,12 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   },
   emptyButtonText: { fontSize: 13, fontWeight: '300', color: c.textPrimary, letterSpacing: 0.3 },
   hint: { fontSize: 11, color: c.textTertiary, textAlign: 'center', marginTop: spacing.xl, letterSpacing: 0.3 },
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', padding: spacing.xl },
+  overlay: { flex: 1, backgroundColor: c.overlay, justifyContent: 'center', padding: spacing.xl },
   modalBox: {
-    backgroundColor: c.surface, borderRadius: 14,
+    backgroundColor: c.surface, borderRadius: radius.lg,
     padding: spacing.xl, gap: spacing.lg,
     borderWidth: 0.5, borderColor: c.borderStrong,
+    ...c.shadow.lg,
   },
   modalLabel: { ...typography.label, color: c.textTertiary },
   modalTitle: { fontSize: 18, fontWeight: '300', color: c.textPrimary },
@@ -258,11 +266,5 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   inputPrefix: { fontSize: 24, fontWeight: '200', color: c.textTertiary, marginRight: spacing.xs },
   input: { flex: 1, fontSize: 24, fontWeight: '200', color: c.textPrimary },
   modalButtons: { flexDirection: 'row', gap: spacing.md },
-  cancelBtn: {
-    flex: 1, paddingVertical: spacing.md, borderRadius: 6,
-    borderWidth: 0.5, borderColor: c.borderStrong, alignItems: 'center',
-  },
-  cancelText: { fontSize: 13, fontWeight: '300', color: c.textSecondary },
-  confirmBtn: { flex: 1, paddingVertical: spacing.md, borderRadius: 6, backgroundColor: c.income, alignItems: 'center' },
-  confirmText: { fontSize: 13, fontWeight: '500', color: '#000' },
+  flexBtn: { flex: 1 },
 });

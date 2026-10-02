@@ -1,16 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Modal,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
+import { View, Text, StyleSheet, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
+import { Sheet } from './ui/Sheet';
+import { Button } from './ui/Button';
 
 interface PurchaseEvaluatorModalProps {
   visible: boolean;
@@ -43,81 +36,63 @@ export function PurchaseEvaluatorModal({ visible, onClose, onEvaluate }: Purchas
   };
 
   return (
-    <Modal visible={visible} animationType="fade" transparent onRequestClose={handleClose}>
-      <View style={styles.overlay}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalBox}
-        >
-          <View style={styles.iconCircle}>
-            <Ionicons name="calculator-outline" size={22} color={c.blue} />
-          </View>
-          <Text style={styles.title}>¿Puedo comprarlo?</Text>
-          <Text style={styles.subtitle}>
-            La IA revisará tu saldo, gastos y metas antes de darte una recomendación
-          </Text>
+    <Sheet visible={visible} onClose={handleClose}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.content}>
+        <View style={styles.iconCircle}>
+          <Ionicons name="calculator-outline" size={22} color={c.accent} />
+        </View>
+        <Text style={styles.title}>¿Puedo comprarlo?</Text>
+        <Text style={styles.subtitle}>
+          La IA revisará tu saldo, gastos y metas antes de darte una recomendación
+        </Text>
 
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          <View style={styles.field}>
-            <Text style={styles.fieldLabel}>¿Qué quieres comprar? (opcional)</Text>
+        <View style={styles.field}>
+          <Text style={styles.fieldLabel}>¿Qué quieres comprar? (opcional)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Ej: Tenis nuevos, un iPad..."
+            placeholderTextColor={c.textTertiary}
+            value={description}
+            onChangeText={setDescription}
+          />
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.fieldLabel}>Precio</Text>
+          <View style={styles.priceRow}>
+            <Text style={styles.pricePrefix}>$</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Ej: Tenis nuevos, un iPad..."
+              style={styles.priceInput}
+              placeholder="0"
               placeholderTextColor={c.textTertiary}
-              value={description}
-              onChangeText={setDescription}
+              value={price}
+              onChangeText={(t) => { setPrice(t); setError(''); }}
+              keyboardType="numeric"
+              autoFocus
             />
           </View>
+        </View>
 
-          <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Precio</Text>
-            <View style={styles.priceRow}>
-              <Text style={styles.pricePrefix}>$</Text>
-              <TextInput
-                style={styles.priceInput}
-                placeholder="0"
-                placeholderTextColor={c.textTertiary}
-                value={price}
-                onChangeText={(t) => { setPrice(t); setError(''); }}
-                keyboardType="numeric"
-                autoFocus
-              />
-            </View>
-          </View>
-
-          <View style={styles.buttonsRow}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={handleClose}>
-              <Text style={styles.cancelBtnText}>Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.evaluateBtn} onPress={handleEvaluate}>
-              <Text style={styles.evaluateBtnText}>Evaluar</Text>
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      </View>
-    </Modal>
+        <View style={styles.buttonsRow}>
+          <Button label="Cancelar" variant="secondary" onPress={handleClose} haptic={null} style={styles.flexBtn} />
+          <Button label="Evaluar" variant="primary" onPress={handleEvaluate} style={styles.flexBtn} />
+        </View>
+      </KeyboardAvoidingView>
+    </Sheet>
   );
 }
 
 const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
+  content: {
     padding: spacing.xl,
-  },
-  modalBox: {
-    backgroundColor: c.surface,
-    borderRadius: radius.lg,
-    padding: spacing.xl,
+    paddingTop: spacing.sm,
     gap: spacing.md,
-    borderWidth: 0.5,
-    borderColor: c.borderStrong,
   },
   iconCircle: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: 'rgba(0,122,255,0.12)',
+    backgroundColor: c.accent + '20',
     alignItems: 'center', justifyContent: 'center',
     marginBottom: 2,
   },
@@ -146,14 +121,5 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   pricePrefix: { fontSize: 20, fontWeight: '200', color: c.textTertiary, marginRight: 4 },
   priceInput: { flex: 1, fontSize: 20, fontWeight: '200', color: c.textPrimary, paddingVertical: spacing.md },
   buttonsRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
-  cancelBtn: {
-    flex: 1, paddingVertical: spacing.md, borderRadius: radius.md,
-    borderWidth: 0.5, borderColor: c.borderStrong, alignItems: 'center',
-  },
-  cancelBtnText: { fontSize: 14, color: c.textSecondary },
-  evaluateBtn: {
-    flex: 1, paddingVertical: spacing.md, borderRadius: radius.md,
-    backgroundColor: c.blue, alignItems: 'center',
-  },
-  evaluateBtnText: { fontSize: 14, fontWeight: '600', color: '#fff' },
+  flexBtn: { flex: 1 },
 });

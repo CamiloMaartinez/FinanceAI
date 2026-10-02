@@ -2,7 +2,17 @@ import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors } from '../../src/constants/theme';
-import { Platform } from 'react-native';
+import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
+import { GlassView } from '../../src/components/ui/GlassView';
+import { Platform, type ColorValue } from 'react-native';
+
+// Ícono relleno cuando la pestaña está activa, outline cuando no — el
+// relleno ES el estado seleccionado, sin depender solo del color (§16).
+function TabIcon(outline: keyof typeof Ionicons.glyphMap, filled: keyof typeof Ionicons.glyphMap) {
+  return ({ color, focused }: { color: ColorValue; size: number; focused: boolean }) => (
+    <Ionicons name={focused ? filled : outline} size={20} color={color as string} />
+  );
+}
 
 export default function TabsLayout() {
   const c = useColors();
@@ -13,14 +23,21 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: c.textPrimary,
         tabBarInactiveTintColor: c.textTertiary,
+        // Flota sobre el contenido en vez de empujarlo — el material
+        // translúcido solo tiene sentido si algo se desliza debajo (§12).
         tabBarStyle: {
-          backgroundColor: c.background,
+          position: 'absolute',
+          backgroundColor: 'transparent',
           borderTopWidth: 0.5,
           borderTopColor: c.borderStrong,
           paddingTop: 8,
           paddingBottom: Platform.OS === 'ios' ? 20 : 10,
-          height: Platform.OS === 'ios' ? 80 : 60,
+          height: TAB_BAR_HEIGHT,
+          elevation: 0,
         },
+        tabBarBackground: () => (
+          <GlassView weight="thick" style={{ flex: 1 }} />
+        ),
         tabBarLabelStyle: {
           fontSize: 9,
           fontWeight: '500',
@@ -34,45 +51,35 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Inicio',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="home-outline" size={20} color={color} />
-          ),
+          tabBarIcon: TabIcon('home-outline', 'home'),
         }}
       />
       <Tabs.Screen
         name="transactions"
         options={{
           title: 'Movimientos',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="swap-vertical-outline" size={20} color={color} />
-          ),
+          tabBarIcon: TabIcon('swap-vertical-outline', 'swap-vertical'),
         }}
       />
       <Tabs.Screen
         name="reports"
         options={{
           title: 'Reportes',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="stats-chart-outline" size={20} color={color} />
-          ),
+          tabBarIcon: TabIcon('stats-chart-outline', 'stats-chart'),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Perfil',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="person-outline" size={20} color={color} />
-          ),
+          tabBarIcon: TabIcon('person-outline', 'person'),
         }}
       />
       <Tabs.Screen
         name="more"
         options={{
           title: 'Más',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="grid-outline" size={20} color={color} />
-          ),
+          tabBarIcon: TabIcon('grid-outline', 'grid'),
         }}
       />
 

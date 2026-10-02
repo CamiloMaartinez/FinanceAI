@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   TextInput,
   Modal,
@@ -15,7 +14,10 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../../src/hooks/useProfile';
 import { useTheme } from '../../src/context/ThemeContext';
-import { useColors, spacing, typography } from '../../src/constants/theme';
+import { useColors, spacing, typography, radius } from '../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
+import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { Button } from '../../src/components/ui/Button';
 import { hapticToggle } from '../../src/utils/haptics';
 import { ExchangeRatesModal } from '../../src/components/ExchangeRatesModal';
 import { PinSetupModal } from '../../src/components/PinSetupModal';
@@ -43,7 +45,7 @@ export default function ProfileScreen() {
       alignItems: 'center', justifyContent: 'center',
     },
     container: { flex: 1, backgroundColor: c.background },
-    content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
+    content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
     header: { paddingVertical: spacing.lg },
     label: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
     nameRow: {
@@ -122,13 +124,14 @@ export default function ProfileScreen() {
       color: c.textTertiary, marginTop: 2,
     },
     overlay: {
-      flex: 1, backgroundColor: 'rgba(0,0,0,0.8)',
+      flex: 1, backgroundColor: c.overlay,
       justifyContent: 'center', padding: spacing.xl,
     },
     modalBox: {
-      backgroundColor: c.surface, borderRadius: 14,
+      backgroundColor: c.surface, borderRadius: radius.lg,
       padding: spacing.xl, gap: spacing.lg,
       borderWidth: 0.5, borderColor: c.borderStrong,
+      ...c.shadow.lg,
     },
     modalLabel: { ...typography.label, color: c.textTertiary },
     modalInput: {
@@ -137,16 +140,7 @@ export default function ProfileScreen() {
       paddingBottom: spacing.sm,
     },
     modalButtons: { flexDirection: 'row', gap: spacing.md },
-    modalCancelBtn: {
-      flex: 1, paddingVertical: spacing.md, borderRadius: 6,
-      borderWidth: 0.5, borderColor: c.borderStrong, alignItems: 'center',
-    },
-    modalCancelText: { fontSize: 13, fontWeight: '300', color: c.textSecondary },
-    modalSaveBtn: {
-      flex: 1, paddingVertical: spacing.md,
-      borderRadius: 6, backgroundColor: c.income, alignItems: 'center',
-    },
-    modalSaveText: { fontSize: 13, fontWeight: '500', color: '#000' },
+    flexBtn: { flex: 1 },
   });
 
   const handleEditName = () => {
@@ -250,10 +244,10 @@ export default function ProfileScreen() {
         {/* Header */}
         <View style={s.header}>
           <Text style={s.label}>PERFIL</Text>
-          <TouchableOpacity style={s.nameRow} onPress={handleEditName}>
+          <AnimatedPressable style={s.nameRow} onPress={handleEditName} onPressFeedback={hapticToggle}>
             <Text style={s.userName}>{profile?.name ?? 'Mi Perfil'}</Text>
             <Ionicons name="pencil-outline" size={14} color={c.textTertiary} />
-          </TouchableOpacity>
+          </AnimatedPressable>
           <Text style={s.daysText}>
             {stats?.daysUsing === 0
               ? 'Primer día'
@@ -342,13 +336,13 @@ export default function ProfileScreen() {
           />
         </View>
         <View style={s.settingDivider} />
-        <TouchableOpacity style={s.settingRow} onPress={() => setPinModalVisible(true)}>
+        <AnimatedPressable style={s.settingRow} onPress={() => setPinModalVisible(true)} onPressFeedback={hapticToggle}>
           <View>
             <Text style={s.settingLabel}>PIN de respaldo</Text>
             <Text style={s.settingDesc}>Por si Face ID falla</Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={c.textTertiary} />
-        </TouchableOpacity>
+        </AnimatedPressable>
         <View style={s.settingDivider} />
         <View style={s.settingRow}>
           <View>
@@ -365,31 +359,31 @@ export default function ProfileScreen() {
           />
         </View>
         <View style={s.settingDivider} />
-        <TouchableOpacity style={s.settingRow} onPress={() => setProfileModalVisible(true)}>
+        <AnimatedPressable style={s.settingRow} onPress={() => setProfileModalVisible(true)} onPressFeedback={hapticToggle}>
           <View>
             <Text style={s.settingLabel}>Perfiles</Text>
             <Text style={s.settingDesc}>Cambiar o crear un perfil</Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={c.textTertiary} />
-        </TouchableOpacity>
+        </AnimatedPressable>
         <View style={s.settingDivider} />
-        <TouchableOpacity style={s.settingRow} onPress={() => setRatesModalVisible(true)}>
+        <AnimatedPressable style={s.settingRow} onPress={() => setRatesModalVisible(true)} onPressFeedback={hapticToggle}>
           <View>
             <Text style={s.settingLabel}>Tasas de cambio</Text>
             <Text style={s.settingDesc}>Para cuentas en USD o EUR</Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={c.textTertiary} />
-        </TouchableOpacity>
+        </AnimatedPressable>
         <View style={s.settingDivider} />
-        <TouchableOpacity style={s.settingRow} onPress={handleReplayOnboarding}>
+        <AnimatedPressable style={s.settingRow} onPress={handleReplayOnboarding} onPressFeedback={hapticToggle}>
           <View>
             <Text style={s.settingLabel}>Ver introducción de nuevo</Text>
             <Text style={s.settingDesc}>Las pantallas de bienvenida</Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={c.textTertiary} />
-        </TouchableOpacity>
+        </AnimatedPressable>
         <View style={s.settingDivider} />
-        <TouchableOpacity style={s.settingRow} onPress={handleExport} disabled={isExporting}>
+        <AnimatedPressable style={s.settingRow} onPress={handleExport} disabled={isExporting} onPressFeedback={hapticToggle}>
           <View>
             <Text style={s.settingLabel}>Exportar respaldo</Text>
             <Text style={s.settingDesc}>Guarda tus datos como archivo</Text>
@@ -399,9 +393,9 @@ export default function ProfileScreen() {
           ) : (
             <Ionicons name="share-outline" size={18} color={c.textTertiary} />
           )}
-        </TouchableOpacity>
+        </AnimatedPressable>
         <View style={s.settingDivider} />
-        <TouchableOpacity style={s.settingRow} onPress={handleImport} disabled={isImporting}>
+        <AnimatedPressable style={s.settingRow} onPress={handleImport} disabled={isImporting} onPressFeedback={hapticToggle}>
           <View>
             <Text style={s.settingLabel}>Importar respaldo</Text>
             <Text style={s.settingDesc}>Restaura desde un archivo</Text>
@@ -411,7 +405,7 @@ export default function ProfileScreen() {
           ) : (
             <Ionicons name="download-outline" size={18} color={c.textTertiary} />
           )}
-        </TouchableOpacity>
+        </AnimatedPressable>
       </Animated.ScrollView>
 
       {/* Modal editar nombre */}
@@ -433,15 +427,14 @@ export default function ProfileScreen() {
               autoFocus
             />
             <View style={s.modalButtons}>
-              <TouchableOpacity
-                style={s.modalCancelBtn}
+              <Button
+                label="Cancelar"
+                variant="secondary"
                 onPress={() => setEditNameVisible(false)}
-              >
-                <Text style={s.modalCancelText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={s.modalSaveBtn} onPress={handleSaveName}>
-                <Text style={s.modalSaveText}>Guardar</Text>
-              </TouchableOpacity>
+                haptic={null}
+                style={s.flexBtn}
+              />
+              <Button label="Guardar" variant="primary" onPress={handleSaveName} style={s.flexBtn} />
             </View>
           </View>
         </View>

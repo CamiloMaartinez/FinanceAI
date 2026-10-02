@@ -3,13 +3,15 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useColors, spacing, typography } from '../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
+import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { hapticToggle } from '../../src/utils/haptics';
 
 interface MenuItem {
   label: string;
@@ -86,24 +88,26 @@ export default function MoreScreen() {
         <View style={styles.divider} />
 
         {MENU_ITEMS.map((item, index) => (
-          <TouchableOpacity
-            key={item.route}
-            style={[
-              styles.menuRow,
-              index < MENU_ITEMS.length - 1 && styles.menuRowBorder,
-            ]}
-            onPress={() => router.push(item.route as any)}
-            activeOpacity={0.6}
-          >
-            <View style={styles.menuIcon}>
-              <Ionicons name={item.icon} size={18} color={c.textSecondary} />
-            </View>
-            <View style={styles.menuInfo}>
-              <Text style={styles.menuLabel}>{item.label}</Text>
-              <Text style={styles.menuDesc}>{item.description}</Text>
-            </View>
-            <Ionicons name="chevron-forward-outline" size={14} color={c.textTertiary} />
-          </TouchableOpacity>
+          <Animated.View key={item.route} entering={FadeInDown.duration(300).delay(index * 60)}>
+            <AnimatedPressable
+              style={[
+                styles.menuRow,
+                index < MENU_ITEMS.length - 1 && styles.menuRowBorder,
+              ]}
+              onPress={() => router.push(item.route as any)}
+              onPressFeedback={hapticToggle}
+              pressScale={0.99}
+            >
+              <View style={styles.menuIcon}>
+                <Ionicons name={item.icon} size={18} color={c.textSecondary} />
+              </View>
+              <View style={styles.menuInfo}>
+                <Text style={styles.menuLabel}>{item.label}</Text>
+                <Text style={styles.menuDesc}>{item.description}</Text>
+              </View>
+              <Ionicons name="chevron-forward-outline" size={14} color={c.textTertiary} />
+            </AnimatedPressable>
+          </Animated.View>
         ))}
       </Animated.ScrollView>
     </SafeAreaView>
@@ -112,7 +116,7 @@ export default function MoreScreen() {
 
 const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   container: { flex: 1, backgroundColor: c.background },
-  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
   header: { paddingVertical: spacing.lg },
   label: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
   title: { fontSize: 26, fontWeight: '200', color: c.textPrimary, letterSpacing: -0.5 },

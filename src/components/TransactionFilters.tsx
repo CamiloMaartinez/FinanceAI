@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Modal,
   ScrollView,
   SafeAreaView,
@@ -11,6 +10,9 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
 import type { Account, Category } from '../models/types';
+import { AnimatedPressable } from './ui/AnimatedPressable';
+import { Button } from './ui/Button';
+import { hapticToggle } from '../utils/haptics';
 
 export type DateRangeFilter = 'all' | '7d' | '30d' | 'month';
 
@@ -106,13 +108,13 @@ export function TransactionFilters({
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose}>
+          <AnimatedPressable onPress={onClose} onPressFeedback={hapticToggle}>
             <Text style={styles.cancelBtn}>Cancelar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
           <Text style={styles.headerTitle}>Filtros</Text>
-          <TouchableOpacity onPress={handleClear}>
+          <AnimatedPressable onPress={handleClear} onPressFeedback={hapticToggle}>
             <Text style={styles.clearBtn}>Limpiar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
@@ -122,15 +124,16 @@ export function TransactionFilters({
               {TYPE_OPTIONS.map((opt) => {
                 const selected = draft.typeFilter === opt.value;
                 return (
-                  <TouchableOpacity
+                  <AnimatedPressable
                     key={opt.value}
                     style={[styles.chip, selected && styles.chipSelected]}
                     onPress={() => setDraft((prev) => ({ ...prev, typeFilter: opt.value }))}
+                    onPressFeedback={hapticToggle}
                   >
                     <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]}>
                       {opt.label}
                     </Text>
-                  </TouchableOpacity>
+                  </AnimatedPressable>
                 );
               })}
             </View>
@@ -142,15 +145,16 @@ export function TransactionFilters({
               {DATE_RANGES.map((opt) => {
                 const selected = draft.dateRange === opt.value;
                 return (
-                  <TouchableOpacity
+                  <AnimatedPressable
                     key={opt.value}
                     style={[styles.chip, selected && styles.chipSelected]}
                     onPress={() => setDraft((prev) => ({ ...prev, dateRange: opt.value }))}
+                    onPressFeedback={hapticToggle}
                   >
                     <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]}>
                       {opt.label}
                     </Text>
-                  </TouchableOpacity>
+                  </AnimatedPressable>
                 );
               })}
             </View>
@@ -163,15 +167,16 @@ export function TransactionFilters({
                 {accounts.map((acc) => {
                   const selected = draft.accountIds.includes(acc.id);
                   return (
-                    <TouchableOpacity
+                    <AnimatedPressable
                       key={acc.id}
                       style={[styles.chip, selected && { backgroundColor: acc.colorHex + '25', borderColor: acc.colorHex }]}
                       onPress={() => toggleAccount(acc.id)}
+                      onPressFeedback={hapticToggle}
                     >
                       <Text style={[styles.chipLabel, selected && { color: acc.colorHex, fontWeight: '600' }]}>
                         {acc.name}
                       </Text>
-                    </TouchableOpacity>
+                    </AnimatedPressable>
                   );
                 })}
               </View>
@@ -185,10 +190,11 @@ export function TransactionFilters({
                 {categories.map((cat) => {
                   const selected = draft.categoryIds.includes(cat.id);
                   return (
-                    <TouchableOpacity
+                    <AnimatedPressable
                       key={cat.id}
                       style={[styles.chip, selected && { backgroundColor: cat.colorHex + '25', borderColor: cat.colorHex }]}
                       onPress={() => toggleCategory(cat.id)}
+                      onPressFeedback={hapticToggle}
                     >
                       <Ionicons
                         name={cat.iconName as any}
@@ -199,7 +205,7 @@ export function TransactionFilters({
                       <Text style={[styles.chipLabel, selected && { color: cat.colorHex, fontWeight: '600' }]}>
                         {cat.name}
                       </Text>
-                    </TouchableOpacity>
+                    </AnimatedPressable>
                   );
                 })}
               </View>
@@ -208,9 +214,7 @@ export function TransactionFilters({
         </ScrollView>
 
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.applyBtn} onPress={handleApply}>
-            <Text style={styles.applyBtnText}>Aplicar filtros</Text>
-          </TouchableOpacity>
+          <Button label="Aplicar filtros" variant="primary" onPress={handleApply} />
         </View>
       </SafeAreaView>
     </Modal>
@@ -252,21 +256,14 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     borderColor: 'transparent',
   },
   chipSelected: {
-    borderColor: c.blue,
-    backgroundColor: 'rgba(0,122,255,0.1)',
+    borderColor: c.accent,
+    backgroundColor: c.accent + '1A',
   },
   chipLabel: { fontSize: 13, color: c.textSecondary },
-  chipLabelSelected: { color: c.blue, fontWeight: '600' },
+  chipLabelSelected: { color: c.accent, fontWeight: '600' },
   footer: {
     padding: spacing.lg,
     borderTopWidth: 0.5,
     borderTopColor: c.border,
   },
-  applyBtn: {
-    backgroundColor: c.blue,
-    borderRadius: radius.md,
-    paddingVertical: spacing.lg,
-    alignItems: 'center',
-  },
-  applyBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
 });

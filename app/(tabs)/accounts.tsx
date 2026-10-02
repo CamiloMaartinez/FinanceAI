@@ -3,18 +3,20 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useAccounts } from '../../src/hooks/useAccounts';
 import { AccountCard } from '../../src/components/AccountCard';
 import { AccountForm } from '../../src/components/AccountForm';
 import { useColors, spacing, typography } from '../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
+import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { hapticSave } from '../../src/utils/haptics';
 import { formatCurrency } from '../../src/utils/currency';
 import type { Account } from '../../src/models/types';
 
@@ -88,12 +90,13 @@ export default function AccountsScreen() {
               {formatCurrency(accounts.totalBalance)}
             </Text>
           </View>
-          <TouchableOpacity
+          <AnimatedPressable
             style={styles.addButton}
             onPress={() => setFormVisible(true)}
+            onPressFeedback={hapticSave}
           >
             <Ionicons name="add" size={20} color={c.textPrimary} />
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <View style={styles.divider} />
@@ -108,22 +111,24 @@ export default function AccountsScreen() {
             <Text style={styles.emptySubtitle}>
               Agrega tu primera cuenta financiera
             </Text>
-            <TouchableOpacity
+            <AnimatedPressable
               style={styles.emptyButton}
               onPress={() => setFormVisible(true)}
+              onPressFeedback={hapticSave}
             >
               <Text style={styles.emptyButtonText}>+ Nueva cuenta</Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           </View>
         ) : (
           <>
-            {accounts.accounts.map((account) => (
-              <AccountCard
-                key={account.id}
-                account={account}
-                onPress={handlePress}
-                onLongPress={handleLongPress}
-              />
+            {accounts.accounts.map((account, i) => (
+              <Animated.View key={account.id} entering={FadeInDown.duration(300).delay(i * 60)}>
+                <AccountCard
+                  account={account}
+                  onPress={handlePress}
+                  onLongPress={handleLongPress}
+                />
+              </Animated.View>
             ))}
             <Text style={styles.hint}>
               Mantén presionada una cuenta para eliminarla
@@ -149,7 +154,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     justifyContent: 'center',
   },
   container: { flex: 1, backgroundColor: c.background },
-  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

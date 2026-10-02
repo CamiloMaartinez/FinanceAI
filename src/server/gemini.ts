@@ -6,7 +6,7 @@
 // bundle del cliente).
 
 const GEMINI_URL =
-  'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent';
+  'https://generativelanguage.googleapis.com/v1/models/gemini-3.8-flash:generateContent';
 
 export interface FinancialContext {
   totalBalance: number;
@@ -71,7 +71,13 @@ async function callGeminiWithRetry(
         },
         body: JSON.stringify({
           contents,
-          generationConfig: { maxOutputTokens, temperature },
+          // Los tokens de razonamiento cuentan dentro de maxOutputTokens; con
+          // el nivel por defecto las respuestas cortas salían vacías.
+          generationConfig: {
+            maxOutputTokens,
+            temperature,
+            thinkingConfig: { thinkingLevel: 'low' },
+          },
         }),
       });
 

@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useColors, spacing, radius } from '../constants/theme';
 import { markOnboardingSeen } from '../services/onboarding';
+import { AnimatedPressable } from './ui/AnimatedPressable';
+import { hapticToggle, hapticSave } from '../utils/haptics';
 
 interface OnboardingProps {
   profileId: string;
@@ -62,9 +64,9 @@ export function Onboarding({ profileId, onFinish }: OnboardingProps) {
   return (
     <SafeAreaView style={styles.container}>
       {!isLast && (
-        <TouchableOpacity style={styles.skipButton} onPress={handleFinish} hitSlop={8}>
+        <AnimatedPressable style={styles.skipButton} onPress={handleFinish} hitSlop={8} onPressFeedback={hapticToggle}>
           <Text style={styles.skipText}>Saltar</Text>
-        </TouchableOpacity>
+        </AnimatedPressable>
       )}
 
       <Animated.View key={index} entering={FadeIn.duration(300)} style={styles.content}>
@@ -78,16 +80,16 @@ export function Onboarding({ profileId, onFinish }: OnboardingProps) {
       <View style={styles.footer}>
         <View style={styles.dotsRow}>
           {SLIDES.map((_, i) => (
-            <TouchableOpacity key={i} onPress={() => setIndex(i)} hitSlop={8}>
+            <AnimatedPressable key={i} onPress={() => setIndex(i)} hitSlop={8} onPressFeedback={hapticToggle} pressScale={0.9}>
               <View style={[styles.dot, i === index && styles.dotActive]} />
-            </TouchableOpacity>
+            </AnimatedPressable>
           ))}
         </View>
 
-        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+        <AnimatedPressable style={styles.nextButton} onPress={handleNext} onPressFeedback={hapticSave}>
           <Text style={styles.nextButtonText}>{isLast ? 'Comenzar' : 'Siguiente'}</Text>
           {!isLast && <Ionicons name="arrow-forward" size={18} color="#fff" />}
-        </TouchableOpacity>
+        </AnimatedPressable>
       </View>
     </SafeAreaView>
   );

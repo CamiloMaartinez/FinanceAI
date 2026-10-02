@@ -1,13 +1,16 @@
 import React, { useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withTiming,
+  withSpring,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
+import { springDefault } from '../constants/motion';
 import { formatCurrency, formatCurrencyCompact } from '../utils/currency';
+import { AnimatedPressable } from './ui/AnimatedPressable';
+import { hapticSave } from '../utils/haptics';
 import {
   getGoalProgress,
   getGoalProgressPercentage,
@@ -38,7 +41,7 @@ export function GoalCard({ goal, onContribute, onEdit, onLongPress }: GoalCardPr
   const animatedWidth = useSharedValue(0);
 
   useEffect(() => {
-    animatedWidth.value = withTiming(progress * 100, { duration: 800 });
+    animatedWidth.value = withSpring(progress * 100, springDefault);
   }, [progress]);
 
   const barStyle = useAnimatedStyle(() => ({
@@ -48,10 +51,10 @@ export function GoalCard({ goal, onContribute, onEdit, onLongPress }: GoalCardPr
   const isOverdue = daysRemaining < 0;
 
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       style={styles.card}
       onLongPress={() => onLongPress(goal)}
-      activeOpacity={0.85}
+      pressScale={0.98}
     >
       <View style={styles.header}>
         <View style={[styles.iconCircle, { backgroundColor: goal.colorHex + '20' }]}>
@@ -66,9 +69,9 @@ export function GoalCard({ goal, onContribute, onEdit, onLongPress }: GoalCardPr
         <Text style={[styles.percentage, { color: progressColor }]}>
           {percentage}%
         </Text>
-        <TouchableOpacity style={styles.editBtn} onPress={() => onEdit(goal)} hitSlop={8}>
+        <AnimatedPressable style={styles.editBtn} onPress={() => onEdit(goal)} hitSlop={8}>
           <Ionicons name="pencil-outline" size={15} color={c.textTertiary} />
-        </TouchableOpacity>
+        </AnimatedPressable>
       </View>
 
       <View style={styles.progressTrack}>
@@ -101,14 +104,15 @@ export function GoalCard({ goal, onContribute, onEdit, onLongPress }: GoalCardPr
         </View>
       )}
 
-      <TouchableOpacity
+      <AnimatedPressable
         style={[styles.contributeBtn, { backgroundColor: goal.colorHex }]}
         onPress={() => onContribute(goal)}
+        onPressFeedback={hapticSave}
       >
         <Ionicons name="add" size={16} color="#fff" />
         <Text style={styles.contributeBtnText}>Abonar</Text>
-      </TouchableOpacity>
-    </TouchableOpacity>
+      </AnimatedPressable>
+    </AnimatedPressable>
   );
 }
 
@@ -119,6 +123,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     padding: spacing.lg,
     marginBottom: spacing.md,
     gap: spacing.md,
+    ...c.shadow.sm,
   },
   header: {
     flexDirection: 'row',
@@ -179,7 +184,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    backgroundColor: 'rgba(255,149,0,0.1)',
+    backgroundColor: c.orange + '1A',
     borderRadius: radius.sm,
     padding: spacing.sm,
   },

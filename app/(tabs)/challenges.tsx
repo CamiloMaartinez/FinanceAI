@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Alert, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
@@ -7,6 +7,9 @@ import { useChallenges, type ChallengeProgress } from '../../src/hooks/useChalle
 import { ChallengeForm } from '../../src/components/ChallengeForm';
 import { getAllCategories } from '../../src/database/db';
 import { useColors, spacing, typography, radius } from '../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
+import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { hapticSave } from '../../src/utils/haptics';
 import type { Category } from '../../src/models/types';
 
 const STATUS_CONFIG = {
@@ -28,10 +31,9 @@ function ChallengeCard({ challenge, category, onDelete }: {
     : 100;
 
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       style={styles.card}
       onLongPress={onDelete}
-      activeOpacity={0.85}
     >
       <View style={styles.cardHeader}>
         <View style={[styles.iconCircle, { backgroundColor: (category?.colorHex ?? c.textTertiary) + '20' }]}>
@@ -55,7 +57,7 @@ function ChallengeCard({ challenge, category, onDelete }: {
         {challenge.status === 'completed' && '¡Lo lograste sin gastar nada! 🎉'}
         {challenge.status === 'failed' && `Se rompió — gastaste $${Math.round(challenge.spentSoFar).toLocaleString('es-CO')}`}
       </Text>
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 }
 
@@ -106,9 +108,9 @@ export default function ChallengesScreen() {
               {challenges.challenges.filter((c) => c.status === 'active').length} activo{challenges.challenges.filter((c) => c.status === 'active').length !== 1 ? 's' : ''}
             </Text>
           </View>
-          <TouchableOpacity style={styles.addButton} onPress={() => setFormVisible(true)}>
+          <AnimatedPressable style={styles.addButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
             <Ionicons name="add" size={20} color={c.textPrimary} />
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <View style={styles.divider} />
@@ -120,9 +122,9 @@ export default function ChallengesScreen() {
             <Text style={styles.emptySubtitle}>
               Ponte a prueba: elige una categoría y evita gastar en ella por un tiempo
             </Text>
-            <TouchableOpacity style={styles.emptyButton} onPress={() => setFormVisible(true)}>
+            <AnimatedPressable style={styles.emptyButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
               <Text style={styles.emptyButtonText}>+ Crear reto</Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           </View>
         ) : (
           challenges.challenges.map((ch, i) => (
@@ -154,7 +156,7 @@ export default function ChallengesScreen() {
 const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   loadingContainer: { flex: 1, backgroundColor: c.background, alignItems: 'center', justifyContent: 'center' },
   container: { flex: 1, backgroundColor: c.background },
-  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
     paddingVertical: spacing.lg,

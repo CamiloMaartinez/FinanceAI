@@ -4,13 +4,16 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
   Modal,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, interpolateColor, withSpring } from 'react-native-reanimated';
 import { useColors, spacing, radius } from '../constants/theme';
+import { springDefault } from '../constants/motion';
+import { AnimatedPressable } from './ui/AnimatedPressable';
+import { hapticSave, hapticToggle } from '../utils/haptics';
 
 interface CardFormProps {
   visible: boolean;
@@ -37,6 +40,19 @@ const COMMON_BENEFITS = [
   'Puntos canjeables', 'Compras internacionales sin recargo',
 ];
 
+// Anillo de foco animado (§4/§15 apple-design).
+function useFocusRing(c: ReturnType<typeof useColors>) {
+  const focus = useSharedValue(0);
+  const style = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(focus.value, [0, 1], [c.border, c.accent]),
+  }));
+  return {
+    style,
+    onFocus: () => { focus.value = withSpring(1, springDefault); },
+    onBlur: () => { focus.value = withSpring(0, springDefault); },
+  };
+}
+
 export function CardForm({ visible, onClose, onSave }: CardFormProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
@@ -49,6 +65,13 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
   const [customBenefit, setCustomBenefit] = useState('');
   const [colorHex,      setColorHex]      = useState('#1C1C2E');
   const [error,         setError]         = useState('');
+
+  const nameRing = useFocusRing(c);
+  const bankRing = useFocusRing(c);
+  const feeRing = useFocusRing(c);
+  const cashbackRing = useFocusRing(c);
+  const rateRing = useFocusRing(c);
+  const customBenefitRing = useFocusRing(c);
 
   const toggleBenefit = (benefit: string) => {
     setBenefits((prev) =>
@@ -97,13 +120,13 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleClose}>
+          <AnimatedPressable onPress={handleClose}>
             <Text style={styles.cancelBtn}>Cancelar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
           <Text style={styles.headerTitle}>Nueva tarjeta</Text>
-          <TouchableOpacity onPress={handleSave}>
+          <AnimatedPressable onPress={handleSave} onPressFeedback={hapticSave}>
             <Text style={styles.saveBtn}>Guardar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
@@ -116,60 +139,80 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
 
           <View style={styles.field}>
             <Text style={styles.fieldLabel}>Nombre de la tarjeta</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ej: Mastercard Platinum"
-              placeholderTextColor={c.textTertiary}
-              value={name}
-              onChangeText={(t) => { setName(t); setError(''); }}
-              autoFocus
-            />
+            <Animated.View style={[styles.input, nameRing.style]}>
+              <TextInput
+                style={styles.inputText}
+                placeholder="Ej: Mastercard Platinum"
+                placeholderTextColor={c.textTertiary}
+                value={name}
+                onChangeText={(t) => { setName(t); setError(''); }}
+                onFocus={nameRing.onFocus}
+                onBlur={nameRing.onBlur}
+                autoFocus
+              />
+            </Animated.View>
           </View>
 
           <View style={styles.field}>
             <Text style={styles.fieldLabel}>Banco emisor</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ej: Bancolombia, Nu, Davivienda"
-              placeholderTextColor={c.textTertiary}
-              value={bank}
-              onChangeText={(t) => { setBank(t); setError(''); }}
-            />
+            <Animated.View style={[styles.input, bankRing.style]}>
+              <TextInput
+                style={styles.inputText}
+                placeholder="Ej: Bancolombia, Nu, Davivienda"
+                placeholderTextColor={c.textTertiary}
+                value={bank}
+                onChangeText={(t) => { setBank(t); setError(''); }}
+                onFocus={bankRing.onFocus}
+                onBlur={bankRing.onBlur}
+              />
+            </Animated.View>
           </View>
 
           <View style={styles.row3}>
             <View style={styles.col3}>
               <Text style={styles.fieldLabel}>Cuota anual ($)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="0"
-                placeholderTextColor={c.textTertiary}
-                value={annualFee}
-                onChangeText={setAnnualFee}
-                keyboardType="numeric"
-              />
+              <Animated.View style={[styles.input, feeRing.style]}>
+                <TextInput
+                  style={styles.inputText}
+                  placeholder="0"
+                  placeholderTextColor={c.textTertiary}
+                  value={annualFee}
+                  onChangeText={setAnnualFee}
+                  onFocus={feeRing.onFocus}
+                  onBlur={feeRing.onBlur}
+                  keyboardType="numeric"
+                />
+              </Animated.View>
             </View>
             <View style={styles.col3}>
               <Text style={styles.fieldLabel}>Cashback (%)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="0"
-                placeholderTextColor={c.textTertiary}
-                value={cashback}
-                onChangeText={setCashback}
-                keyboardType="numeric"
-              />
+              <Animated.View style={[styles.input, cashbackRing.style]}>
+                <TextInput
+                  style={styles.inputText}
+                  placeholder="0"
+                  placeholderTextColor={c.textTertiary}
+                  value={cashback}
+                  onChangeText={setCashback}
+                  onFocus={cashbackRing.onFocus}
+                  onBlur={cashbackRing.onBlur}
+                  keyboardType="numeric"
+                />
+              </Animated.View>
             </View>
             <View style={styles.col3}>
               <Text style={styles.fieldLabel}>Interés EA (%)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="0"
-                placeholderTextColor={c.textTertiary}
-                value={interestRate}
-                onChangeText={(t) => { setInterestRate(t); setError(''); }}
-                keyboardType="numeric"
-              />
+              <Animated.View style={[styles.input, rateRing.style]}>
+                <TextInput
+                  style={styles.inputText}
+                  placeholder="0"
+                  placeholderTextColor={c.textTertiary}
+                  value={interestRate}
+                  onChangeText={(t) => { setInterestRate(t); setError(''); }}
+                  onFocus={rateRing.onFocus}
+                  onBlur={rateRing.onBlur}
+                  keyboardType="numeric"
+                />
+              </Animated.View>
             </View>
           </View>
 
@@ -177,13 +220,15 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
             <Text style={styles.fieldLabel}>Beneficios</Text>
             <View style={styles.benefitsGrid}>
               {COMMON_BENEFITS.map((b) => (
-                <TouchableOpacity
+                <AnimatedPressable
                   key={b}
+                  pressScale={0.96}
                   style={[
                     styles.benefitChip,
                     benefits.includes(b) && styles.benefitChipSelected,
                   ]}
                   onPress={() => toggleBenefit(b)}
+                  onPressFeedback={hapticToggle}
                 >
                   <Text style={[
                     styles.benefitChipText,
@@ -191,21 +236,25 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
                   ]}>
                     {b}
                   </Text>
-                </TouchableOpacity>
+                </AnimatedPressable>
               ))}
             </View>
             <View style={styles.customBenefitRow}>
-              <TextInput
-                style={[styles.input, { flex: 1 }]}
-                placeholder="Agregar beneficio personalizado"
-                placeholderTextColor={c.textTertiary}
-                value={customBenefit}
-                onChangeText={setCustomBenefit}
-                onSubmitEditing={addCustomBenefit}
-              />
-              <TouchableOpacity style={styles.addBtn} onPress={addCustomBenefit}>
+              <Animated.View style={[styles.input, { flex: 1 }, customBenefitRing.style]}>
+                <TextInput
+                  style={styles.inputText}
+                  placeholder="Agregar beneficio personalizado"
+                  placeholderTextColor={c.textTertiary}
+                  value={customBenefit}
+                  onChangeText={setCustomBenefit}
+                  onSubmitEditing={addCustomBenefit}
+                  onFocus={customBenefitRing.onFocus}
+                  onBlur={customBenefitRing.onBlur}
+                />
+              </Animated.View>
+              <AnimatedPressable style={styles.addBtn} onPress={addCustomBenefit} onPressFeedback={hapticToggle}>
                 <Text style={styles.addBtnText}>+</Text>
-              </TouchableOpacity>
+              </AnimatedPressable>
             </View>
           </View>
 
@@ -213,14 +262,16 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
             <Text style={styles.fieldLabel}>Color de la tarjeta</Text>
             <View style={styles.colorGrid}>
               {CARD_COLORS.map((hex) => (
-                <TouchableOpacity
+                <AnimatedPressable
                   key={hex}
+                  pressScale={0.9}
                   style={[
                     styles.colorDot,
                     { backgroundColor: hex },
                     colorHex === hex && styles.colorDotSelected,
                   ]}
                   onPress={() => setColorHex(hex)}
+                  onPressFeedback={hapticToggle}
                 />
               ))}
             </View>
@@ -244,10 +295,10 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   },
   headerTitle: { fontSize: 17, fontWeight: '600', color: c.textPrimary },
   cancelBtn: { fontSize: 16, color: c.textSecondary },
-  saveBtn: { fontSize: 16, fontWeight: '600', color: c.blue },
+  saveBtn: { fontSize: 16, fontWeight: '600', color: c.accent },
   form: { padding: spacing.lg },
   errorBox: {
-    backgroundColor: 'rgba(255,59,48,0.15)',
+    backgroundColor: c.expense + '26',
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -265,6 +316,10 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   input: {
     backgroundColor: c.surface,
     borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: c.border,
+  },
+  inputText: {
     padding: spacing.md,
     fontSize: 15,
     color: c.textPrimary,
@@ -290,11 +345,11 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     borderColor: 'transparent',
   },
   benefitChipSelected: {
-    borderColor: c.blue,
-    backgroundColor: 'rgba(0,122,255,0.1)',
+    borderColor: c.accent,
+    backgroundColor: c.accent + '1A',
   },
   benefitChipText: { fontSize: 12, color: c.textSecondary },
-  benefitChipTextSelected: { color: c.blue, fontWeight: '500' },
+  benefitChipTextSelected: { color: c.accent, fontWeight: '500' },
   customBenefitRow: {
     flexDirection: 'row',
     gap: spacing.sm,
@@ -304,7 +359,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: radius.md,
-    backgroundColor: c.blue,
+    backgroundColor: c.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },

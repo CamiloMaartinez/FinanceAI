@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Alert,
   ActivityIndicator,
 } from 'react-native';
@@ -11,6 +10,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
 import { scanReceipt } from '../services/receiptScanner';
+import { AnimatedPressable } from './ui/AnimatedPressable';
 
 interface ReceiptScannerButtonProps {
   onScanned: (amount: number | null, notes: string) => void;
@@ -67,23 +67,23 @@ export function ReceiptScannerButton({ onScanned }: ReceiptScannerButtonProps) {
   };
 
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       style={styles.button}
       onPress={handlePress}
       disabled={isScanning}
     >
       {isScanning ? (
         <>
-          <ActivityIndicator size="small" color={c.blue} />
+          <ActivityIndicator size="small" color={c.accent} />
           <Text style={styles.text}>Analizando recibo...</Text>
         </>
       ) : (
         <>
-          <Ionicons name="camera-outline" size={20} color={c.blue} />
+          <Ionicons name="camera-outline" size={20} color={c.accent} />
           <Text style={styles.text}>Escanear recibo</Text>
         </>
       )}
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 }
 
@@ -93,11 +93,11 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    backgroundColor: 'rgba(0,122,255,0.1)',
+    backgroundColor: c.accent + '1A',
     borderRadius: radius.md,
     paddingVertical: spacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(0,122,255,0.3)',
+    borderColor: c.accent + '4D',
     borderStyle: 'dashed',
   },
   text: {

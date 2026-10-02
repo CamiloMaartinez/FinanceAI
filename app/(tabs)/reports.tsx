@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
-  TouchableOpacity,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,6 +16,9 @@ import { MonthComparisonCard } from '../../src/components/MonthComparisonCard';
 import { MonthPredictionCard } from '../../src/components/MonthPredictionCard';
 import { ComparativeStats } from '../../src/components/ComparativeStats';
 import { useColors, spacing, typography } from '../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
+import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { hapticSave } from '../../src/utils/haptics';
 import { exportReportToPdf } from '../../src/services/pdfExport';
 
 export default function ReportsScreen() {
@@ -68,9 +70,9 @@ export default function ReportsScreen() {
             <Text style={styles.label}>REPORTES</Text>
             <Text style={styles.monthName}>{monthName}</Text>
           </View>
-          <TouchableOpacity style={styles.exportButton} onPress={handleExport}>
+          <AnimatedPressable style={styles.exportButton} onPress={handleExport} onPressFeedback={hapticSave}>
             <Ionicons name="share-outline" size={16} color={c.textSecondary} />
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <View style={styles.divider} />
@@ -108,7 +110,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     justifyContent: 'center',
   },
   container: { flex: 1, backgroundColor: c.background },
-  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

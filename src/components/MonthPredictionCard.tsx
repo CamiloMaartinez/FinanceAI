@@ -105,7 +105,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   headerText: { fontSize: 13, fontWeight: '600', color: c.textSecondary, flex: 1 },
   dayText: { fontSize: 11, color: c.textTertiary },
   projectedLabel: { fontSize: 12.5, color: c.textTertiary, marginBottom: 2 },
-  projectedAmount: { fontSize: 28, fontWeight: '700', marginBottom: spacing.md },
+  projectedAmount: { fontSize: 32, fontWeight: '200', letterSpacing: -1, marginBottom: spacing.md },
   referenceRow: { flexDirection: 'row', gap: spacing.xl, marginBottom: spacing.md },
   referenceItem: { gap: 2 },
   referenceLabel: { fontSize: 11, color: c.textTertiary },

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useColors, spacing, typography } from '../../constants/theme';
+import { useColors, spacing, typography, radius } from '../../constants/theme';
 import { formatCurrencyCompact } from '../../utils/currency';
 
 interface SummaryCardsProps {
@@ -25,7 +25,7 @@ export function SummaryCards({ income, expenses }: SummaryCardsProps) {
     grid: {
       flexDirection: 'row', flexWrap: 'wrap',
       borderWidth: 0.5, borderColor: c.border,
-      borderRadius: 8, overflow: 'hidden',
+      borderRadius: radius.md, overflow: 'hidden',
     },
     item: { width: '50%', padding: spacing.lg },
     itemBorderRight: { borderRightWidth: 0.5, borderRightColor: c.border },

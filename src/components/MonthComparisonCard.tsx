@@ -100,10 +100,10 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     borderRadius: radius.md,
   },
   changeBoxIncrease: {
-    backgroundColor: 'rgba(255,59,48,0.1)',
+    backgroundColor: c.expense + '1A',
   },
   changeBoxDecrease: {
-    backgroundColor: 'rgba(52,199,89,0.1)',
+    backgroundColor: c.income + '1A',
   },
   changeText: {
     fontSize: 12,

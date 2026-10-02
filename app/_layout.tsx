@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { LogBox, View, ActivityIndicator } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { seedIfEmpty } from '../src/database/seed';
 import { isBiometricAvailable } from '../src/services/biometricAuth';
 import { LockScreen } from '../src/components/LockScreen';
@@ -17,11 +18,13 @@ LogBox.ignoreLogs(['A props object containing a "key" prop']);
 
 export default function RootLayout() {
   return (
-    <ErrorBoundary>
-      <ThemeProvider>
-        <RootLayoutInner />
-      </ThemeProvider>
-    </ErrorBoundary>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ErrorBoundary>
+        <ThemeProvider>
+          <RootLayoutInner />
+        </ThemeProvider>
+      </ErrorBoundary>
+    </GestureHandlerRootView>
   );
 }
 

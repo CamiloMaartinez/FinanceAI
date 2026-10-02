@@ -1,17 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Modal,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
+import { View, Text, StyleSheet, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
 import { getExchangeRates, setExchangeRate } from '../services/exchangeRates';
+import { Sheet } from './ui/Sheet';
+import { Button } from './ui/Button';
 
 interface ExchangeRatesModalProps {
   visible: boolean;
@@ -47,70 +40,52 @@ export function ExchangeRatesModal({ visible, onClose }: ExchangeRatesModalProps
   };
 
   return (
-    <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalBox}
-        >
-          <View style={styles.iconCircle}>
-            <Ionicons name="swap-horizontal-outline" size={22} color={c.blue} />
-          </View>
-          <Text style={styles.title}>Tasas de cambio</Text>
-          <Text style={styles.subtitle}>
-            Estos valores son de referencia — la app no consulta una tasa en tiempo real. Actualízalos manualmente cuando quieras.
-          </Text>
+    <Sheet visible={visible} onClose={onClose}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.content}>
+        <View style={styles.iconCircle}>
+          <Ionicons name="swap-horizontal-outline" size={22} color={c.accent} />
+        </View>
+        <Text style={styles.title}>Tasas de cambio</Text>
+        <Text style={styles.subtitle}>
+          Estos valores son de referencia — la app no consulta una tasa en tiempo real. Actualízalos manualmente cuando quieras.
+        </Text>
 
-          {EDITABLE_CURRENCIES.map((cur) => (
-            <View key={cur.code} style={styles.field}>
-              <Text style={styles.fieldLabel}>{cur.label} → COP</Text>
-              <View style={styles.inputRow}>
-                <Text style={styles.inputPrefix}>1 {cur.code} =</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="0"
-                  placeholderTextColor={c.textTertiary}
-                  value={rates[cur.code] ?? ''}
-                  onChangeText={(t) => setRates((prev) => ({ ...prev, [cur.code]: t }))}
-                  keyboardType="numeric"
-                />
-                <Text style={styles.inputSuffix}>COP</Text>
-              </View>
+        {EDITABLE_CURRENCIES.map((cur) => (
+          <View key={cur.code} style={styles.field}>
+            <Text style={styles.fieldLabel}>{cur.label} → COP</Text>
+            <View style={styles.inputRow}>
+              <Text style={styles.inputPrefix}>1 {cur.code} =</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="0"
+                placeholderTextColor={c.textTertiary}
+                value={rates[cur.code] ?? ''}
+                onChangeText={(t) => setRates((prev) => ({ ...prev, [cur.code]: t }))}
+                keyboardType="numeric"
+              />
+              <Text style={styles.inputSuffix}>COP</Text>
             </View>
-          ))}
-
-          <View style={styles.buttonsRow}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
-              <Text style={styles.cancelBtnText}>Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-              <Text style={styles.saveBtnText}>Guardar</Text>
-            </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
-      </View>
-    </Modal>
+        ))}
+
+        <View style={styles.buttonsRow}>
+          <Button label="Cancelar" variant="secondary" onPress={onClose} haptic={null} style={styles.flexBtn} />
+          <Button label="Guardar" variant="primary" onPress={handleSave} style={styles.flexBtn} />
+        </View>
+      </KeyboardAvoidingView>
+    </Sheet>
   );
 }
 
 const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
+  content: {
     padding: spacing.xl,
-  },
-  modalBox: {
-    backgroundColor: c.surface,
-    borderRadius: radius.lg,
-    padding: spacing.xl,
+    paddingTop: spacing.sm,
     gap: spacing.md,
-    borderWidth: 0.5,
-    borderColor: c.borderStrong,
   },
   iconCircle: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: 'rgba(0,122,255,0.12)',
+    backgroundColor: c.accent + '20',
     alignItems: 'center', justifyContent: 'center',
     marginBottom: 2,
   },
@@ -131,14 +106,5 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   input: { flex: 1, fontSize: 15, color: c.textPrimary, paddingVertical: spacing.md },
   inputSuffix: { fontSize: 13, color: c.textTertiary },
   buttonsRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
-  cancelBtn: {
-    flex: 1, paddingVertical: spacing.md, borderRadius: radius.md,
-    borderWidth: 0.5, borderColor: c.borderStrong, alignItems: 'center',
-  },
-  cancelBtnText: { fontSize: 14, color: c.textSecondary },
-  saveBtn: {
-    flex: 1, paddingVertical: spacing.md, borderRadius: radius.md,
-    backgroundColor: c.blue, alignItems: 'center',
-  },
-  saveBtnText: { fontSize: 14, fontWeight: '600', color: '#fff' },
+  flexBtn: { flex: 1 },
 });

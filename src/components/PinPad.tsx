@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing } from '../constants/theme';
+import { AnimatedPressable } from './ui/AnimatedPressable';
+import { hapticToggle } from '../utils/haptics';
 
 interface PinPadProps {
   onComplete: (pin: string) => void;
@@ -47,15 +49,15 @@ export function PinPad({ onComplete, error }: PinPadProps) {
           if (k === '') return <View key={i} style={styles.key} />;
           if (k === 'del') {
             return (
-              <TouchableOpacity key={i} style={styles.key} onPress={handleDelete} hitSlop={8}>
+              <AnimatedPressable key={i} style={styles.key} onPress={handleDelete} onPressFeedback={hapticToggle} pressScale={0.92} hitSlop={8}>
                 <Ionicons name="backspace-outline" size={22} color={c.textSecondary} />
-              </TouchableOpacity>
+              </AnimatedPressable>
             );
           }
           return (
-            <TouchableOpacity key={i} style={styles.key} onPress={() => handlePress(k)}>
+            <AnimatedPressable key={i} style={styles.key} onPress={() => handlePress(k)} onPressFeedback={hapticToggle} pressScale={0.92}>
               <Text style={styles.keyText}>{k}</Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           );
         })}
       </View>

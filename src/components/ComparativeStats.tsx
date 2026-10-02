@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useColors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius, typography } from '../constants/theme';
 import { SPENDING_BENCHMARKS } from '../data/spendingBenchmarks';
 import type { CategoryBreakdownItem } from '../hooks/useReports';
 
@@ -75,7 +75,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     gap: spacing.sm,
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  title: { fontSize: 11, fontWeight: '700', color: c.textSecondary, letterSpacing: 0.5 },
+  title: { ...typography.label, color: c.textSecondary },
   disclaimer: { fontSize: 11, color: c.textTertiary, lineHeight: 15, marginBottom: spacing.xs },
   row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, paddingVertical: 4 },
   dot: { width: 8, height: 8, borderRadius: 4, marginTop: 5 },

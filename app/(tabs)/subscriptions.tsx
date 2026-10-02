@@ -3,18 +3,19 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useSubscriptions } from '../../src/hooks/useSubscriptions';
 import { SubscriptionCard } from '../../src/components/SubscriptionCard';
 import { SubscriptionForm } from '../../src/components/SubscriptionForm';
 import { useColors, spacing, typography } from '../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
+import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
 import { formatCurrency } from '../../src/utils/currency';
 import { getTotalAnnualCost, getTotalMonthlyCost } from '../../src/utils/subscriptionCalculations';
 import { hapticSave } from '../../src/utils/haptics';
@@ -91,9 +92,9 @@ export default function SubscriptionsScreen() {
               {data.subscriptions.length} activa{data.subscriptions.length !== 1 ? 's' : ''}
             </Text>
           </View>
-          <TouchableOpacity style={styles.addButton} onPress={() => setFormVisible(true)}>
+          <AnimatedPressable style={styles.addButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
             <Ionicons name="add" size={20} color={c.textPrimary} />
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <View style={styles.divider} />
@@ -122,13 +123,14 @@ export default function SubscriptionsScreen() {
             </Text>
           </View>
         ) : (
-          data.subscriptions.map((sub) => (
-            <SubscriptionCard
-              key={sub.id}
-              subscription={sub}
-              onPress={handlePress}
-              onLongPress={handleLongPress}
-            />
+          data.subscriptions.map((sub, i) => (
+            <Animated.View key={sub.id} entering={FadeInDown.duration(300).delay(i * 60)}>
+              <SubscriptionCard
+                subscription={sub}
+                onPress={handlePress}
+                onLongPress={handleLongPress}
+              />
+            </Animated.View>
           ))
         )}
 
@@ -152,7 +154,7 @@ export default function SubscriptionsScreen() {
 const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   loadingContainer: { flex: 1, backgroundColor: c.background, alignItems: 'center', justifyContent: 'center' },
   container: { flex: 1, backgroundColor: c.background },
-  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

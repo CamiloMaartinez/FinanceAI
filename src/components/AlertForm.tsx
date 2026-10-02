@@ -4,16 +4,19 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
   Modal,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, interpolateColor, withSpring } from 'react-native-reanimated';
 import { useColors, spacing, typography, radius } from '../constants/theme';
+import { springDefault } from '../constants/motion';
 import type { AlertType } from '../hooks/useAlerts';
 import { ALERT_TYPE_LABELS, ALERT_TYPE_UNITS } from '../hooks/useAlerts';
 import type { Category } from '../models/types';
+import { AnimatedPressable } from './ui/AnimatedPressable';
+import { hapticSave, hapticToggle } from '../utils/haptics';
 
 interface AlertFormProps {
   visible: boolean;
@@ -51,6 +54,19 @@ const ALERT_TYPES: { value: AlertType; description: string }[] = [
   },
 ];
 
+// Anillo de foco animado (§4/§15 apple-design).
+function useFocusRing(c: ReturnType<typeof useColors>) {
+  const focus = useSharedValue(0);
+  const style = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(focus.value, [0, 1], ['transparent', c.income]),
+  }));
+  return {
+    style,
+    onFocus: () => { focus.value = withSpring(1, springDefault); },
+    onBlur: () => { focus.value = withSpring(0, springDefault); },
+  };
+}
+
 export function AlertForm({ visible, categories, onClose, onSave }: AlertFormProps) {
   const [type,       setType]       = useState<AlertType>('balance_below');
   const [threshold,  setThreshold]  = useState('');
@@ -58,6 +74,7 @@ export function AlertForm({ visible, categories, onClose, onSave }: AlertFormPro
   const [error,      setError]      = useState('');
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
+  const thresholdRing = useFocusRing(c);
 
   const unit       = ALERT_TYPE_UNITS[type];
   const needsCategory = type === 'category_expense_above';
@@ -98,13 +115,13 @@ export function AlertForm({ visible, categories, onClose, onSave }: AlertFormPro
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleClose}>
+          <AnimatedPressable onPress={handleClose}>
             <Text style={styles.cancelBtn}>Cancelar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
           <Text style={styles.headerTitle}>NUEVA ALERTA</Text>
-          <TouchableOpacity onPress={handleSave}>
+          <AnimatedPressable onPress={handleSave} onPressFeedback={hapticSave}>
             <Text style={styles.saveBtn}>Guardar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
@@ -118,13 +135,15 @@ export function AlertForm({ visible, categories, onClose, onSave }: AlertFormPro
           {/* Tipo de alerta */}
           <Text style={styles.fieldLabel}>TIPO DE ALERTA</Text>
           {ALERT_TYPES.map((t) => (
-            <TouchableOpacity
+            <AnimatedPressable
               key={t.value}
+              pressScale={0.99}
               style={[
                 styles.typeOption,
                 type === t.value && styles.typeOptionSelected,
               ]}
               onPress={() => { setType(t.value); setCategoryId(null); setError(''); }}
+              onPressFeedback={hapticToggle}
             >
               <View style={styles.typeLeft}>
                 <Text style={[
@@ -138,14 +157,14 @@ export function AlertForm({ visible, categories, onClose, onSave }: AlertFormPro
               {type === t.value && (
                 <View style={styles.selectedDot} />
               )}
-            </TouchableOpacity>
+            </AnimatedPressable>
           ))}
 
           {/* Valor umbral */}
           <Text style={[styles.fieldLabel, { marginTop: spacing.xl }]}>
             {unit === '%' ? 'PORCENTAJE' : 'MONTO'}
           </Text>
-          <View style={styles.thresholdRow}>
+          <Animated.View style={[styles.thresholdRow, thresholdRing.style]}>
             <Text style={styles.thresholdPrefix}>{unit}</Text>
             <TextInput
               style={styles.thresholdInput}
@@ -153,10 +172,12 @@ export function AlertForm({ visible, categories, onClose, onSave }: AlertFormPro
               placeholderTextColor={c.textTertiary}
               value={threshold}
               onChangeText={(t) => { setThreshold(t); setError(''); }}
+              onFocus={thresholdRing.onFocus}
+              onBlur={thresholdRing.onBlur}
               keyboardType="numeric"
               autoFocus
             />
-          </View>
+          </Animated.View>
           <View style={styles.thresholdDivider} />
 
           {/* Selector de categoría */}
@@ -168,8 +189,9 @@ export function AlertForm({ visible, categories, onClose, onSave }: AlertFormPro
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View style={styles.categoryRow}>
                   {categories.map((cat) => (
-                    <TouchableOpacity
+                    <AnimatedPressable
                       key={cat.id}
+                      pressScale={0.97}
                       style={[
                         styles.categoryChip,
                         categoryId === cat.id && {
@@ -178,6 +200,7 @@ export function AlertForm({ visible, categories, onClose, onSave }: AlertFormPro
                         },
                       ]}
                       onPress={() => { setCategoryId(cat.id); setError(''); }}
+                      onPressFeedback={hapticToggle}
                     >
                       <Text style={[
                         styles.categoryChipText,
@@ -185,7 +208,7 @@ export function AlertForm({ visible, categories, onClose, onSave }: AlertFormPro
                       ]}>
                         {cat.name}
                       </Text>
-                    </TouchableOpacity>
+                    </AnimatedPressable>
                   ))}
                 </View>
               </ScrollView>
@@ -213,7 +236,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   saveBtn: { fontSize: 15, fontWeight: '400', color: c.income },
   form: { padding: spacing.xl },
   errorBox: {
-    backgroundColor: 'rgba(229,90,78,0.1)',
+    backgroundColor: c.expense + '1A',
     borderRadius: radius.sm,
     padding: spacing.md,
     marginBottom: spacing.lg,
@@ -239,6 +262,9 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'baseline',
     gap: spacing.sm,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    borderRadius: radius.sm,
   },
   thresholdPrefix: {
     fontSize: 28,

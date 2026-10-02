@@ -1,0 +1,79 @@
+# Genera un .ipa SIN FIRMAR de FinanceAI para instalarlo con SideStore /
+# AltStore usando un Apple ID gratuito (sin cuenta Apple Developer de pago).
+# SideStore firma la app en el iPhone; la firma dura 7 días y se renueva
+# desde el mismo SideStore.
+#
+# Se ejecuta a mano: GitHub → Actions → "iOS IPA (SideStore)" → Run workflow.
+# El .ipa queda como artifact descargable al final de la ejecución.
+
+name: iOS IPA (SideStore)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    # macos-26 trae Xcode 26.x; SDK 57 exige Xcode 26.4 o superior.
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      # URL pública (no es secreta) donde viven las rutas app/api/* en EAS
+      # Hosting. Se incrusta en el bundle al compilar. Se puede sobrescribir
+      # con la variable de repositorio EXPO_PUBLIC_API_BASE_URL.
+      EXPO_PUBLIC_API_BASE_URL: ${{ vars.EXPO_PUBLIC_API_BASE_URL || 'https://camilomartinez-financeai.expo.app' }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Generar proyecto nativo iOS
+        run: npx expo prebuild --platform ios --clean --no-install
+
+      # Un Apple ID gratuito no puede firmar apps con Push Notifications.
+      # Las notificaciones LOCALES (aviso de suscripciones) siguen funcionando.
+      - name: Quitar entitlement de push
+        run: |
+          for f in ios/*/*.entitlements; do
+            /usr/libexec/PlistBuddy -c "Delete :aps-environment" "$f" || true
+          done
+
+      - name: Instalar pods
+        run: cd ios && pod install
+
+      - name: Compilar (Release, sin firma)
+        run: |
+          set -o pipefail
+          WORKSPACE=$(ls -d ios/*.xcworkspace | head -n 1)
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          xcodebuild \
+            -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build | tail -n 200
+
+      - name: Empaquetar .ipa
+        run: |
+          APP=$(ls -d build/Build/Products/Release-iphoneos/*.app | head -n 1)
+          mkdir -p Payload
+          cp -R "$APP" Payload/
+          zip -qry FinanceAI.ipa Payload
+          ls -lh FinanceAI.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FinanceAI-ipa
+          path: FinanceAI.ipa
+          retention-days: 14

@@ -4,15 +4,18 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
   Modal,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { useAnimatedStyle, useSharedValue, interpolateColor, withSpring } from 'react-native-reanimated';
 import { useColors, spacing, radius } from '../constants/theme';
+import { springDefault } from '../constants/motion';
 import { SUPPORTED_CURRENCIES, getCurrencyInfo } from '../constants/currencies';
+import { AnimatedPressable } from './ui/AnimatedPressable';
+import { hapticSave, hapticToggle } from '../utils/haptics';
 
 interface AccountFormProps {
   visible: boolean;
@@ -51,6 +54,20 @@ const ACCOUNT_COLORS = [
   '#AC8E68', // Café
 ];
 
+// Anillo de foco animado (§4/§15 apple-design): el borde interpola de
+// c.border a c.accent con un resorte crítico, sin desplazar el layout.
+function useFocusRing(c: ReturnType<typeof useColors>) {
+  const focus = useSharedValue(0);
+  const style = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(focus.value, [0, 1], [c.border, c.accent]),
+  }));
+  return {
+    style,
+    onFocus: () => { focus.value = withSpring(1, springDefault); },
+    onBlur: () => { focus.value = withSpring(0, springDefault); },
+  };
+}
+
 export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
@@ -60,6 +77,9 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
   const [colorHex,   setColorHex]   = useState('#007AFF');
   const [currency,   setCurrency]   = useState('COP');
   const [error,      setError]      = useState('');
+
+  const nameRing = useFocusRing(c);
+  const balanceRing = useFocusRing(c);
 
   const handleSave = () => {
     // Validaciones
@@ -100,13 +120,13 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
       >
         {/* Header del modal */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleClose}>
+          <AnimatedPressable onPress={handleClose}>
             <Text style={styles.cancelBtn}>Cancelar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
           <Text style={styles.headerTitle}>Nueva cuenta</Text>
-          <TouchableOpacity onPress={handleSave}>
+          <AnimatedPressable onPress={handleSave} onPressFeedback={hapticSave}>
             <Text style={styles.saveBtn}>Guardar</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
@@ -121,14 +141,18 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
           {/* Nombre */}
           <View style={styles.field}>
             <Text style={styles.fieldLabel}>Nombre de la cuenta</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ej: Nequi, Bancolombia..."
-              placeholderTextColor={c.textTertiary}
-              value={name}
-              onChangeText={(text) => { setName(text); setError(''); }}
-              autoFocus
-            />
+            <Animated.View style={[styles.input, nameRing.style]}>
+              <TextInput
+                style={styles.inputText}
+                placeholder="Ej: Nequi, Bancolombia..."
+                placeholderTextColor={c.textTertiary}
+                value={name}
+                onChangeText={(text) => { setName(text); setError(''); }}
+                onFocus={nameRing.onFocus}
+                onBlur={nameRing.onBlur}
+                autoFocus
+              />
+            </Animated.View>
           </View>
 
           {/* Moneda */}
@@ -136,13 +160,15 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
             <Text style={styles.fieldLabel}>Moneda</Text>
             <View style={styles.typeGrid}>
               {SUPPORTED_CURRENCIES.map((cur) => (
-                <TouchableOpacity
+                <AnimatedPressable
                   key={cur.code}
+                  pressScale={0.97}
                   style={[
                     styles.typeOption,
                     currency === cur.code && styles.typeOptionSelected,
                   ]}
                   onPress={() => setCurrency(cur.code)}
+                  onPressFeedback={hapticToggle}
                 >
                   <Text style={[
                     styles.typeLabel,
@@ -150,7 +176,7 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
                   ]}>
                     {cur.symbol} {cur.code}
                   </Text>
-                </TouchableOpacity>
+                </AnimatedPressable>
               ))}
             </View>
             {currency !== 'COP' && (
@@ -163,14 +189,18 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
           {/* Saldo inicial */}
           <View style={styles.field}>
             <Text style={styles.fieldLabel}>Saldo inicial</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="0"
-              placeholderTextColor={c.textTertiary}
-              value={balance}
-              onChangeText={(text) => { setBalance(text); setError(''); }}
-              keyboardType="numeric"
-            />
+            <Animated.View style={[styles.input, balanceRing.style]}>
+              <TextInput
+                style={styles.inputText}
+                placeholder="0"
+                placeholderTextColor={c.textTertiary}
+                value={balance}
+                onChangeText={(text) => { setBalance(text); setError(''); }}
+                onFocus={balanceRing.onFocus}
+                onBlur={balanceRing.onBlur}
+                keyboardType="numeric"
+              />
+            </Animated.View>
           </View>
 
           {/* Tipo de cuenta */}
@@ -178,18 +208,20 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
             <Text style={styles.fieldLabel}>Tipo de cuenta</Text>
             <View style={styles.typeGrid}>
               {ACCOUNT_TYPES.map((t) => (
-                <TouchableOpacity
+                <AnimatedPressable
                   key={t.value}
+                  pressScale={0.97}
                   style={[
                     styles.typeOption,
                     type === t.value && styles.typeOptionSelected,
                   ]}
                   onPress={() => setType(t.value)}
+                  onPressFeedback={hapticToggle}
                 >
                   <Ionicons
                     name={t.icon as any}
                     size={20}
-                    color={type === t.value ? c.blue : c.textSecondary}
+                    color={type === t.value ? c.accent : c.textSecondary}
                   />
                   <Text style={[
                     styles.typeLabel,
@@ -197,7 +229,7 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
                   ]}>
                     {t.label}
                   </Text>
-                </TouchableOpacity>
+                </AnimatedPressable>
               ))}
             </View>
           </View>
@@ -207,19 +239,21 @@ export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
             <Text style={styles.fieldLabel}>Color</Text>
             <View style={styles.colorGrid}>
               {ACCOUNT_COLORS.map((hex) => (
-                <TouchableOpacity
+                <AnimatedPressable
                   key={hex}
+                  pressScale={0.9}
                   style={[
                     styles.colorDot,
                     { backgroundColor: hex },
                     colorHex === hex && styles.colorDotSelected,
                   ]}
                   onPress={() => setColorHex(hex)}
+                  onPressFeedback={hapticToggle}
                 >
                   {colorHex === hex && (
                     <Ionicons name="checkmark" size={16} color="#fff" />
                   )}
-                </TouchableOpacity>
+                </AnimatedPressable>
               ))}
             </View>
           </View>
@@ -268,13 +302,13 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   saveBtn: {
     fontSize:   16,
     fontWeight: '600',
-    color:      c.blue,
+    color:      c.accent,
   },
   form: {
     padding: spacing.lg,
   },
   errorBox: {
-    backgroundColor: 'rgba(255,59,48,0.15)',
+    backgroundColor: c.expense + '26',
     borderRadius:    radius.md,
     padding:         spacing.md,
     marginBottom:    spacing.md,
@@ -297,6 +331,10 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   input: {
     backgroundColor: c.surface,
     borderRadius:    radius.md,
+    borderWidth:      1.5,
+    borderColor:      c.border,
+  },
+  inputText: {
     padding:         spacing.lg,
     fontSize:        16,
     color:           c.textPrimary,
@@ -317,15 +355,15 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     borderColor:    'transparent',
   },
   typeOptionSelected: {
-    borderColor:     c.blue,
-    backgroundColor: 'rgba(0,122,255,0.1)',
+    borderColor:     c.accent,
+    backgroundColor: c.accent + '1A',
   },
   typeLabel: {
     fontSize: 13,
     color:    c.textSecondary,
   },
   typeLabelSelected: {
-    color:      c.blue,
+    color:      c.accent,
     fontWeight: '500',
   },
   currencyHint: {

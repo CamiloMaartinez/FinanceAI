@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing } from '../constants/theme';
 import { formatCurrency } from '../utils/currency';
+import { AnimatedPressable } from './ui/AnimatedPressable';
 import type { TransactionWithCategory } from '../models/types';
 
 interface TransactionRowProps {
@@ -39,11 +40,10 @@ export function TransactionRow({ transaction, onPress, onLongPress }: Transactio
   const isIncome = transaction.type === 'income' || transaction.type === 'loan';
 
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       style={styles.row}
       onPress={onPress ? () => onPress(transaction) : undefined}
       onLongPress={onLongPress ? () => onLongPress(transaction) : undefined}
-      activeOpacity={0.7}
     >
       <View style={[styles.iconCircle, { backgroundColor: color + '20' }]}>
         <Ionicons name={icon} size={18} color={color} />
@@ -62,7 +62,7 @@ export function TransactionRow({ transaction, onPress, onLongPress }: Transactio
       <Text style={[styles.amount, { color: isIncome ? c.income : c.expense }]}>
         {isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}
       </Text>
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 }
 

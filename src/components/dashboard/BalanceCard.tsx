@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, typography } from '../../constants/theme';
 import { formatCurrency } from '../../utils/currency';
+import { AnimatedPressable } from '../ui/AnimatedPressable';
+import { hapticToggle } from '../../utils/haptics';
 
 interface BalanceCardProps {
   totalBalance: number;
@@ -38,13 +40,13 @@ export function BalanceCard({ totalBalance, netFlow }: BalanceCardProps) {
     <View style={s.container}>
       <View style={s.header}>
         <Text style={s.label}>PATRIMONIO TOTAL</Text>
-        <TouchableOpacity onPress={() => setIsVisible(!isVisible)}>
+        <AnimatedPressable onPress={() => setIsVisible(!isVisible)} onPressFeedback={hapticToggle} hitSlop={8}>
           <Ionicons
             name={isVisible ? 'eye-outline' : 'eye-off-outline'}
             size={14}
             color={c.textTertiary}
           />
-        </TouchableOpacity>
+        </AnimatedPressable>
       </View>
       <Text style={s.amount}>
         {isVisible ? formatCurrency(totalBalance) : '••••••••'}
