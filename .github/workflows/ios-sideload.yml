@@ -21,6 +21,9 @@ jobs:
       # Hosting. Se incrusta en el bundle al compilar. Se puede sobrescribir
       # con la variable de repositorio EXPO_PUBLIC_API_BASE_URL.
       EXPO_PUBLIC_API_BASE_URL: ${{ vars.EXPO_PUBLIC_API_BASE_URL || 'https://camilomartinez-financeai.expo.app' }}
+      # Token que exige el servidor (src/server/guard.ts). Secreto del repo:
+      # Settings → Secrets and variables → Actions → EXPO_PUBLIC_APP_TOKEN.
+      EXPO_PUBLIC_APP_TOKEN: ${{ secrets.EXPO_PUBLIC_APP_TOKEN }}
 
     steps:
       - uses: actions/checkout@v5
@@ -29,6 +32,13 @@ jobs:
         with:
           node-version: 22
           cache: npm
+
+      - name: Verificar secreto del token
+        run: |
+          if [ -z "$EXPO_PUBLIC_APP_TOKEN" ]; then
+            echo "::error::Falta el secreto EXPO_PUBLIC_APP_TOKEN; sin él la IA responde 'No autorizado'."
+            exit 1
+          fi
 
       - name: Instalar dependencias
         run: npm ci

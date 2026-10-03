@@ -13,6 +13,7 @@ import { Onboarding } from '../src/components/Onboarding';
 import { hasSeenOnboarding } from '../src/services/onboarding';
 import { getActiveProfile } from '../src/services/profiles';
 import { setDatabaseFileName } from '../src/database/db';
+import { scheduleBackupReminder } from '../src/services/backup';
 
 LogBox.ignoreLogs(['A props object containing a "key" prop']);
 
@@ -46,6 +47,8 @@ function RootLayoutInner() {
 
       await seedIfEmpty();
       await evaluateAlerts();
+      // No bloquea el arranque: si falla, simplemente no hay recordatorio
+      scheduleBackupReminder().catch(() => {});
 
       const seen = await hasSeenOnboarding(activeProfile.id);
       setOnboardingSeen(seen);

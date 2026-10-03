@@ -3,6 +3,9 @@
 // vive del lado del servidor en src/server/gemini.ts.
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? '';
+// Token que exige src/server/guard.ts. Se incrusta al compilar (secreto de
+// GitHub Actions); no es infalible, pero impide que cualquiera use la API.
+const APP_TOKEN = process.env.EXPO_PUBLIC_APP_TOKEN ?? '';
 
 interface FinancialContext {
   totalBalance: number;
@@ -20,7 +23,7 @@ export interface PurchaseEvaluation {
 async function postJson<T>(path: string, body: unknown): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-app-token': APP_TOKEN },
     body: JSON.stringify(body),
   });
 

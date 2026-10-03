@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -22,10 +22,24 @@ import { hapticToggle } from '../../src/utils/haptics';
 import { ExchangeRatesModal } from '../../src/components/ExchangeRatesModal';
 import { PinSetupModal } from '../../src/components/PinSetupModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { exportBackup, pickBackupFile, restoreBackup } from '../../src/services/backup';
+import { exportBackup, getLastBackupDate, pickBackupFile, restoreBackup } from '../../src/services/backup';
 import { ProfileSwitcherModal } from '../../src/components/ProfileSwitcherModal';
 import { getActiveProfileId } from '../../src/services/profiles';
 import type { Achievement } from '../../src/hooks/useProfile';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function isBackupStale(lastBackup: Date | null): boolean {
+  return !lastBackup || Date.now() - lastBackup.getTime() > 7 * DAY_MS;
+}
+
+function describeLastBackup(lastBackup: Date | null): string {
+  if (!lastBackup) return 'Nunca has hecho un respaldo';
+  const days = Math.floor((Date.now() - lastBackup.getTime()) / DAY_MS);
+  if (days === 0) return 'Último respaldo: hoy';
+  if (days === 1) return 'Último respaldo: ayer';
+  return `Último respaldo: hace ${days} días`;
+}
 
 export default function ProfileScreen() {
   const { profile, stats, achievements, isLoading, updateName, toggleFaceId } = useProfile();
@@ -36,6 +50,11 @@ export default function ProfileScreen() {
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [lastBackup, setLastBackup] = useState<Date | null>(null);
+
+  useEffect(() => {
+    getLastBackupDate().then(setLastBackup).catch(() => {});
+  }, []);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
   const [newName, setNewName] = useState('');
 
@@ -173,6 +192,7 @@ export default function ProfileScreen() {
     setIsExporting(true);
     try {
       await exportBackup();
+      setLastBackup(await getLastBackupDate());
     } catch (err) {
       Alert.alert('Error', err instanceof Error ? err.message : 'No se pudo exportar el respaldo');
     } finally {
@@ -386,7 +406,9 @@ export default function ProfileScreen() {
         <AnimatedPressable style={s.settingRow} onPress={handleExport} disabled={isExporting} onPressFeedback={hapticToggle}>
           <View>
             <Text style={s.settingLabel}>Exportar respaldo</Text>
-            <Text style={s.settingDesc}>Guarda tus datos como archivo</Text>
+            <Text style={[s.settingDesc, isBackupStale(lastBackup) && { color: c.orange }]}>
+              {describeLastBackup(lastBackup)}
+            </Text>
           </View>
           {isExporting ? (
             <ActivityIndicator size="small" color={c.textTertiary} />

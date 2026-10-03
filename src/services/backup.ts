@@ -1,9 +1,19 @@
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
+import * as Notifications from 'expo-notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getDb } from '../database/db';
+import { getActiveProfileId } from './profiles';
+import { getExchangeRates, setExchangeRate } from './exchangeRates';
 
 const BACKUP_VERSION = 1;
+
+// El respaldo es por perfil (cada perfil tiene su propia base de datos),
+// así que la fecha del último respaldo también se guarda por perfil.
+const LAST_BACKUP_KEY_PREFIX = 'last-backup-at';
+const BACKUP_REMINDER_ID = 'backup-reminder';
+const BACKUP_REMINDER_DAYS = 7;
 
 // Todas las tablas que respaldamos, en el orden correcto para poder
 // restaurarlas después sin violar relaciones (categorías y cuentas antes
@@ -24,6 +34,8 @@ interface BackupData {
   version: number;
   exportedAt: string;
   tables: Record<string, any[]>;
+  // Opcional: los respaldos hechos antes de agregar esto no lo traen
+  settings?: { exchangeRates?: Record<string, number> };
 }
 
 // Exporta TODA la base de datos a un archivo JSON y abre el menú nativo de
@@ -41,6 +53,7 @@ export async function exportBackup(): Promise<void> {
     version: BACKUP_VERSION,
     exportedAt: new Date().toISOString(),
     tables,
+    settings: { exchangeRates: await getExchangeRates() },
   };
 
   const dateLabel = new Date().toISOString().slice(0, 10);
@@ -57,6 +70,52 @@ export async function exportBackup(): Promise<void> {
   await Sharing.shareAsync(file.uri, {
     mimeType: 'application/json',
     dialogTitle: 'Guardar respaldo de FinanceAI',
+  });
+
+  // iOS no avisa si el usuario canceló la hoja de compartir, así que
+  // contamos el respaldo como hecho en cuanto se cierra.
+  const profileId = await getActiveProfileId();
+  await AsyncStorage.setItem(`${LAST_BACKUP_KEY_PREFIX}:${profileId}`, new Date().toISOString());
+  await scheduleBackupReminder();
+}
+
+export async function getLastBackupDate(): Promise<Date | null> {
+  const profileId = await getActiveProfileId();
+  const raw = await AsyncStorage.getItem(`${LAST_BACKUP_KEY_PREFIX}:${profileId}`);
+  return raw ? new Date(raw) : null;
+}
+
+// Programa (o reprograma) un recordatorio local para hacer respaldo 7 días
+// después del último. No pide permiso: si el usuario no ha aceptado
+// notificaciones, simplemente no se programa nada.
+export async function scheduleBackupReminder(): Promise<void> {
+  const { status } = await Notifications.getPermissionsAsync();
+  if (status !== 'granted') return;
+
+  await Notifications.cancelScheduledNotificationAsync(BACKUP_REMINDER_ID);
+
+  const lastBackup = await getLastBackupDate();
+  const triggerDate = new Date(lastBackup ?? Date.now());
+  triggerDate.setDate(triggerDate.getDate() + BACKUP_REMINDER_DAYS);
+  triggerDate.setHours(10, 0, 0, 0);
+
+  // Si ya pasó (respaldo muy viejo), avisamos mañana a las 10:00
+  if (triggerDate.getTime() <= Date.now()) {
+    triggerDate.setTime(Date.now());
+    triggerDate.setDate(triggerDate.getDate() + 1);
+    triggerDate.setHours(10, 0, 0, 0);
+  }
+
+  await Notifications.scheduleNotificationAsync({
+    identifier: BACKUP_REMINDER_ID,
+    content: {
+      title: 'Haz un respaldo de FinanceAI',
+      body: 'Tus datos solo viven en este iPhone. Ve a Perfil → Exportar respaldo.',
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      date: triggerDate,
+    },
   });
 }
 
@@ -107,4 +166,8 @@ export async function restoreBackup(data: BackupData): Promise<void> {
       }
     }
   });
+
+  for (const [code, rate] of Object.entries(data.settings?.exchangeRates ?? {})) {
+    await setExchangeRate(code, rate);
+  }
 }

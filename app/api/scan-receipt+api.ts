@@ -1,6 +1,10 @@
 import { scanReceiptServer } from '../../src/server/gemini';
+import { guardRequest } from '../../src/server/guard';
 
 export async function POST(request: Request) {
+  const blocked = guardRequest(request, 8_000_000);
+  if (blocked) return blocked;
+
   let body: { base64Image?: string };
 
   try {

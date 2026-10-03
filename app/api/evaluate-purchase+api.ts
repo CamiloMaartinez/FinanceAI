@@ -1,6 +1,10 @@
 import { evaluatePurchaseServer, type FinancialContext } from '../../src/server/gemini';
+import { guardRequest } from '../../src/server/guard';
 
 export async function POST(request: Request) {
+  const blocked = guardRequest(request, 50_000);
+  if (blocked) return blocked;
+
   let body: { itemDescription?: string; price?: number; context?: FinancialContext };
 
   try {
