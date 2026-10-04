@@ -70,7 +70,8 @@
     "collectCoverageFrom": [
       "src/utils/**/*.ts",
       "src/database/db.ts",
-      "src/server/guard.ts"
+      "src/server/guard.ts",
+      "src/services/exchangeRates.ts"
     ]
   }
 }

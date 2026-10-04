@@ -23,6 +23,7 @@ import { ExchangeRatesModal } from '../../src/components/ExchangeRatesModal';
 import { PinSetupModal } from '../../src/components/PinSetupModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { exportBackup, getLastBackupDate, pickBackupFile, restoreBackup } from '../../src/services/backup';
+import { exportTransactionsCsv } from '../../src/services/csvExport';
 import { ProfileSwitcherModal } from '../../src/components/ProfileSwitcherModal';
 import { getActiveProfileId } from '../../src/services/profiles';
 import type { Achievement } from '../../src/hooks/useProfile';
@@ -50,6 +51,7 @@ export default function ProfileScreen() {
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isExportingCsv, setIsExportingCsv] = useState(false);
   const [lastBackup, setLastBackup] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -197,6 +199,17 @@ export default function ProfileScreen() {
       Alert.alert('Error', err instanceof Error ? err.message : 'No se pudo exportar el respaldo');
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleExportCsv = async () => {
+    setIsExportingCsv(true);
+    try {
+      await exportTransactionsCsv();
+    } catch (err) {
+      Alert.alert('No se pudo exportar', err instanceof Error ? err.message : 'Inténtalo de nuevo');
+    } finally {
+      setIsExportingCsv(false);
     }
   };
 
@@ -414,6 +427,18 @@ export default function ProfileScreen() {
             <ActivityIndicator size="small" color={c.textTertiary} />
           ) : (
             <Ionicons name="share-outline" size={18} color={c.textTertiary} />
+          )}
+        </AnimatedPressable>
+        <View style={s.settingDivider} />
+        <AnimatedPressable style={s.settingRow} onPress={handleExportCsv} disabled={isExportingCsv} onPressFeedback={hapticToggle}>
+          <View>
+            <Text style={s.settingLabel}>Exportar movimientos</Text>
+            <Text style={s.settingDesc}>Archivo CSV para Excel o Google Sheets</Text>
+          </View>
+          {isExportingCsv ? (
+            <ActivityIndicator size="small" color={c.textTertiary} />
+          ) : (
+            <Ionicons name="grid-outline" size={18} color={c.textTertiary} />
           )}
         </AnimatedPressable>
         <View style={s.settingDivider} />

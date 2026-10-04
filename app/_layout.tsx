@@ -15,6 +15,7 @@ import { getActiveProfile } from '../src/services/profiles';
 import { setDatabaseFileName, processDueRecurring } from '../src/database/db';
 import { scheduleBackupReminder } from '../src/services/backup';
 import { refreshSubscriptionBilling } from '../src/services/subscriptionBilling';
+import { refreshExchangeRates } from '../src/services/exchangeRates';
 
 LogBox.ignoreLogs(['A props object containing a "key" prop']);
 
@@ -54,6 +55,8 @@ function RootLayoutInner() {
       await evaluateAlerts();
       // No bloquea el arranque: si falla, simplemente no hay recordatorio
       scheduleBackupReminder().catch(() => {});
+      // Tampoco bloquea: sin internet se usan las últimas tasas guardadas
+      refreshExchangeRates().catch(() => {});
 
       const seen = await hasSeenOnboarding(activeProfile.id);
       setOnboardingSeen(seen);
