@@ -18,7 +18,17 @@ import { ReceiptScannerButton } from './ReceiptScannerButton';
 import { suggestCategory } from '../services/ai';
 import { AnimatedPressable } from './ui/AnimatedPressable';
 import { hapticSave, hapticToggle } from '../utils/haptics';
-import type { Account, Category, TransactionWithCategory } from '../models/types';
+import { DateField } from './DateField';
+import { atLocalNoon, RECURRENCE_LABELS, type RecurrenceFrequency } from '../utils/recurrence';
+import type { Account, Category, TransactionInput, TransactionWithCategory } from '../models/types';
+
+type FormType = 'expense' | 'income' | 'transfer';
+
+function isSameDay(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear()
+    && a.getMonth() === b.getMonth()
+    && a.getDate() === b.getDate();
+}
 
 interface TransactionFormProps {
   visible: boolean;
@@ -29,14 +39,8 @@ interface TransactionFormProps {
   // de Siri que abre financeai://transactions?monto=...&nota=...)
   prefill?: { amount?: number; notes?: string; type?: 'expense' | 'income' } | null;
   onClose: () => void;
-  onSave: (
-    amount: number,
-    type: string,
-    date: string,
-    accountId: string,
-    categoryId: string | null,
-    notes: string
-  ) => void;
+  // `recurrence` solo llega en movimientos nuevos de ingreso o gasto
+  onSave: (input: TransactionInput, recurrence: RecurrenceFrequency | null) => void;
 }
 
 // Anillo de foco animado (§4/§15 apple-design): interpola el borde entre
@@ -65,17 +69,27 @@ export function TransactionForm({
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
   const isEditing = !!editingTransaction;
-  const [type,       setType]       = useState<'expense' | 'income'>('expense');
+  const [type,       setType]       = useState<FormType>('expense');
   const [amount,     setAmount]     = useState('');
   const [accountId,  setAccountId]  = useState<string | null>(null);
+  const [toAccountId, setToAccountId] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [notes,      setNotes]      = useState('');
+  const [date,       setDate]       = useState<Date>(() => new Date());
+  const [recurrence, setRecurrence] = useState<RecurrenceFrequency | null>(null);
   const [error,      setError]      = useState('');
   const [categoryFromAI, setCategoryFromAI] = useState(false);
   const [isSuggesting,   setIsSuggesting]   = useState(false);
 
   const amountRing = useFocusRing(c);
   const notesRing = useFocusRing(c);
+
+  const fromAccount = accounts.find((a) => a.id === accountId);
+  // Solo se puede transferir entre cuentas de la misma moneda: el monto
+  // que sale es el mismo que entra.
+  const transferTargets = accounts.filter(
+    (a) => a.id !== accountId && (!fromAccount || a.currency === fromAccount.currency)
+  );
 
   // Selecciona la primera cuenta automáticamente cuando se abre (solo si no estamos editando)
   useEffect(() => {
@@ -84,14 +98,25 @@ export function TransactionForm({
     }
   }, [visible, accounts]);
 
+  // Si la cuenta destino deja de ser válida (misma cuenta u otra moneda), se quita
+  useEffect(() => {
+    if (toAccountId && !transferTargets.some((a) => a.id === toAccountId)) {
+      setToAccountId(null);
+    }
+  }, [accountId]);
+
   // Precarga los datos cuando se abre en modo edición
   useEffect(() => {
     if (visible && editingTransaction) {
-      setType(editingTransaction.type as 'expense' | 'income');
+      const t = editingTransaction.type;
+      setType(t === 'income' || t === 'transfer' ? t : 'expense');
       setAmount(String(Math.round(editingTransaction.amount)));
       setAccountId(editingTransaction.accountId);
+      setToAccountId(editingTransaction.toAccountId ?? null);
       setCategoryId(editingTransaction.categoryId);
       setNotes(editingTransaction.notes ?? '');
+      setDate(new Date(editingTransaction.date));
+      setRecurrence(null);
       setError('');
     }
   }, [visible, editingTransaction]);
@@ -133,6 +158,24 @@ export function TransactionForm({
     return () => clearTimeout(timeout);
   }, [notes, type, editingTransaction]);
 
+  const changeType = (next: FormType) => {
+    setType(next);
+    if (next !== 'expense') setCategoryId(null);
+    if (next === 'transfer') setRecurrence(null);
+    setError('');
+  };
+
+  // Hora que se guarda: si es hoy, la hora actual (así queda arriba en la
+  // lista); si se editó sin cambiar el día, la original; si es otro día,
+  // mediodía para que la zona horaria no lo mueva de fecha.
+  const resolveDateISO = (): string => {
+    if (editingTransaction && isSameDay(date, new Date(editingTransaction.date))) {
+      return editingTransaction.date;
+    }
+    if (isSameDay(date, new Date())) return new Date().toISOString();
+    return atLocalNoon(date).toISOString();
+  };
+
   const handleSave = () => {
     const amountNum = parseFloat(amount.replace(/\./g, '').replace(',', '.'));
 
@@ -141,7 +184,11 @@ export function TransactionForm({
       return;
     }
     if (!accountId) {
-      setError('Selecciona una cuenta');
+      setError(type === 'transfer' ? 'Selecciona la cuenta de origen' : 'Selecciona una cuenta');
+      return;
+    }
+    if (type === 'transfer' && !toAccountId) {
+      setError('Selecciona la cuenta de destino');
       return;
     }
     if (type === 'expense' && !categoryId) {
@@ -150,12 +197,16 @@ export function TransactionForm({
     }
 
     onSave(
-      amountNum,
-      type,
-      editingTransaction ? editingTransaction.date : new Date().toISOString(),
-      accountId,
-      type === 'expense' ? categoryId : null,
-      notes.trim()
+      {
+        amount: amountNum,
+        type,
+        date: resolveDateISO(),
+        accountId,
+        toAccountId: type === 'transfer' ? toAccountId : null,
+        categoryId: type === 'expense' ? categoryId : null,
+        notes: notes.trim(),
+      },
+      !isEditing && type !== 'transfer' ? recurrence : null
     );
     handleClose();
   };
@@ -164,9 +215,12 @@ export function TransactionForm({
     setType('expense');
     setAmount('');
     setAccountId(null);
+    setToAccountId(null);
     setCategoryId(null);
     setCategoryFromAI(false);
     setNotes('');
+    setDate(new Date());
+    setRecurrence(null);
     setError('');
     onClose();
   };
@@ -210,7 +264,7 @@ export function TransactionForm({
                 styles.typeSwitchOption,
                 type === 'expense' && styles.typeSwitchExpenseActive,
               ]}
-              onPress={() => { setType('expense'); setError(''); }}
+              onPress={() => changeType('expense')}
               onPressFeedback={hapticToggle}
             >
               <Text style={[
@@ -226,7 +280,7 @@ export function TransactionForm({
                 styles.typeSwitchOption,
                 type === 'income' && styles.typeSwitchIncomeActive,
               ]}
-              onPress={() => { setType('income'); setCategoryId(null); setError(''); }}
+              onPress={() => changeType('income')}
               onPressFeedback={hapticToggle}
             >
               <Text style={[
@@ -236,6 +290,25 @@ export function TransactionForm({
                 Ingreso
               </Text>
             </AnimatedPressable>
+            {/* Transferir requiere al menos dos cuentas */}
+            {accounts.length > 1 && (
+              <AnimatedPressable
+                pressScale={0.98}
+                style={[
+                  styles.typeSwitchOption,
+                  type === 'transfer' && styles.typeSwitchTransferActive,
+                ]}
+                onPress={() => changeType('transfer')}
+                onPressFeedback={hapticToggle}
+              >
+                <Text style={[
+                  styles.typeSwitchLabel,
+                  type === 'transfer' && styles.typeSwitchLabelActive,
+                ]}>
+                  Transferencia
+                </Text>
+              </AnimatedPressable>
+            )}
           </View>
 
           {/* Escanear recibo — solo para gastos nuevos, no al editar */}
@@ -274,9 +347,15 @@ export function TransactionForm({
             </Animated.View>
           </View>
 
-          {/* Cuenta */}
+          {/* Fecha */}
           <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Cuenta</Text>
+            <Text style={styles.fieldLabel}>Fecha</Text>
+            <DateField value={date} onChange={setDate} />
+          </View>
+
+          {/* Cuenta (o cuenta de origen, en transferencias) */}
+          <View style={styles.field}>
+            <Text style={styles.fieldLabel}>{type === 'transfer' ? 'Desde' : 'Cuenta'}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.chipRow}>
                 {accounts.map((acc) => (
@@ -300,6 +379,42 @@ export function TransactionForm({
               </View>
             </ScrollView>
           </View>
+
+          {/* Cuenta destino — solo transferencias */}
+          {type === 'transfer' && (
+            <View style={styles.field}>
+              <Text style={styles.fieldLabel}>Hacia</Text>
+              {transferTargets.length === 0 ? (
+                <Text style={styles.helperText}>
+                  No tienes otra cuenta en {fromAccount?.currency ?? 'esta moneda'}.
+                  Solo se puede transferir entre cuentas de la misma moneda.
+                </Text>
+              ) : (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={styles.chipRow}>
+                    {transferTargets.map((acc) => (
+                      <AnimatedPressable
+                        key={acc.id}
+                        pressScale={0.97}
+                        style={[
+                          styles.chip,
+                          toAccountId === acc.id && {
+                            backgroundColor: acc.colorHex + '25',
+                            borderColor: acc.colorHex,
+                          },
+                        ]}
+                        onPress={() => { setToAccountId(acc.id); setError(''); }}
+                        onPressFeedback={hapticToggle}
+                      >
+                        <View style={[styles.chipDot, { backgroundColor: acc.colorHex }]} />
+                        <Text style={styles.chipLabel}>{acc.name}</Text>
+                      </AnimatedPressable>
+                    ))}
+                  </View>
+                </ScrollView>
+              )}
+            </View>
+          )}
 
           {/* Categoría — solo para gastos */}
           {type === 'expense' && (
@@ -348,6 +463,37 @@ export function TransactionForm({
                   </AnimatedPressable>
                 ))}
               </View>
+            </View>
+          )}
+
+          {/* Repetir — solo ingresos y gastos nuevos (salario, arriendo...) */}
+          {!isEditing && type !== 'transfer' && (
+            <View style={styles.field}>
+              <Text style={styles.fieldLabel}>Repetir</Text>
+              <View style={styles.chipRow}>
+                {([null, 'weekly', 'biweekly', 'monthly'] as const).map((freq) => {
+                  const active = recurrence === freq;
+                  return (
+                    <AnimatedPressable
+                      key={freq ?? 'none'}
+                      pressScale={0.97}
+                      style={[styles.chip, active && styles.chipSelected]}
+                      onPress={() => setRecurrence(freq)}
+                      onPressFeedback={hapticToggle}
+                    >
+                      <Text style={[styles.chipLabel, active && styles.chipLabelSelected]}>
+                        {freq ? RECURRENCE_LABELS[freq] : 'No'}
+                      </Text>
+                    </AnimatedPressable>
+                  );
+                })}
+              </View>
+              {recurrence && (
+                <Text style={styles.helperText}>
+                  Se registrará solo cada {recurrence === 'monthly' ? 'mes' : recurrence === 'biweekly' ? '15 días' : 'semana'} al abrir la app.
+                  Puedes detenerlo en Movimientos → Recurrentes.
+                </Text>
+              )}
             </View>
           )}
 
@@ -431,6 +577,22 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   },
   typeSwitchIncomeActive: {
     backgroundColor: c.income + '33',
+  },
+  typeSwitchTransferActive: {
+    backgroundColor: c.blue + '33',
+  },
+  helperText: {
+    fontSize: 12,
+    color: c.textTertiary,
+    marginTop: spacing.sm,
+    lineHeight: 17,
+  },
+  chipSelected: {
+    borderColor: c.accent,
+    backgroundColor: c.accent + '1F',
+  },
+  chipLabelSelected: {
+    fontWeight: '600',
   },
   typeSwitchLabel: {
     fontSize: 14,

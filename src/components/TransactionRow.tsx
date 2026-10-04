@@ -38,6 +38,8 @@ export function TransactionRow({ transaction, onPress, onLongPress }: Transactio
     : (TYPE_ICONS[transaction.type] ?? 'ellipse');
   const color    = transaction.categoryColor ?? getTypeColors(c)[transaction.type] ?? c.textSecondary;
   const isIncome = transaction.type === 'income' || transaction.type === 'loan';
+  // Las transferencias no son ingreso ni gasto: sin signo y en color neutro
+  const isTransfer = transaction.type === 'transfer';
 
   return (
     <AnimatedPressable
@@ -51,16 +53,18 @@ export function TransactionRow({ transaction, onPress, onLongPress }: Transactio
 
       <View style={styles.info}>
         <Text style={styles.notes} numberOfLines={1}>
-          {transaction.notes || transaction.categoryName || 'Movimiento'}
+          {transaction.notes || transaction.categoryName || (isTransfer ? 'Transferencia' : 'Movimiento')}
         </Text>
         <Text style={styles.meta}>
-          {transaction.accountName}
+          {isTransfer
+            ? `${transaction.accountName ?? ''} → ${transaction.toAccountName ?? ''}`
+            : transaction.accountName}
           {transaction.categoryName ? ` · ${transaction.categoryName}` : ''}
         </Text>
       </View>
 
-      <Text style={[styles.amount, { color: isIncome ? c.income : c.expense }]}>
-        {isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}
+      <Text style={[styles.amount, { color: isTransfer ? c.textSecondary : isIncome ? c.income : c.expense }]}>
+        {isTransfer ? '' : isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}
       </Text>
     </AnimatedPressable>
   );

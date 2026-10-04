@@ -12,7 +12,7 @@ import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { Onboarding } from '../src/components/Onboarding';
 import { hasSeenOnboarding } from '../src/services/onboarding';
 import { getActiveProfile } from '../src/services/profiles';
-import { setDatabaseFileName } from '../src/database/db';
+import { setDatabaseFileName, processDueRecurring } from '../src/database/db';
 import { scheduleBackupReminder } from '../src/services/backup';
 
 LogBox.ignoreLogs(['A props object containing a "key" prop']);
@@ -46,6 +46,9 @@ function RootLayoutInner() {
       setActiveProfileId(activeProfile.id);
 
       await seedIfEmpty();
+      // Antes de las alertas, para que los recurrentes generados cuenten
+      // en los presupuestos. Si falla, la app arranca igual.
+      await processDueRecurring().catch(() => 0);
       await evaluateAlerts();
       // No bloquea el arranque: si falla, simplemente no hay recordatorio
       scheduleBackupReminder().catch(() => {});

@@ -78,7 +78,9 @@
           "cameraPermission": "FinanceAI necesita acceso a la cámara para capturar fotos de tus recibos."
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "@react-native-community/datetimepicker",
+      "expo-sharing"
     ],
     "extra": {
       "router": {},

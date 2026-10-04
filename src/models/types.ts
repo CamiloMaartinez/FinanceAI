@@ -48,6 +48,9 @@ export interface Transaction {
   notes: string;
   tags: string[];
   createdAt: string;
+  // Solo en transferencias: la cuenta que recibe el dinero (accountId es
+  // la que lo envía)
+  toAccountId?: string | null;
 }
 
 // Transacción con datos de categoría ya unidos (para mostrar en listas)
@@ -57,6 +60,37 @@ export interface TransactionWithCategory extends Transaction {
   categoryColor?: string;
   accountName?: string;
   accountColor?: string;
+  toAccountName?: string;
+}
+
+// Lo que se necesita para crear o editar un movimiento
+export interface TransactionInput {
+  amount: number;
+  type: TransactionType;
+  date: string;
+  accountId: string;
+  toAccountId: string | null;
+  categoryId: string | null;
+  notes: string;
+}
+
+// ─── Movimientos recurrentes ───────────────────────────────
+// Regla que genera un movimiento automáticamente cada cierto tiempo
+// (salario, arriendo, servicios). Ver src/utils/recurrence.ts.
+export interface RecurringTransaction {
+  id: string;
+  amount: number;
+  type: 'income' | 'expense';
+  accountId: string;
+  categoryId: string | null;
+  notes: string;
+  frequency: 'weekly' | 'biweekly' | 'monthly';
+  anchorDay: number;   // día del mes original (para la frecuencia mensual)
+  nextDate: string;    // ISO: próxima vez que se genera
+  isActive: boolean;
+  createdAt: string;
+  accountName?: string;
+  categoryName?: string;
 }
 
 // ─── Metas ─────────────────────────────────────────────────

@@ -28,6 +28,7 @@ const BACKUP_TABLES = [
   'alerts',
   'budgets',
   'challenges',
+  'recurring_transactions',
 ] as const;
 
 interface BackupData {

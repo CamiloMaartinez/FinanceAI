@@ -10,8 +10,11 @@ import type {
   Alert,
   Budget,
   Challenge,
+  TransactionInput,
+  RecurringTransaction,
 } from '../models/types';
 import { getExchangeRates, convertToCOP } from '../services/exchangeRates';
+import { dueOccurrences, atLocalNoon, type RecurrenceFrequency } from '../utils/recurrence';
 
 // Filas crudas de SQLite: los campos que se guardan como JSON en texto
 // (tags, subcategories, benefits) llegan como string y hay que parsearlos.
@@ -150,6 +153,19 @@ async function initDb(database: SQLite.SQLiteDatabase) {
       status      TEXT NOT NULL DEFAULT 'active',
       createdAt   TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS recurring_transactions (
+      id         TEXT PRIMARY KEY NOT NULL,
+      amount     REAL NOT NULL,
+      type       TEXT NOT NULL,
+      accountId  TEXT NOT NULL,
+      categoryId TEXT,
+      notes      TEXT NOT NULL DEFAULT '',
+      frequency  TEXT NOT NULL,
+      anchorDay  INTEGER NOT NULL,
+      nextDate   TEXT NOT NULL,
+      isActive   INTEGER NOT NULL DEFAULT 1,
+      createdAt  TEXT NOT NULL
+    );
     CREATE INDEX IF NOT EXISTS idx_transactions_account
       ON transactions(accountId);
     CREATE INDEX IF NOT EXISTS idx_transactions_category
@@ -164,6 +180,11 @@ async function initDb(database: SQLite.SQLiteDatabase) {
   // se ignora sin problema.
   try {
     await database.execAsync(`ALTER TABLE accounts ADD COLUMN currency TEXT NOT NULL DEFAULT 'COP';`);
+  } catch {
+    // La columna ya existe — no hay nada que hacer
+  }
+  try {
+    await database.execAsync(`ALTER TABLE transactions ADD COLUMN toAccountId TEXT;`);
   } catch {
     // La columna ya existe — no hay nada que hacer
   }
@@ -381,10 +402,12 @@ export async function getAllTransactionsWithCategory(): Promise<TransactionWithC
        c.iconName as categoryIcon,
        c.colorHex as categoryColor,
        a.name     as accountName,
-       a.colorHex as accountColor
+       a.colorHex as accountColor,
+       ta.name    as toAccountName
      FROM transactions t
      LEFT JOIN categories c ON c.id = t.categoryId
      LEFT JOIN accounts a ON a.id = t.accountId
+     LEFT JOIN accounts ta ON ta.id = t.toAccountId
      ORDER BY t.date DESC`
   );
   return rows.map((r) => ({ ...r, tags: JSON.parse(r.tags || '[]') }));
@@ -401,92 +424,179 @@ export async function getAllCategories(): Promise<Category[]> {
   }));
 }
 
-export async function createTransaction(
-  amount: number,
-  type: string,
-  date: string,
-  accountId: string,
-  categoryId: string | null,
-  notes: string
+// IDs únicos aunque se creen varios en el mismo milisegundo (por ejemplo,
+// al generar de una vez varios movimientos recurrentes pendientes).
+let idCounter = 0;
+function newId(prefix: string): string {
+  idCounter = (idCounter + 1) % 1000;
+  return `${prefix}-${Date.now()}-${idCounter}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
+type BalanceSource = Pick<TransactionInput, 'amount' | 'type' | 'accountId' | 'toAccountId'>;
+
+// Cómo afecta un movimiento a los saldos. Las transferencias mueven dinero
+// entre dos cuentas propias: no son ingreso ni gasto, por eso los totales
+// (getMonthlyTotals, etc.) ya las ignoran.
+function balanceEffects(tx: BalanceSource): { accountId: string; delta: number }[] {
+  if (tx.type === 'transfer') {
+    if (!tx.toAccountId) throw new Error('La transferencia necesita una cuenta destino');
+    return [
+      { accountId: tx.accountId, delta: -tx.amount },
+      { accountId: tx.toAccountId, delta: tx.amount },
+    ];
+  }
+  const positive = tx.type === 'income' || tx.type === 'loan';
+  return [{ accountId: tx.accountId, delta: positive ? tx.amount : -tx.amount }];
+}
+
+async function applyBalance(
+  database: SQLite.SQLiteDatabase,
+  tx: BalanceSource,
+  direction: 1 | -1
 ): Promise<void> {
+  for (const { accountId, delta } of balanceEffects(tx)) {
+    await database.runAsync(
+      `UPDATE accounts SET balance = balance + ? WHERE id = ?`,
+      [delta * direction, accountId]
+    );
+  }
+}
+
+// Inserta sin abrir transacción propia: lo usan createTransaction y el
+// generador de recurrentes, que ya están dentro de una.
+async function insertTransaction(
+  database: SQLite.SQLiteDatabase,
+  input: TransactionInput
+): Promise<void> {
+  await database.runAsync(
+    `INSERT INTO transactions (id, amount, type, date, accountId, toAccountId, categoryId, notes, tags, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, '[]', ?)`,
+    [
+      newId('tx'), input.amount, input.type, input.date, input.accountId,
+      input.type === 'transfer' ? input.toAccountId : null,
+      input.type === 'expense' ? input.categoryId : null,
+      input.notes, new Date().toISOString(),
+    ]
+  );
+  await applyBalance(database, input, 1);
+}
+
+// Todas las operaciones van dentro de una transacción de SQLite: si algo
+// falla a mitad de camino, no queda un saldo descuadrado.
+export async function createTransaction(input: TransactionInput): Promise<void> {
   const database = await getDb();
-  const id = `tx-${Date.now()}`;
-  const now = new Date().toISOString();
-
-  // Insertar la transacción
-  await database.runAsync(
-    `INSERT INTO transactions (id, amount, type, date, accountId, categoryId, notes, tags, createdAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, '[]', ?)`,
-    [id, amount, type, date, accountId, categoryId, notes, now]
-  );
-
-  // Actualizar el saldo de la cuenta correspondiente
-  const signedAmount =
-    type === 'income' || type === 'loan' ? amount : -amount;
-
-  await database.runAsync(
-    `UPDATE accounts SET balance = balance + ? WHERE id = ?`,
-    [signedAmount, accountId]
-  );
+  await database.withTransactionAsync(() => insertTransaction(database, input));
 }
 
 export async function deleteTransaction(
-  id: string,
-  amount: number,
-  type: string,
-  accountId: string
+  tx: Pick<Transaction, 'id' | 'amount' | 'type' | 'accountId' | 'toAccountId'>
 ): Promise<void> {
   const database = await getDb();
-
-  // Revertir el saldo antes de borrar
-  const signedAmount =
-    type === 'income' || type === 'loan' ? -amount : amount;
-
-  await database.runAsync(
-    `UPDATE accounts SET balance = balance + ? WHERE id = ?`,
-    [signedAmount, accountId]
-  );
-
-  await database.runAsync(`DELETE FROM transactions WHERE id = ?`, [id]);
+  await database.withTransactionAsync(async () => {
+    await applyBalance(database, { ...tx, toAccountId: tx.toAccountId ?? null }, -1);
+    await database.runAsync(`DELETE FROM transactions WHERE id = ?`, [tx.id]);
+  });
 }
 
 export async function updateTransaction(
   id: string,
-  previous: { amount: number; type: string; accountId: string },
-  updated: {
-    amount: number;
-    type: string;
-    date: string;
-    accountId: string;
-    categoryId: string | null;
-    notes: string;
-  }
+  previous: BalanceSource,
+  updated: TransactionInput
 ): Promise<void> {
   const database = await getDb();
+  await database.withTransactionAsync(async () => {
+    // Revertir la versión original y aplicar la nueva (puede ser otra cuenta)
+    await applyBalance(database, previous, -1);
+    await applyBalance(database, updated, 1);
+    await database.runAsync(
+      `UPDATE transactions
+       SET amount = ?, type = ?, date = ?, accountId = ?, toAccountId = ?, categoryId = ?, notes = ?
+       WHERE id = ?`,
+      [
+        updated.amount, updated.type, updated.date, updated.accountId,
+        updated.type === 'transfer' ? updated.toAccountId : null,
+        updated.type === 'expense' ? updated.categoryId : null,
+        updated.notes, id,
+      ]
+    );
+  });
+}
 
-  // 1) Revertir el efecto de la transacción original en su cuenta
-  const revertAmount =
-    previous.type === 'income' || previous.type === 'loan' ? -previous.amount : previous.amount;
+// ─── Movimientos recurrentes ───────────────────────────────
+
+export async function getAllRecurring(): Promise<RecurringTransaction[]> {
+  const database = await getDb();
+  const rows = await database.getAllAsync<Omit<RecurringTransaction, 'isActive'> & { isActive: number }>(
+    `SELECT r.*, a.name as accountName, c.name as categoryName
+     FROM recurring_transactions r
+     LEFT JOIN accounts a ON a.id = r.accountId
+     LEFT JOIN categories c ON c.id = r.categoryId
+     WHERE r.isActive = 1
+     ORDER BY r.nextDate ASC`
+  );
+  return rows.map((r) => ({ ...r, isActive: !!r.isActive }));
+}
+
+// `firstDate` es la fecha del movimiento que el usuario acaba de registrar;
+// la regla empieza a generar desde la siguiente repetición.
+export async function createRecurring(
+  input: Omit<TransactionInput, 'toAccountId'> & { type: 'income' | 'expense' },
+  frequency: RecurrenceFrequency,
+  firstDate: Date
+): Promise<void> {
+  const database = await getDb();
+  const anchorDay = firstDate.getDate();
+  const { next } = dueOccurrences(atLocalNoon(firstDate), frequency, anchorDay, firstDate);
   await database.runAsync(
-    `UPDATE accounts SET balance = balance + ? WHERE id = ?`,
-    [revertAmount, previous.accountId]
+    `INSERT INTO recurring_transactions
+       (id, amount, type, accountId, categoryId, notes, frequency, anchorDay, nextDate, isActive, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+    [
+      newId('rec'), input.amount, input.type, input.accountId,
+      input.type === 'expense' ? input.categoryId : null,
+      input.notes, frequency, anchorDay, next.toISOString(), new Date().toISOString(),
+    ]
+  );
+}
+
+export async function deleteRecurring(id: string): Promise<void> {
+  const database = await getDb();
+  // Soft delete: los movimientos que ya generó se quedan
+  await database.runAsync(`UPDATE recurring_transactions SET isActive = 0 WHERE id = ?`, [id]);
+}
+
+// Genera los movimientos recurrentes que ya vencieron. Se llama al abrir la
+// app; devuelve cuántos movimientos creó.
+export async function processDueRecurring(now: Date = new Date()): Promise<number> {
+  const database = await getDb();
+  const rules = await database.getAllAsync<RecurringTransaction>(
+    `SELECT * FROM recurring_transactions WHERE isActive = 1 AND nextDate <= ?`,
+    [now.toISOString()]
   );
 
-  // 2) Aplicar el efecto de la nueva versión (puede ser otra cuenta)
-  const applyAmount =
-    updated.type === 'income' || updated.type === 'loan' ? updated.amount : -updated.amount;
-  await database.runAsync(
-    `UPDATE accounts SET balance = balance + ? WHERE id = ?`,
-    [applyAmount, updated.accountId]
-  );
-
-  // 3) Actualizar la transacción en sí
-  await database.runAsync(
-    `UPDATE transactions
-     SET amount = ?, type = ?, date = ?, accountId = ?, categoryId = ?, notes = ?
-     WHERE id = ?`,
-    [updated.amount, updated.type, updated.date, updated.accountId, updated.categoryId, updated.notes, id]
-  );
+  let created = 0;
+  for (const rule of rules) {
+    const { due, next } = dueOccurrences(new Date(rule.nextDate), rule.frequency, rule.anchorDay, now);
+    await database.withTransactionAsync(async () => {
+      for (const date of due) {
+        await insertTransaction(database, {
+          amount: rule.amount,
+          type: rule.type,
+          date: date.toISOString(),
+          accountId: rule.accountId,
+          toAccountId: null,
+          categoryId: rule.categoryId,
+          notes: rule.notes,
+        });
+      }
+      await database.runAsync(
+        `UPDATE recurring_transactions SET nextDate = ? WHERE id = ?`,
+        [next.toISOString(), rule.id]
+      );
+    });
+    created += due.length;
+  }
+  return created;
 }
 // ─── Queries de Metas ───────────────────────────────────────
 

@@ -28,7 +28,9 @@ import { hapticSave, hapticToggle } from '../../src/utils/haptics';
 import { useColors, spacing, typography } from '../../src/constants/theme';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
-import type { TransactionWithCategory } from '../../src/models/types';
+import type { TransactionInput, TransactionWithCategory } from '../../src/models/types';
+import type { RecurrenceFrequency } from '../../src/utils/recurrence';
+import { RecurringListModal } from '../../src/components/RecurringListModal';
 
 function groupByDay(transactions: TransactionWithCategory[]) {
   const groups: { label: string; items: TransactionWithCategory[] }[] = [];
@@ -66,6 +68,7 @@ export default function TransactionsScreen() {
   const [editingTx, setEditingTx] = useState<TransactionWithCategory | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filtersVisible, setFiltersVisible] = useState(false);
+  const [recurringVisible, setRecurringVisible] = useState(false);
   const [filters, setFilters] = useState<TransactionFiltersState>(EMPTY_FILTERS);
 
   // Atajos de Siri / Apple Pay: financeai://transactions?monto=25000&nota=Starbucks&tipo=ingreso
@@ -94,14 +97,11 @@ export default function TransactionsScreen() {
   const activeFilterCount = countActiveFilters(filters);
   const hasActiveSearch = searchQuery.trim().length > 0 || activeFilterCount > 0;
 
-  const handleSave = async (
-    amount: number, type: string, date: string,
-    accountId: string, categoryId: string | null, notes: string
-  ) => {
+  const handleSave = async (input: TransactionInput, recurrence: RecurrenceFrequency | null) => {
     if (editingTx) {
-      await data.editTransaction(editingTx, { amount, type, date, accountId, categoryId, notes });
+      await data.editTransaction(editingTx, input);
     } else {
-      await data.addTransaction(amount, type, date, accountId, categoryId, notes);
+      await data.addTransaction(input, recurrence);
     }
     hapticSave();
   };
@@ -150,6 +150,15 @@ export default function TransactionsScreen() {
               {hasActiveSearch ? `${filteredTransactions.length} de ${data.transactions.length}` : data.transactions.length} registros
             </Text>
           </View>
+          <View style={styles.headerActions}>
+          <AnimatedPressable
+            style={styles.addButton}
+            onPress={() => setRecurringVisible(true)}
+            onPressFeedback={hapticToggle}
+            accessibilityLabel="Movimientos recurrentes"
+          >
+            <Ionicons name="repeat" size={18} color={c.textPrimary} />
+          </AnimatedPressable>
           <AnimatedPressable
             style={[
               styles.addButton,
@@ -166,6 +175,7 @@ export default function TransactionsScreen() {
           >
             <Ionicons name="add" size={20} color={c.textPrimary} />
           </AnimatedPressable>
+          </View>
         </View>
 
         <View style={styles.divider} />
@@ -269,6 +279,11 @@ export default function TransactionsScreen() {
         onSave={handleSave}
       />
 
+      <RecurringListModal
+        visible={recurringVisible}
+        onClose={() => setRecurringVisible(false)}
+      />
+
       <TransactionFilters
         visible={filtersVisible}
         categories={data.categories}
@@ -317,6 +332,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     justifyContent: 'center',
   },
   addButtonDisabled: { opacity: 0.3 },
+  headerActions: { flexDirection: 'row', gap: spacing.sm },
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',

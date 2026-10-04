@@ -51,6 +51,7 @@ export function RecentTransactions({ transactions }: Props) {
       ) : (
         transactions.map((tx, index) => {
           const isIncome  = tx.type === 'income' || tx.type === 'loan';
+          const isTransfer = tx.type === 'transfer';
           const lineColor = TYPE_COLORS[tx.type] ?? c.textTertiary;
 
           return (
@@ -62,15 +63,15 @@ export function RecentTransactions({ transactions }: Props) {
               <View style={[s.accentLine, { backgroundColor: lineColor }]} />
               <View style={s.info}>
                 <Text style={s.notesText} numberOfLines={1}>
-                  {tx.notes || tx.categoryName || 'Movimiento'}
+                  {tx.notes || tx.categoryName || (isTransfer ? 'Transferencia' : 'Movimiento')}
                 </Text>
                 <Text style={s.metaText}>
                   {formatDate(tx.date)}
                   {tx.categoryName ? `  ·  ${tx.categoryName}` : ''}
                 </Text>
               </View>
-              <Text style={[s.amount, { color: isIncome ? c.income : c.expense }]}>
-                {isIncome ? '+' : '-'}{formatCurrency(tx.amount)}
+              <Text style={[s.amount, { color: isTransfer ? c.textSecondary : isIncome ? c.income : c.expense }]}>
+                {isTransfer ? '' : isIncome ? '+' : '-'}{formatCurrency(tx.amount)}
               </Text>
             </Animated.View>
           );

@@ -5,9 +5,11 @@ import {
   createTransaction,
   updateTransaction,
   deleteTransaction,
+  createRecurring,
 } from '../database/db';
 import { getAllAccounts } from '../database/db';
-import type { TransactionWithCategory, Category, Account } from '../models/types';
+import type { TransactionWithCategory, TransactionInput, Category, Account } from '../models/types';
+import type { RecurrenceFrequency } from '../utils/recurrence';
 
 interface UseTransactionsResult {
   transactions: TransactionWithCategory[];
@@ -16,25 +18,10 @@ interface UseTransactionsResult {
   isLoading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
-  addTransaction: (
-    amount: number,
-    type: string,
-    date: string,
-    accountId: string,
-    categoryId: string | null,
-    notes: string
-  ) => Promise<void>;
-  editTransaction: (
-    tx: TransactionWithCategory,
-    updated: {
-      amount: number;
-      type: string;
-      date: string;
-      accountId: string;
-      categoryId: string | null;
-      notes: string;
-    }
-  ) => Promise<void>;
+  // Si viene `recurrence`, además del movimiento se crea la regla que lo
+  // repetirá automáticamente (solo ingresos y gastos)
+  addTransaction: (input: TransactionInput, recurrence?: RecurrenceFrequency | null) => Promise<void>;
+  editTransaction: (tx: TransactionWithCategory, updated: TransactionInput) => Promise<void>;
   removeTransaction: (tx: TransactionWithCategory) => Promise<void>;
 }
 
@@ -69,36 +56,28 @@ export function useTransactions(): UseTransactionsResult {
   }, [load]);
 
   const addTransaction = useCallback(async (
-    amount: number,
-    type: string,
-    date: string,
-    accountId: string,
-    categoryId: string | null,
-    notes: string
+    input: TransactionInput,
+    recurrence?: RecurrenceFrequency | null
   ) => {
-    await createTransaction(amount, type, date, accountId, categoryId, notes);
+    await createTransaction(input);
+    if (recurrence && (input.type === 'income' || input.type === 'expense')) {
+      await createRecurring({ ...input, type: input.type }, recurrence, new Date(input.date));
+    }
     await load();
   }, [load]);
 
   const removeTransaction = useCallback(async (tx: TransactionWithCategory) => {
-    await deleteTransaction(tx.id, tx.amount, tx.type, tx.accountId);
+    await deleteTransaction(tx);
     await load();
   }, [load]);
 
   const editTransaction = useCallback(async (
     tx: TransactionWithCategory,
-    updated: {
-      amount: number;
-      type: string;
-      date: string;
-      accountId: string;
-      categoryId: string | null;
-      notes: string;
-    }
+    updated: TransactionInput
   ) => {
     await updateTransaction(
       tx.id,
-      { amount: tx.amount, type: tx.type, accountId: tx.accountId },
+      { amount: tx.amount, type: tx.type, accountId: tx.accountId, toAccountId: tx.toAccountId ?? null },
       updated
     );
     await load();
