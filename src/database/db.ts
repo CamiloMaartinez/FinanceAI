@@ -480,7 +480,7 @@ async function insertTransaction(
     [
       newId('tx'), input.amount, input.type, input.date, input.accountId,
       input.type === 'transfer' ? input.toAccountId : null,
-      input.type === 'expense' ? input.categoryId : null,
+      input.type === 'transfer' ? null : input.categoryId,
       input.notes, new Date().toISOString(),
     ]
   );
@@ -521,7 +521,7 @@ export async function updateTransaction(
       [
         updated.amount, updated.type, updated.date, updated.accountId,
         updated.type === 'transfer' ? updated.toAccountId : null,
-        updated.type === 'expense' ? updated.categoryId : null,
+        updated.type === 'transfer' ? null : updated.categoryId,
         updated.notes, id,
       ]
     );
@@ -559,7 +559,7 @@ export async function createRecurring(
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
     [
       newId('rec'), input.amount, input.type, input.accountId,
-      input.type === 'expense' ? input.categoryId : null,
+      input.categoryId,
       input.notes, frequency, anchorDay, next.toISOString(), new Date().toISOString(),
     ]
   );

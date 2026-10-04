@@ -55,9 +55,13 @@ const PRIORITIES = [
 
 // Ofrece 3 fechas rápidas: 3, 6 y 12 meses desde hoy
 function getQuickDate(monthsAhead: number): string {
-  const date = new Date();
-  date.setMonth(date.getMonth() + monthsAhead);
-  return date.toISOString();
+  // Ajustado al último día del mes: el 31 de agosto + 3 meses es el 30 de
+  // noviembre, no el 1 de diciembre como daría setMonth
+  const today = new Date();
+  const target = new Date(today.getFullYear(), today.getMonth() + monthsAhead, 1, 12);
+  const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+  target.setDate(Math.min(today.getDate(), lastDay));
+  return target.toISOString();
 }
 
 // Anillo de foco animado (§4/§15 apple-design).

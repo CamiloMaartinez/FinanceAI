@@ -20,7 +20,7 @@ import { AnimatedPressable } from './ui/AnimatedPressable';
 import { hapticSave, hapticToggle } from '../utils/haptics';
 import { DateField } from './DateField';
 import { atLocalNoon, RECURRENCE_LABELS, type RecurrenceFrequency } from '../utils/recurrence';
-import type { Account, Category, TransactionInput, TransactionWithCategory } from '../models/types';
+import type { Account, Category, TransactionInput, TransactionType, TransactionWithCategory } from '../models/types';
 
 type FormType = 'expense' | 'income' | 'transfer';
 
@@ -70,6 +70,9 @@ export function TransactionForm({
   const styles = useMemo(() => createStyles(c), [c]);
   const isEditing = !!editingTransaction;
   const [type,       setType]       = useState<FormType>('expense');
+  // Movimientos antiguos de tipo préstamo, pago o inversión: el formulario
+  // los muestra como ingreso o gasto, pero conservan su tipo si no se cambia
+  const [legacyType, setLegacyType] = useState<TransactionType | null>(null);
   const [amount,     setAmount]     = useState('');
   const [accountId,  setAccountId]  = useState<string | null>(null);
   const [toAccountId, setToAccountId] = useState<string | null>(null);
@@ -109,7 +112,8 @@ export function TransactionForm({
   useEffect(() => {
     if (visible && editingTransaction) {
       const t = editingTransaction.type;
-      setType(t === 'income' || t === 'transfer' ? t : 'expense');
+      setType(t === 'income' || t === 'transfer' ? t : t === 'loan' ? 'income' : 'expense');
+      setLegacyType(t === 'loan' || t === 'payment' || t === 'investment' ? t : null);
       setAmount(String(Math.round(editingTransaction.amount)));
       setAccountId(editingTransaction.accountId);
       setToAccountId(editingTransaction.toAccountId ?? null);
@@ -160,6 +164,7 @@ export function TransactionForm({
 
   const changeType = (next: FormType) => {
     setType(next);
+    setLegacyType(null); // el usuario eligió un tipo: ya no es el antiguo
     if (next !== 'expense') setCategoryId(null);
     if (next === 'transfer') setRecurrence(null);
     setError('');
@@ -191,7 +196,8 @@ export function TransactionForm({
       setError('Selecciona la cuenta de destino');
       return;
     }
-    if (type === 'expense' && !categoryId) {
+    // Un pago o una inversión antiguos pueden no tener categoría: se guardan igual
+    if (type === 'expense' && !categoryId && !legacyType) {
       setError('Selecciona una categoría');
       return;
     }
@@ -199,11 +205,11 @@ export function TransactionForm({
     onSave(
       {
         amount: amountNum,
-        type,
+        type: legacyType ?? type,
         date: resolveDateISO(),
         accountId,
         toAccountId: type === 'transfer' ? toAccountId : null,
-        categoryId: type === 'expense' ? categoryId : null,
+        categoryId: type === 'expense' || legacyType ? categoryId : null,
         notes: notes.trim(),
       },
       !isEditing && type !== 'transfer' ? recurrence : null
@@ -213,6 +219,7 @@ export function TransactionForm({
 
   const handleClose = () => {
     setType('expense');
+    setLegacyType(null);
     setAmount('');
     setAccountId(null);
     setToAccountId(null);
