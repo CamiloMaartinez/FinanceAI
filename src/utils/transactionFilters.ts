@@ -17,6 +17,7 @@ export function matchesSearch(tx: TransactionWithCategory, query: string): boole
     tx.notes ?? '',
     tx.categoryName ?? '',
     tx.accountName ?? '',
+    tx.toAccountName ?? '', // transferencias: también la cuenta destino
     String(Math.round(tx.amount)),
   ];
 
@@ -31,7 +32,10 @@ export function matchesFilters(tx: TransactionWithCategory, filters: Transaction
   }
 
   if (filters.accountIds.length > 0) {
-    if (!filters.accountIds.includes(tx.accountId)) return false;
+    // Una transferencia afecta a las dos cuentas: aparece en ambas
+    const touchesAccount = filters.accountIds.includes(tx.accountId)
+      || (!!tx.toAccountId && filters.accountIds.includes(tx.toAccountId));
+    if (!touchesAccount) return false;
   }
 
   if (filters.dateRange !== 'all') {

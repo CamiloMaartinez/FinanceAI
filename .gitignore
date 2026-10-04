@@ -43,3 +43,5 @@ yarn-error.*
 node_modules/
 .env
 .expo/
+# tests
+coverage/

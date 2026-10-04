@@ -358,7 +358,7 @@ export async function createAccount(
   currency: string = 'COP'
 ): Promise<void> {
   const database = await getDb();
-  const id = `acc-${Date.now()}`;
+  const id = newId('acc');
   const now = new Date().toISOString();
 
   await database.runAsync(
@@ -617,7 +617,7 @@ export async function createGoal(
   iconName: string
 ): Promise<void> {
   const database = await getDb();
-  const id = `goal-${Date.now()}`;
+  const id = newId('goal');
   const now = new Date().toISOString();
 
   await database.runAsync(
@@ -688,7 +688,7 @@ export async function createSubscription(
   iconName: string
 ): Promise<string> {
   const database = await getDb();
-  const id = `sub-${Date.now()}`;
+  const id = newId('sub');
   const now = new Date().toISOString();
 
   await database.runAsync(
@@ -801,7 +801,7 @@ export async function createCard(
   colorHex: string
 ): Promise<void> {
   const database = await getDb();
-  const id  = `card-${Date.now()}`;
+  const id  = newId('card');
   const now = new Date().toISOString();
 
   await database.runAsync(
@@ -914,7 +914,7 @@ export async function createAlert(
   categoryId: string | null
 ): Promise<void> {
   const database = await getDb();
-  const id  = `alert-${Date.now()}`;
+  const id  = newId('alert');
   const now = new Date().toISOString();
 
   await database.runAsync(
@@ -983,7 +983,7 @@ export async function upsertBudget(
       [totalLimit, limitsJson, isAIGenerated ? 1 : 0, existing.id]
     );
   } else {
-    const id = `budget-${Date.now()}`;
+    const id = newId('budget');
     await database.runAsync(
       `INSERT INTO budgets (id, month, year, totalLimit, categoryLimits, isAIGenerated, createdAt)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -1015,7 +1015,7 @@ export async function createChallenge(
   endDate: string
 ): Promise<void> {
   const database = await getDb();
-  const id = `challenge-${Date.now()}`;
+  const id = newId('challenge');
   const now = new Date().toISOString();
 
   await database.runAsync(

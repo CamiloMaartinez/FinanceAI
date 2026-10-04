@@ -7,7 +7,10 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "deploy:api": "node scripts/deploy-api.mjs"
+    "deploy:api": "node scripts/deploy-api.mjs",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -48,8 +51,26 @@
     "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
+    "@react-native/jest-preset": "^0.86.3",
+    "@types/jest": "29.5.14",
     "@types/react": "~19.2.2",
+    "jest": "~29.7.0",
+    "jest-expo": "~57.0.5",
     "typescript": "~6.0.3"
   },
-  "private": true
+  "private": true,
+  "jest": {
+    "preset": "jest-expo",
+    "testMatch": [
+      "<rootDir>/__tests__/**/*.test.ts"
+    ],
+    "setupFiles": [
+      "<rootDir>/__tests__/setup/jestSetup.ts"
+    ],
+    "collectCoverageFrom": [
+      "src/utils/**/*.ts",
+      "src/database/db.ts",
+      "src/server/guard.ts"
+    ]
+  }
 }

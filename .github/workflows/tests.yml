@@ -1,0 +1,48 @@
+# Revisa el proyecto en cada push y pull request a main:
+#   1. TypeScript (errores de tipos)
+#   2. Pruebas automáticas (npm test)
+# Si algo falla, GitHub marca el commit con ❌ y avisa por correo.
+
+name: Pruebas
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      # Node 22.13+ trae node:sqlite, que usan las pruebas de base de datos
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Revisar tipos (TypeScript)
+        run: npx tsc --noEmit
+
+      # El resultado y la cobertura quedan visibles en la página de la ejecución
+      - name: Pruebas
+        run: |
+          set -o pipefail
+          npx jest --ci --coverage --coverageReporters=text 2>&1 | tee jest-output.txt
+          {
+            echo '## Resultado de las pruebas'
+            echo '```'
+            grep -E '^(Tests|Test Suites):' jest-output.txt
+            echo '```'
+            echo '## Cobertura'
+            echo '```'
+            grep -E '^\s*(File|All files|-+\||\s+\S+\.ts)' jest-output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
