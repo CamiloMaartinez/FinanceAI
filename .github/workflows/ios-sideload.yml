@@ -39,6 +39,11 @@ jobs:
             echo "::error::Falta el secreto EXPO_PUBLIC_APP_TOKEN; sin él la IA responde 'No autorizado'."
             exit 1
           fi
+          # Detecta errores al pegar (espacios, "APP_TOKEN=" incluido, etc.)
+          if ! echo "$EXPO_PUBLIC_APP_TOKEN" | grep -qE '^[0-9a-f]{64}$'; then
+            echo "::error::EXPO_PUBLIC_APP_TOKEN debe ser exactamente el valor de APP_TOKEN en .env (64 caracteres 0-9 a-f), sin espacios ni el nombre de la variable."
+            exit 1
+          fi
 
       - name: Instalar dependencias
         run: npm ci
