@@ -6,6 +6,7 @@ import {
   deleteSubscription,
 } from '../database/db';
 import { scheduleSubscriptionReminders, cancelSubscriptionReminders } from '../services/notifications';
+import { refreshSubscriptionBilling } from '../services/subscriptionBilling';
 import type { Subscription } from '../models/types';
 
 interface UseSubscriptionsResult {
@@ -42,6 +43,8 @@ export function useSubscriptions(): UseSubscriptionsResult {
     setIsLoading(true);
     setError(null);
     try {
+      // Por si la app quedó abierta de un día para otro y pasó un cobro
+      await refreshSubscriptionBilling().catch(() => 0);
       const rows = await getAllSubscriptions();
       setSubscriptions(rows);
     } catch (err) {

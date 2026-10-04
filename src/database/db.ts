@@ -15,6 +15,7 @@ import type {
 } from '../models/types';
 import { getExchangeRates, convertToCOP } from '../services/exchangeRates';
 import { dueOccurrences, atLocalNoon, type RecurrenceFrequency } from '../utils/recurrence';
+import { advanceBillingDate } from '../utils/subscriptionCalculations';
 
 // Filas crudas de SQLite: los campos que se guardan como JSON en texto
 // (tags, subcategories, benefits) llegan como string y hay que parsearlos.
@@ -185,6 +186,11 @@ async function initDb(database: SQLite.SQLiteDatabase) {
   }
   try {
     await database.execAsync(`ALTER TABLE transactions ADD COLUMN toAccountId TEXT;`);
+  } catch {
+    // La columna ya existe — no hay nada que hacer
+  }
+  try {
+    await database.execAsync(`ALTER TABLE subscriptions ADD COLUMN anchorDay INTEGER;`);
   } catch {
     // La columna ya existe — no hay nada que hacer
   }
@@ -693,9 +699,9 @@ export async function createSubscription(
 
   await database.runAsync(
     `INSERT INTO subscriptions
-       (id, name, amount, frequency, nextBillingDate, iconName, colorHex, isActive, createdAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)`,
-    [id, name, amount, frequency, nextBillingDate, iconName, colorHex, now]
+       (id, name, amount, frequency, nextBillingDate, anchorDay, iconName, colorHex, isActive, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+    [id, name, amount, frequency, nextBillingDate, new Date(nextBillingDate).getDate(), iconName, colorHex, now]
   );
 
   return id;
@@ -719,12 +725,38 @@ export async function updateSubscription(
   iconName: string
 ): Promise<void> {
   const database = await getDb();
+  // Si el usuario cambia la fecha, ese pasa a ser el nuevo día de cobro
   await database.runAsync(
     `UPDATE subscriptions
-     SET name = ?, amount = ?, frequency = ?, nextBillingDate = ?, colorHex = ?, iconName = ?
+     SET name = ?, amount = ?, frequency = ?, nextBillingDate = ?, anchorDay = ?, colorHex = ?, iconName = ?
      WHERE id = ?`,
-    [name, amount, frequency, nextBillingDate, colorHex, iconName, id]
+    [name, amount, frequency, nextBillingDate, new Date(nextBillingDate).getDate(), colorHex, iconName, id]
   );
+}
+
+// Avanza al siguiente cobro las suscripciones cuya fecha ya pasó. Se llama
+// al abrir la app y al cargar Suscripciones. Devuelve las que cambiaron,
+// para reprogramar sus recordatorios.
+export async function advanceDueSubscriptions(now: Date = new Date()): Promise<Subscription[]> {
+  const database = await getDb();
+  const rows = await database.getAllAsync<Subscription>(
+    `SELECT * FROM subscriptions WHERE isActive = 1`
+  );
+
+  const advanced: Subscription[] = [];
+  for (const sub of rows) {
+    // Suscripciones creadas antes de existir anchorDay: se toma el día de su
+    // fecha actual, que todavía no se ha corrido por ningún mes corto
+    const anchorDay = sub.anchorDay ?? new Date(sub.nextBillingDate).getDate();
+    const next = advanceBillingDate(sub.nextBillingDate, sub.frequency, anchorDay, now);
+    if (!next) continue;
+    await database.runAsync(
+      `UPDATE subscriptions SET nextBillingDate = ?, anchorDay = ? WHERE id = ?`,
+      [next, anchorDay, sub.id]
+    );
+    advanced.push({ ...sub, nextBillingDate: next, anchorDay });
+  }
+  return advanced;
 }
 // ─── Queries de Reportes ────────────────────────────────────
 

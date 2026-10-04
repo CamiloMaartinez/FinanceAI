@@ -32,13 +32,14 @@ export function getTotalAnnualCost(subscriptions: Subscription[]): number {
 export function getTotalMonthlyCost(subscriptions: Subscription[]): number {
   return getTotalAnnualCost(subscriptions) / 12;
 }
-
 // Suma meses sin desbordar el día: setMonth(+1) sobre el 31 de enero da el
 // "31 de febrero", que JavaScript convierte en 3 de marzo. Aquí se ajusta
 // al último día del mes destino (31 ene → 28 feb; 29 feb + 12 → 28 feb).
-function addMonthsClamped(from: Date, months: number): Date {
+// `anchorDay` es el día de cobro original: así, tras un 28 de febrero, el
+// cobro vuelve al 31 en marzo en lugar de quedarse en 28.
+function addMonthsClamped(from: Date, months: number, anchorDay?: number | null): Date {
   const date = new Date(from);
-  const day = date.getDate();
+  const day = anchorDay ?? date.getDate();
   date.setDate(1);
   date.setMonth(date.getMonth() + months);
   const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -46,27 +47,50 @@ function addMonthsClamped(from: Date, months: number): Date {
   return date;
 }
 
+const PERIOD_MONTHS: Record<Exclude<BillingFrequency, 'weekly'>, number> = {
+  monthly: 1,
+  quarterly: 3,
+  annual: 12,
+};
+
+function addPeriod(date: Date, frequency: BillingFrequency, anchorDay?: number | null): Date {
+  if (frequency === 'weekly') {
+    const next = new Date(date);
+    next.setDate(next.getDate() + 7);
+    return next;
+  }
+  return addMonthsClamped(date, PERIOD_MONTHS[frequency] ?? 1, anchorDay);
+}
+
 // Calcula la siguiente fecha de cobro, avanzando un período desde una fecha base
 export function calculateNextBillingDate(
   frequency: BillingFrequency,
-  fromDate: Date = new Date()
+  fromDate: Date = new Date(),
+  anchorDay?: number | null
 ): string {
-  let date = new Date(fromDate);
+  return addPeriod(new Date(fromDate), frequency, anchorDay).toISOString();
+}
 
-  switch (frequency) {
-    case 'weekly':
-      date.setDate(date.getDate() + 7);
-      break;
-    case 'monthly':
-      date = addMonthsClamped(date, 1);
-      break;
-    case 'quarterly':
-      date = addMonthsClamped(date, 3);
-      break;
-    case 'annual':
-      date = addMonthsClamped(date, 12);
-      break;
+function startOfDay(date: Date): number {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+}
+
+// Si el día de cobro ya pasó, devuelve el siguiente cobro que todavía no
+// ha ocurrido (saltando los períodos que se hayan perdido si la app no se
+// abrió). El mismo día del cobro todavía no se avanza: se muestra "hoy".
+// Devuelve null si no hay que cambiar nada.
+export function advanceBillingDate(
+  nextBillingDate: string,
+  frequency: BillingFrequency,
+  anchorDay: number | null,
+  now: Date = new Date()
+): string | null {
+  let date = new Date(nextBillingDate);
+  if (Number.isNaN(date.getTime()) || startOfDay(date) >= startOfDay(now)) return null;
+
+  // Tope de seguridad: 10 años de cobros semanales
+  for (let i = 0; i < 520 && startOfDay(date) < startOfDay(now); i++) {
+    date = addPeriod(date, frequency, anchorDay);
   }
-
   return date.toISOString();
 }

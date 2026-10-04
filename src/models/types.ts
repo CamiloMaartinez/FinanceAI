@@ -122,6 +122,9 @@ export interface Subscription {
   colorHex: string;
   isActive: boolean;
   createdAt: string;
+  // Día del mes en que se cobra originalmente (31 → 28 feb → 31 mar).
+  // null en suscripciones creadas antes de existir este campo.
+  anchorDay?: number | null;
 }
 
 // ─── Presupuestos ───────────────────────────────────────────
