@@ -15,6 +15,8 @@ const TYPE_LABELS: Record<string, string> = {
   investment: 'Inversión',
   loan: 'Préstamo',
   payment: 'Pago',
+  debt_in: 'Deuda (entrada)',
+  debt_out: 'Deuda (salida)',
 };
 
 export const CSV_HEADERS = ['Fecha', 'Tipo', 'Monto', 'Moneda', 'Cuenta', 'Cuenta destino', 'Categoría', 'Nota'];

@@ -35,8 +35,11 @@ export type TransactionType =
   | 'expense'     // Gasto
   | 'transfer'    // Transferencia entre cuentas
   | 'investment'  // Inversión
-  | 'loan'        // Préstamo recibido
-  | 'payment';    // Pago de deuda
+  | 'loan'        // Préstamo recibido (antiguo)
+  | 'payment'     // Pago de deuda (antiguo; cuenta como gasto)
+  // Módulo de deudas: mueven dinero pero NO son ingreso ni gasto
+  | 'debt_in'     // Entra dinero: me prestan o me pagan lo que me deben
+  | 'debt_out';   // Sale dinero: presto o pago lo que debo
 
 export interface Transaction {
   id: string;
@@ -207,5 +210,37 @@ export interface Challenge {
   startDate: string;
   endDate: string;
   status: ChallengeStatus;
+  createdAt: string;
+}
+
+// ─── Deudas y préstamos ──────────────────────────────────────
+// owed_to_me: le presté a alguien (me debe). i_owe: alguien me prestó.
+export type DebtDirection = 'owed_to_me' | 'i_owe';
+
+export interface Debt {
+  id: string;
+  direction: DebtDirection;
+  personName: string;
+  amount: number;            // monto original
+  notes: string;
+  date: string;              // cuándo se prestó
+  dueDate: string | null;    // fecha límite para pagar, si la hay
+  accountId: string | null;  // cuenta de donde salió / a donde entró el dinero
+  transactionId: string | null;
+  isSettled: boolean;
+  settledAt: string | null;
+  createdAt: string;
+  // Calculados al leer
+  paidAmount: number;
+  remaining: number;
+}
+
+export interface DebtPayment {
+  id: string;
+  debtId: string;
+  amount: number;
+  date: string;
+  accountId: string | null;
+  transactionId: string | null;
   createdAt: string;
 }

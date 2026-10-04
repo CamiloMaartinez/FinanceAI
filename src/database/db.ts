@@ -12,6 +12,9 @@ import type {
   Challenge,
   TransactionInput,
   RecurringTransaction,
+  Debt,
+  DebtDirection,
+  DebtPayment,
 } from '../models/types';
 import { getExchangeRates, convertToCOP } from '../services/exchangeRates';
 import { dueOccurrences, atLocalNoon, type RecurrenceFrequency } from '../utils/recurrence';
@@ -154,6 +157,29 @@ async function initDb(database: SQLite.SQLiteDatabase) {
       status      TEXT NOT NULL DEFAULT 'active',
       createdAt   TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS debts (
+      id            TEXT PRIMARY KEY NOT NULL,
+      direction     TEXT NOT NULL,
+      personName    TEXT NOT NULL,
+      amount        REAL NOT NULL,
+      notes         TEXT NOT NULL DEFAULT '',
+      date          TEXT NOT NULL,
+      dueDate       TEXT,
+      accountId     TEXT,
+      transactionId TEXT,
+      isSettled     INTEGER NOT NULL DEFAULT 0,
+      settledAt     TEXT,
+      createdAt     TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS debt_payments (
+      id            TEXT PRIMARY KEY NOT NULL,
+      debtId        TEXT NOT NULL,
+      amount        REAL NOT NULL,
+      date          TEXT NOT NULL,
+      accountId     TEXT,
+      transactionId TEXT,
+      createdAt     TEXT NOT NULL
+    );
     CREATE TABLE IF NOT EXISTS recurring_transactions (
       id         TEXT PRIMARY KEY NOT NULL,
       amount     REAL NOT NULL,
@@ -232,12 +258,30 @@ export async function getNetWorthHistory(
 
   for (let i = 0; i < monthsBack; i++) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const totals = await getMonthlyTotals(date.getMonth() + 1, date.getFullYear());
-    runningTotal = runningTotal - (totals.income - totals.expense);
+    runningTotal = runningTotal - (await getMonthlyBalanceChange(date.getMonth() + 1, date.getFullYear()));
     points.unshift({ label: MONTH_ABBR[date.getMonth()], value: runningTotal });
   }
 
   return points;
+}
+
+// Cuánto cambió la suma de los saldos en un mes: todo lo que mueve dinero
+// (ingresos, gastos, préstamos, deudas) menos las transferencias, que solo
+// lo pasan de una cuenta propia a otra. Distinto de getMonthlyTotals, que
+// cuenta solo ingresos y gastos.
+export async function getMonthlyBalanceChange(month: number, year: number): Promise<number> {
+  const database = await getDb();
+  const start = new Date(year, month - 1, 1).toISOString();
+  const end = new Date(year, month, 1).toISOString();
+  const row = await database.getFirstAsync<{ total: number | null }>(
+    `SELECT SUM(CASE
+       WHEN type IN ('income', 'loan', 'debt_in') THEN amount
+       WHEN type = 'transfer' THEN 0
+       ELSE -amount END) as total
+     FROM transactions WHERE date >= ? AND date < ?`,
+    [start, end]
+  );
+  return row?.total ?? 0;
 }
 
 export async function getMonthlyTotals(
@@ -457,7 +501,7 @@ function balanceEffects(tx: BalanceSource): { accountId: string; delta: number }
       { accountId: tx.toAccountId, delta: tx.amount },
     ];
   }
-  const positive = tx.type === 'income' || tx.type === 'loan';
+  const positive = tx.type === 'income' || tx.type === 'loan' || tx.type === 'debt_in';
   return [{ accountId: tx.accountId, delta: positive ? tx.amount : -tx.amount }];
 }
 
@@ -479,25 +523,29 @@ async function applyBalance(
 async function insertTransaction(
   database: SQLite.SQLiteDatabase,
   input: TransactionInput
-): Promise<void> {
+): Promise<string> {
+  const id = newId('tx');
   await database.runAsync(
     `INSERT INTO transactions (id, amount, type, date, accountId, toAccountId, categoryId, notes, receiptUri, tags, createdAt)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', ?)`,
     [
-      newId('tx'), input.amount, input.type, input.date, input.accountId,
+      id, input.amount, input.type, input.date, input.accountId,
       input.type === 'transfer' ? input.toAccountId : null,
       input.type === 'transfer' ? null : input.categoryId,
       input.notes, input.receiptUri ?? null, new Date().toISOString(),
     ]
   );
   await applyBalance(database, input, 1);
+  return id;
 }
 
 // Todas las operaciones van dentro de una transacción de SQLite: si algo
 // falla a mitad de camino, no queda un saldo descuadrado.
 export async function createTransaction(input: TransactionInput): Promise<void> {
   const database = await getDb();
-  await database.withTransactionAsync(() => insertTransaction(database, input));
+  await database.withTransactionAsync(async () => {
+    await insertTransaction(database, input);
+  });
 }
 
 export async function deleteTransaction(
@@ -610,6 +658,145 @@ export async function processDueRecurring(now: Date = new Date()): Promise<numbe
   }
   return created;
 }
+// ─── Deudas y préstamos ────────────────────────────────────
+// Prestar o devolver dinero no es ingreso ni gasto: si el usuario elige una
+// cuenta, se registra un movimiento debt_in / debt_out que solo mueve el
+// saldo (los totales del mes los ignoran, igual que las transferencias).
+
+type DebtRow = Omit<Debt, 'isSettled' | 'paidAmount' | 'remaining'> & {
+  isSettled: number;
+  paidAmount: number | null;
+};
+
+export async function getAllDebts(): Promise<Debt[]> {
+  const database = await getDb();
+  const rows = await database.getAllAsync<DebtRow>(
+    `SELECT d.*, (SELECT SUM(p.amount) FROM debt_payments p WHERE p.debtId = d.id) as paidAmount
+     FROM debts d
+     ORDER BY d.isSettled ASC, COALESCE(d.dueDate, '9999') ASC, d.createdAt DESC`
+  );
+  return rows.map((r) => {
+    const paid = r.paidAmount ?? 0;
+    return { ...r, isSettled: !!r.isSettled, paidAmount: paid, remaining: Math.max(r.amount - paid, 0) };
+  });
+}
+
+export async function getDebtPayments(debtId: string): Promise<DebtPayment[]> {
+  const database = await getDb();
+  return database.getAllAsync<DebtPayment>(
+    `SELECT * FROM debt_payments WHERE debtId = ? ORDER BY date DESC`,
+    [debtId]
+  );
+}
+
+export interface DebtInput {
+  direction: DebtDirection;
+  personName: string;
+  amount: number;
+  notes: string;
+  date: string;
+  dueDate: string | null;
+  accountId: string | null; // null = no mover dinero de ninguna cuenta
+}
+
+export async function createDebt(input: DebtInput): Promise<string> {
+  const database = await getDb();
+  const id = newId('debt');
+  await database.withTransactionAsync(async () => {
+    let transactionId: string | null = null;
+    if (input.accountId) {
+      // Le presto a alguien: sale dinero. Alguien me presta: entra dinero.
+      transactionId = await insertTransaction(database, {
+        amount: input.amount,
+        type: input.direction === 'owed_to_me' ? 'debt_out' : 'debt_in',
+        date: input.date,
+        accountId: input.accountId,
+        toAccountId: null,
+        categoryId: null,
+        notes: input.direction === 'owed_to_me' ? `Préstamo a ${input.personName}` : `Préstamo de ${input.personName}`,
+      });
+    }
+    await database.runAsync(
+      `INSERT INTO debts (id, direction, personName, amount, notes, date, dueDate, accountId, transactionId, isSettled, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
+      [id, input.direction, input.personName, input.amount, input.notes, input.date,
+        input.dueDate, input.accountId, transactionId, new Date().toISOString()]
+    );
+  });
+  return id;
+}
+
+// Registra un abono. Cuando lo pendiente llega a cero, la deuda queda
+// saldada. Devuelve true si con este abono se saldó.
+export async function addDebtPayment(
+  debtId: string,
+  amount: number,
+  date: string,
+  accountId: string | null
+): Promise<boolean> {
+  const database = await getDb();
+  const debt = (await getAllDebts()).find((d) => d.id === debtId);
+  if (!debt) throw new Error('La deuda no existe');
+  if (!(amount > 0)) throw new Error('El abono debe ser mayor que cero');
+  if (amount > debt.remaining + 0.005) {
+    throw new Error(`El abono supera lo pendiente (${Math.round(debt.remaining)})`);
+  }
+
+  const settles = debt.remaining - amount <= 0.005;
+  await database.withTransactionAsync(async () => {
+    let transactionId: string | null = null;
+    if (accountId) {
+      // Me pagan lo que me deben: entra dinero. Pago lo que debo: sale.
+      transactionId = await insertTransaction(database, {
+        amount,
+        type: debt.direction === 'owed_to_me' ? 'debt_in' : 'debt_out',
+        date,
+        accountId,
+        toAccountId: null,
+        categoryId: null,
+        notes: debt.direction === 'owed_to_me' ? `Abono de ${debt.personName}` : `Abono a ${debt.personName}`,
+      });
+    }
+    await database.runAsync(
+      `INSERT INTO debt_payments (id, debtId, amount, date, accountId, transactionId, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [newId('dpay'), debtId, amount, date, accountId, transactionId, new Date().toISOString()]
+    );
+    if (settles) {
+      await database.runAsync(
+        `UPDATE debts SET isSettled = 1, settledAt = ? WHERE id = ?`,
+        [new Date().toISOString(), debtId]
+      );
+    }
+  });
+  return settles;
+}
+
+// Borra la deuda, sus abonos y los movimientos que generaron (revirtiendo
+// los saldos de las cuentas), como si nunca se hubiera registrado.
+export async function deleteDebt(id: string): Promise<void> {
+  const database = await getDb();
+  const debt = await database.getFirstAsync<{ transactionId: string | null }>(
+    `SELECT transactionId FROM debts WHERE id = ?`, [id]
+  );
+  if (!debt) return;
+  const payments = await getDebtPayments(id);
+  const txIds = [debt.transactionId, ...payments.map((p) => p.transactionId)].filter(
+    (t): t is string => !!t
+  );
+
+  await database.withTransactionAsync(async () => {
+    for (const txId of txIds) {
+      const tx = await database.getFirstAsync<Transaction>(`SELECT * FROM transactions WHERE id = ?`, [txId]);
+      if (!tx) continue;
+      await applyBalance(database, { ...tx, toAccountId: tx.toAccountId ?? null }, -1);
+      await database.runAsync(`DELETE FROM transactions WHERE id = ?`, [txId]);
+    }
+    await database.runAsync(`DELETE FROM debt_payments WHERE debtId = ?`, [id]);
+    await database.runAsync(`DELETE FROM debts WHERE id = ?`, [id]);
+  });
+}
+
 // ─── Queries de Metas ───────────────────────────────────────
 
 export async function getAllGoals(): Promise<Goal[]> {

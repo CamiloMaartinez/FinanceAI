@@ -112,7 +112,18 @@ export default function TransactionsScreen() {
     setPrefill(null);
   };
 
+  // Los movimientos de una deuda se manejan desde Deudas: editarlos o
+  // borrarlos aquí descuadraría lo pendiente de esa deuda
+  const isDebtMovement = (tx: TransactionWithCategory) => tx.type === 'debt_in' || tx.type === 'debt_out';
+  const explainDebtMovement = () => {
+    Alert.alert(
+      'Movimiento de una deuda',
+      'Este movimiento pertenece a una deuda o préstamo. Para cambiarlo, ve a Más → Deudas y préstamos.'
+    );
+  };
+
   const handlePress = (tx: TransactionWithCategory) => {
+    if (isDebtMovement(tx)) return explainDebtMovement();
     setEditingTx(tx);
     setFormVisible(true);
   };
@@ -246,12 +257,16 @@ export default function TransactionsScreen() {
               <Text style={styles.groupLabel}>{group.label}</Text>
               {group.items.map((tx, i) => (
                 <View key={tx.id}>
-                  <SwipeToDelete onDelete={() => handleSwipeDelete(tx)}>
-                    <TransactionRow
-                      transaction={tx}
-                      onPress={handlePress}
-                    />
-                  </SwipeToDelete>
+                  {isDebtMovement(tx) ? (
+                    <TransactionRow transaction={tx} onPress={handlePress} />
+                  ) : (
+                    <SwipeToDelete onDelete={() => handleSwipeDelete(tx)}>
+                      <TransactionRow
+                        transaction={tx}
+                        onPress={handlePress}
+                      />
+                    </SwipeToDelete>
+                  )}
                   {i < group.items.length - 1 && (
                     <View style={styles.rowDivider} />
                   )}

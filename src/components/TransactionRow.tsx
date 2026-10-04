@@ -19,6 +19,8 @@ const TYPE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   investment: 'pie-chart',
   loan:       'business',
   payment:    'checkmark-circle',
+  debt_in:    'person-outline',
+  debt_out:   'person-outline',
 };
 
 const getTypeColors = (c: ReturnType<typeof useColors>): Record<string, string> => ({
@@ -28,6 +30,8 @@ const getTypeColors = (c: ReturnType<typeof useColors>): Record<string, string> 
   investment: c.purple,
   loan:       c.orange,
   payment:    c.pink,
+  debt_in:    c.orange,
+  debt_out:   c.orange,
 });
 
 export function TransactionRow({ transaction, onPress, onLongPress }: TransactionRowProps) {
@@ -37,9 +41,12 @@ export function TransactionRow({ transaction, onPress, onLongPress }: Transactio
     ? (transaction.categoryIcon as keyof typeof Ionicons.glyphMap)
     : (TYPE_ICONS[transaction.type] ?? 'ellipse');
   const color    = transaction.categoryColor ?? getTypeColors(c)[transaction.type] ?? c.textSecondary;
-  const isIncome = transaction.type === 'income' || transaction.type === 'loan';
+  const isIncome = transaction.type === 'income' || transaction.type === 'loan' || transaction.type === 'debt_in';
   // Las transferencias no son ingreso ni gasto: sin signo y en color neutro
   const isTransfer = transaction.type === 'transfer';
+  // Préstamos y abonos de deudas: mueven el saldo (llevan signo) pero no son
+  // ingreso ni gasto, así que van en color neutro
+  const isDebt = transaction.type === 'debt_in' || transaction.type === 'debt_out';
 
   return (
     <AnimatedPressable
@@ -68,7 +75,7 @@ export function TransactionRow({ transaction, onPress, onLongPress }: Transactio
         </Text>
       </View>
 
-      <Text style={[styles.amount, { color: isTransfer ? c.textSecondary : isIncome ? c.income : c.expense }]}>
+      <Text style={[styles.amount, { color: isTransfer || isDebt ? c.textSecondary : isIncome ? c.income : c.expense }]}>
         {isTransfer ? '' : isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}
       </Text>
     </AnimatedPressable>

@@ -52,6 +52,12 @@ const MENU_ITEMS: MenuItem[] = [
     route: '/(tabs)/subscriptions',
   },
   {
+    label: 'Deudas y préstamos',
+    description: 'Quién te debe y a quién le debes',
+    icon: 'people-outline',
+    route: '/(tabs)/debts',
+  },
+  {
     label: 'Asistente IA',
     description: 'Consulta financiera inteligente',
     icon: 'sparkles-outline',

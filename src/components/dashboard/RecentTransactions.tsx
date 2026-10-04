@@ -19,6 +19,8 @@ export function RecentTransactions({ transactions }: Props) {
     investment: c.income,
     loan:       c.income,
     payment:    c.expense,
+    debt_in:    c.orange,
+    debt_out:   c.orange,
   };
 
   const s = StyleSheet.create({
@@ -50,8 +52,9 @@ export function RecentTransactions({ transactions }: Props) {
         <Text style={s.emptyText}>Sin movimientos registrados</Text>
       ) : (
         transactions.map((tx, index) => {
-          const isIncome  = tx.type === 'income' || tx.type === 'loan';
+          const isIncome  = tx.type === 'income' || tx.type === 'loan' || tx.type === 'debt_in';
           const isTransfer = tx.type === 'transfer';
+          const isDebt = tx.type === 'debt_in' || tx.type === 'debt_out';
           const lineColor = TYPE_COLORS[tx.type] ?? c.textTertiary;
 
           return (
@@ -70,7 +73,7 @@ export function RecentTransactions({ transactions }: Props) {
                   {tx.categoryName ? `  ·  ${tx.categoryName}` : ''}
                 </Text>
               </View>
-              <Text style={[s.amount, { color: isTransfer ? c.textSecondary : isIncome ? c.income : c.expense }]}>
+              <Text style={[s.amount, { color: isTransfer || isDebt ? c.textSecondary : isIncome ? c.income : c.expense }]}>
                 {isTransfer ? '' : isIncome ? '+' : '-'}{formatCurrency(tx.amount)}
               </Text>
             </Animated.View>

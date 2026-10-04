@@ -29,6 +29,8 @@ const BACKUP_TABLES = [
   'budgets',
   'challenges',
   'recurring_transactions',
+  'debts',
+  'debt_payments',
 ] as const;
 
 interface BackupData {
