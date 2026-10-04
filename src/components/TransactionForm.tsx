@@ -19,6 +19,8 @@ import { suggestCategory } from '../services/ai';
 import { AnimatedPressable } from './ui/AnimatedPressable';
 import { hapticSave, hapticToggle } from '../utils/haptics';
 import { DateField } from './DateField';
+import { ReceiptAttachment } from './ReceiptAttachment';
+import { saveReceiptPhoto, resolveReceiptUri, deleteReceiptPhoto } from '../services/receiptStorage';
 import { atLocalNoon, RECURRENCE_LABELS, type RecurrenceFrequency } from '../utils/recurrence';
 import type { Account, Category, TransactionInput, TransactionType, TransactionWithCategory } from '../models/types';
 
@@ -80,6 +82,14 @@ export function TransactionForm({
   const [notes,      setNotes]      = useState('');
   const [date,       setDate]       = useState<Date>(() => new Date());
   const [recurrence, setRecurrence] = useState<RecurrenceFrequency | null>(null);
+  // Recibo: receiptPath = el ya guardado (ruta relativa); pendingPhotoUri =
+  // una foto nueva que se copia a la carpeta de la app solo al guardar
+  const [receiptPath, setReceiptPath] = useState<string | null>(null);
+  const [pendingPhotoUri, setPendingPhotoUri] = useState<string | null>(null);
+  const receiptDisplayUri = useMemo(
+    () => pendingPhotoUri ?? resolveReceiptUri(receiptPath),
+    [pendingPhotoUri, receiptPath]
+  );
   const [error,      setError]      = useState('');
   const [categoryFromAI, setCategoryFromAI] = useState(false);
   const [isSuggesting,   setIsSuggesting]   = useState(false);
@@ -119,6 +129,8 @@ export function TransactionForm({
       setToAccountId(editingTransaction.toAccountId ?? null);
       setCategoryId(editingTransaction.categoryId);
       setNotes(editingTransaction.notes ?? '');
+      setReceiptPath(editingTransaction.receiptUri ?? null);
+      setPendingPhotoUri(null);
       setDate(new Date(editingTransaction.date));
       setRecurrence(null);
       setError('');
@@ -202,6 +214,20 @@ export function TransactionForm({
       return;
     }
 
+    // Foto del recibo: una nueva se copia a la carpeta permanente; la que se
+    // reemplazó o se quitó se borra para no dejar archivos huérfanos
+    let finalReceipt = type === 'transfer' ? null : receiptPath;
+    if (pendingPhotoUri && type !== 'transfer') {
+      try {
+        finalReceipt = saveReceiptPhoto(pendingPhotoUri);
+      } catch {
+        setError('No se pudo guardar la foto del recibo');
+        return;
+      }
+    }
+    const previousReceipt = editingTransaction?.receiptUri ?? null;
+    if (previousReceipt && previousReceipt !== finalReceipt) deleteReceiptPhoto(previousReceipt);
+
     onSave(
       {
         amount: amountNum,
@@ -211,6 +237,7 @@ export function TransactionForm({
         toAccountId: type === 'transfer' ? toAccountId : null,
         categoryId: type === 'expense' || legacyType ? categoryId : null,
         notes: notes.trim(),
+        receiptUri: finalReceipt,
       },
       !isEditing && type !== 'transfer' ? recurrence : null
     );
@@ -228,6 +255,8 @@ export function TransactionForm({
     setNotes('');
     setDate(new Date());
     setRecurrence(null);
+    setReceiptPath(null);
+    setPendingPhotoUri(null);
     setError('');
     onClose();
   };
@@ -322,13 +351,14 @@ export function TransactionForm({
           {type === 'expense' && !isEditing && (
             <View style={styles.field}>
               <ReceiptScannerButton
-                onScanned={(amount, notes) => {
+                onScanned={(amount, notes, photoUri) => {
                   if (amount !== null) {
                     setAmount(String(Math.round(amount)));
                   }
                   if (notes) {
                     setNotes(notes);
                   }
+                  setPendingPhotoUri(photoUri); // la foto escaneada queda adjunta
                   setError('');
                 }}
               />
@@ -519,6 +549,18 @@ export function TransactionForm({
               />
             </Animated.View>
           </View>
+
+          {/* Foto del recibo — no aplica a transferencias */}
+          {type !== 'transfer' && (
+            <View style={styles.field}>
+              <Text style={styles.fieldLabel}>Recibo (opcional)</Text>
+              <ReceiptAttachment
+                uri={receiptDisplayUri}
+                onPick={(uri) => setPendingPhotoUri(uri)}
+                onRemove={() => { setPendingPhotoUri(null); setReceiptPath(null); }}
+              />
+            </View>
+          )}
 
         </ScrollView>
       </KeyboardAvoidingView>

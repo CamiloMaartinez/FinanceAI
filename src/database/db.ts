@@ -194,6 +194,12 @@ async function initDb(database: SQLite.SQLiteDatabase) {
   } catch {
     // La columna ya existe — no hay nada que hacer
   }
+  try {
+    // Ruta RELATIVA de la foto del recibo (ver services/receiptStorage.ts)
+    await database.execAsync(`ALTER TABLE transactions ADD COLUMN receiptUri TEXT;`);
+  } catch {
+    // La columna ya existe — no hay nada que hacer
+  }
 }
 
 // ─── Queries del Dashboard ──────────────────────────────────
@@ -475,13 +481,13 @@ async function insertTransaction(
   input: TransactionInput
 ): Promise<void> {
   await database.runAsync(
-    `INSERT INTO transactions (id, amount, type, date, accountId, toAccountId, categoryId, notes, tags, createdAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, '[]', ?)`,
+    `INSERT INTO transactions (id, amount, type, date, accountId, toAccountId, categoryId, notes, receiptUri, tags, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', ?)`,
     [
       newId('tx'), input.amount, input.type, input.date, input.accountId,
       input.type === 'transfer' ? input.toAccountId : null,
       input.type === 'transfer' ? null : input.categoryId,
-      input.notes, new Date().toISOString(),
+      input.notes, input.receiptUri ?? null, new Date().toISOString(),
     ]
   );
   await applyBalance(database, input, 1);
@@ -516,13 +522,13 @@ export async function updateTransaction(
     await applyBalance(database, updated, 1);
     await database.runAsync(
       `UPDATE transactions
-       SET amount = ?, type = ?, date = ?, accountId = ?, toAccountId = ?, categoryId = ?, notes = ?
+       SET amount = ?, type = ?, date = ?, accountId = ?, toAccountId = ?, categoryId = ?, notes = ?, receiptUri = ?
        WHERE id = ?`,
       [
         updated.amount, updated.type, updated.date, updated.accountId,
         updated.type === 'transfer' ? updated.toAccountId : null,
         updated.type === 'transfer' ? null : updated.categoryId,
-        updated.notes, id,
+        updated.notes, updated.receiptUri ?? null, id,
       ]
     );
   });

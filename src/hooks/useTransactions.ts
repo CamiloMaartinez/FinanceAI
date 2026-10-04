@@ -10,6 +10,7 @@ import {
 import { getAllAccounts } from '../database/db';
 import type { TransactionWithCategory, TransactionInput, Category, Account } from '../models/types';
 import type { RecurrenceFrequency } from '../utils/recurrence';
+import { deleteReceiptPhoto } from '../services/receiptStorage';
 
 interface UseTransactionsResult {
   transactions: TransactionWithCategory[];
@@ -68,6 +69,7 @@ export function useTransactions(): UseTransactionsResult {
 
   const removeTransaction = useCallback(async (tx: TransactionWithCategory) => {
     await deleteTransaction(tx);
+    deleteReceiptPhoto(tx.receiptUri);
     await load();
   }, [load]);
 

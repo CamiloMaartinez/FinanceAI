@@ -13,7 +13,8 @@ import { scanReceipt } from '../services/receiptScanner';
 import { AnimatedPressable } from './ui/AnimatedPressable';
 
 interface ReceiptScannerButtonProps {
-  onScanned: (amount: number | null, notes: string) => void;
+  // photoUri: la foto tomada (temporal), para guardarla con el movimiento
+  onScanned: (amount: number | null, notes: string, photoUri: string) => void;
 }
 
 export function ReceiptScannerButton({ onScanned }: ReceiptScannerButtonProps) {
@@ -34,7 +35,7 @@ export function ReceiptScannerButton({ onScanned }: ReceiptScannerButtonProps) {
 
     // Abrir la cámara
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       quality: 0.7,
       base64: true,
     });
@@ -55,7 +56,7 @@ export function ReceiptScannerButton({ onScanned }: ReceiptScannerButtonProps) {
         return;
       }
 
-      onScanned(scanned.amount, scanned.suggestedNotes);
+      onScanned(scanned.amount, scanned.suggestedNotes, result.assets[0].uri);
     } catch (err) {
       Alert.alert(
         'Error al escanear',

@@ -52,9 +52,14 @@ export function TransactionRow({ transaction, onPress, onLongPress }: Transactio
       </View>
 
       <View style={styles.info}>
-        <Text style={styles.notes} numberOfLines={1}>
-          {transaction.notes || transaction.categoryName || (isTransfer ? 'Transferencia' : 'Movimiento')}
-        </Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.notes} numberOfLines={1}>
+            {transaction.notes || transaction.categoryName || (isTransfer ? 'Transferencia' : 'Movimiento')}
+          </Text>
+          {transaction.receiptUri ? (
+            <Ionicons name="attach" size={14} color={c.textTertiary} accessibilityLabel="Tiene recibo" />
+          ) : null}
+        </View>
         <Text style={styles.meta}>
           {isTransfer
             ? `${transaction.accountName ?? ''} → ${transaction.toAccountName ?? ''}`
@@ -87,11 +92,17 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   info: {
     flex: 1,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 2,
+  },
   notes: {
+    flexShrink: 1,
     fontSize: 14,
     fontWeight: '500',
     color: c.textPrimary,
-    marginBottom: 2,
   },
   meta: {
     fontSize: 12,

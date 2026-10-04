@@ -51,6 +51,8 @@ export interface Transaction {
   // Solo en transferencias: la cuenta que recibe el dinero (accountId es
   // la que lo envía)
   toAccountId?: string | null;
+  // Ruta relativa de la foto del recibo (services/receiptStorage.ts)
+  receiptUri?: string | null;
 }
 
 // Transacción con datos de categoría ya unidos (para mostrar en listas)
@@ -72,6 +74,7 @@ export interface TransactionInput {
   toAccountId: string | null;
   categoryId: string | null;
   notes: string;
+  receiptUri?: string | null;
 }
 
 // ─── Movimientos recurrentes ───────────────────────────────
