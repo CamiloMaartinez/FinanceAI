@@ -25,6 +25,9 @@ interface TransactionFormProps {
   accounts: Account[];
   categories: Category[];
   editingTransaction?: TransactionWithCategory | null;
+  // Datos para precargar un movimiento NUEVO (por ejemplo, desde un atajo
+  // de Siri que abre financeai://transactions?monto=...&nota=...)
+  prefill?: { amount?: number; notes?: string; type?: 'expense' | 'income' } | null;
   onClose: () => void;
   onSave: (
     amount: number,
@@ -55,6 +58,7 @@ export function TransactionForm({
   accounts,
   categories,
   editingTransaction,
+  prefill,
   onClose,
   onSave,
 }: TransactionFormProps) {
@@ -91,6 +95,16 @@ export function TransactionForm({
       setError('');
     }
   }, [visible, editingTransaction]);
+
+  // Precarga los datos de un atajo (solo para movimientos nuevos)
+  useEffect(() => {
+    if (visible && prefill && !editingTransaction) {
+      if (prefill.type) setType(prefill.type);
+      if (prefill.amount) setAmount(String(Math.round(prefill.amount)));
+      if (prefill.notes) setNotes(prefill.notes);
+      setError('');
+    }
+  }, [visible, prefill]);
 
   // Categorización automática: mientras el usuario escribe la nota de un
   // gasto NUEVO (no al editar), la IA sugiere una categoría tras una pausa

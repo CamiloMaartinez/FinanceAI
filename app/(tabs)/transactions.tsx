@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
 import {
   View,
   Text,
@@ -22,6 +23,7 @@ import {
   type TransactionFiltersState,
 } from '../../src/components/TransactionFilters';
 import { filterTransactions } from '../../src/utils/transactionFilters';
+import { parseShortcutAmount } from '../../src/utils/shortcutParams';
 import { hapticSave, hapticToggle } from '../../src/utils/haptics';
 import { useColors, spacing, typography } from '../../src/constants/theme';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
@@ -66,6 +68,24 @@ export default function TransactionsScreen() {
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [filters, setFilters] = useState<TransactionFiltersState>(EMPTY_FILTERS);
 
+  // Atajos de Siri / Apple Pay: financeai://transactions?monto=25000&nota=Starbucks&tipo=ingreso
+  // abre el formulario de un movimiento nuevo con esos datos ya escritos.
+  const shortcut = useLocalSearchParams<{ monto?: string; nota?: string; tipo?: string }>();
+  const [prefill, setPrefill] = useState<{ amount?: number; notes?: string; type?: 'expense' | 'income' } | null>(null);
+
+  useEffect(() => {
+    if (!shortcut.monto && !shortcut.nota) return;
+    setEditingTx(null);
+    setPrefill({
+      amount: parseShortcutAmount(shortcut.monto) ?? undefined,
+      notes: shortcut.nota?.trim() || undefined,
+      type: shortcut.tipo === 'ingreso' ? 'income' : 'expense',
+    });
+    setFormVisible(true);
+    // Limpiamos los parámetros para que el formulario no se reabra solo
+    router.setParams({ monto: undefined, nota: undefined, tipo: undefined });
+  }, [shortcut.monto, shortcut.nota, shortcut.tipo]);
+
   const filteredTransactions = useMemo(
     () => filterTransactions(data.transactions, searchQuery, filters),
     [data.transactions, searchQuery, filters]
@@ -89,6 +109,7 @@ export default function TransactionsScreen() {
   const handleCloseForm = () => {
     setFormVisible(false);
     setEditingTx(null);
+    setPrefill(null);
   };
 
   const handlePress = (tx: TransactionWithCategory) => {
@@ -243,6 +264,7 @@ export default function TransactionsScreen() {
         accounts={data.accounts}
         categories={data.categories}
         editingTransaction={editingTx}
+        prefill={prefill}
         onClose={handleCloseForm}
         onSave={handleSave}
       />
