@@ -582,6 +582,17 @@ export async function updateTransaction(
   });
 }
 
+// Importa varios movimientos (extracto del banco) en una sola transacción:
+// si uno falla, no queda importado ninguno ni un saldo a medias.
+export async function importTransactions(inputs: TransactionInput[]): Promise<number> {
+  if (inputs.length === 0) return 0;
+  const database = await getDb();
+  await database.withTransactionAsync(async () => {
+    for (const input of inputs) await insertTransaction(database, input);
+  });
+  return inputs.length;
+}
+
 // ─── Movimientos recurrentes ───────────────────────────────
 
 export async function getAllRecurring(): Promise<RecurringTransaction[]> {

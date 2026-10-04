@@ -24,6 +24,7 @@ import { PinSetupModal } from '../../src/components/PinSetupModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { exportBackup, getLastBackupDate, pickBackupFile, restoreBackup } from '../../src/services/backup';
 import { exportTransactionsCsv } from '../../src/services/csvExport';
+import { ImportStatementModal } from '../../src/components/ImportStatementModal';
 import { ProfileSwitcherModal } from '../../src/components/ProfileSwitcherModal';
 import { getActiveProfileId } from '../../src/services/profiles';
 import type { Achievement } from '../../src/hooks/useProfile';
@@ -52,6 +53,7 @@ export default function ProfileScreen() {
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isExportingCsv, setIsExportingCsv] = useState(false);
+  const [importStatementVisible, setImportStatementVisible] = useState(false);
   const [lastBackup, setLastBackup] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -442,6 +444,14 @@ export default function ProfileScreen() {
           )}
         </AnimatedPressable>
         <View style={s.settingDivider} />
+        <AnimatedPressable style={s.settingRow} onPress={() => setImportStatementVisible(true)} onPressFeedback={hapticToggle}>
+          <View>
+            <Text style={s.settingLabel}>Importar extracto del banco</Text>
+            <Text style={s.settingDesc}>Movimientos desde un archivo CSV</Text>
+          </View>
+          <Ionicons name="cloud-download-outline" size={18} color={c.textTertiary} />
+        </AnimatedPressable>
+        <View style={s.settingDivider} />
         <AnimatedPressable style={s.settingRow} onPress={handleImport} disabled={isImporting} onPressFeedback={hapticToggle}>
           <View>
             <Text style={s.settingLabel}>Importar respaldo</Text>
@@ -487,6 +497,10 @@ export default function ProfileScreen() {
         </View>
       </Modal>
 
+      <ImportStatementModal
+        visible={importStatementVisible}
+        onClose={() => setImportStatementVisible(false)}
+      />
       <ExchangeRatesModal
         visible={ratesModalVisible}
         onClose={() => setRatesModalVisible(false)}

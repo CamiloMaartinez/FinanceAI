@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
 import {
   getAllTransactionsWithCategory,
   getAllCategories,
@@ -52,9 +53,11 @@ export function useTransactions(): UseTransactionsResult {
     }
   }, []);
 
-  useEffect(() => {
+  // Recarga cada vez que se entra a la pantalla: así aparece lo que se creó
+  // desde otras partes (deudas, extractos importados, recurrentes)
+  useFocusEffect(useCallback(() => {
     load();
-  }, [load]);
+  }, [load]));
 
   const addTransaction = useCallback(async (
     input: TransactionInput,
