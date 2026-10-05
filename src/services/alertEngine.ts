@@ -10,6 +10,7 @@ import {
   getAllCategories,
   updateAlertTriggered,
 } from '../database/db';
+import { analyzeMonth, describeInsight, type CategoryInsight } from '../utils/spendingInsights';
 
 const BUDGET_NOTIFIED_KEY = 'budget-alerts-notified';
 const UNUSUAL_NOTIFIED_KEY = 'unusual-spending-notified';
@@ -108,65 +109,46 @@ function getPastMonth(monthsAgo: number): { month: number; year: number } {
   return { month: d.getMonth() + 1, year: d.getFullYear() };
 }
 
-// Compara el gasto de este mes por categoría contra el promedio de los
-// últimos 3 meses en esa misma categoría. Si vas muy por encima de tu propio
-// comportamiento histórico, avisa — una vez al día por categoría como máximo.
-async function evaluateUnusualSpending(): Promise<void> {
-  const now          = new Date();
-  const currentMonth = now.getMonth() + 1;
-  const currentYear  = now.getFullYear();
-
-  const [currentBreakdown, categories, ...pastBreakdowns] = await Promise.all([
+// Análisis del mes: categorías donde ya superaste tu promedio de los
+// últimos 3 meses, o donde a este ritmo lo vas a superar (spendingInsights).
+// Lo usan las notificaciones y la pantalla de Alertas.
+export async function getMonthInsights(today: Date = new Date()): Promise<CategoryInsight[]> {
+  const currentMonth = today.getMonth() + 1;
+  const currentYear  = today.getFullYear();
+  const [currentBreakdown, ...pastBreakdowns] = await Promise.all([
     getCategoryBreakdown(currentMonth, currentYear),
-    getAllCategories(),
     ...[1, 2, 3].map((n) => {
       const { month, year } = getPastMonth(n);
       return getCategoryBreakdown(month, year);
     }),
   ]);
+  return analyzeMonth({
+    current: currentBreakdown.map((c) => ({ categoryId: c.categoryId, categoryName: c.categoryName, total: c.total })),
+    pastMonths: pastBreakdowns,
+    today,
+  });
+}
 
-  if (currentBreakdown.length === 0) return;
+// Avisa una vez al día por categoría y tipo de alerta (ritmo / superado)
+async function evaluateUnusualSpending(): Promise<void> {
+  const now = new Date();
+  const insights = await getMonthInsights(now);
+  if (insights.length === 0) return;
 
   const notifiedRaw = await AsyncStorage.getItem(UNUSUAL_NOTIFIED_KEY);
   const notified: Record<string, string> = notifiedRaw ? JSON.parse(notifiedRaw) : {};
   const today = todayKey();
 
-  const toNotify: { key: string; title: string; body: string }[] = [];
-
-  for (const current of currentBreakdown) {
-    // Historial de esta categoría en los 3 meses anteriores (solo meses con gasto real)
-    const history = pastBreakdowns
-      .map((b) => b.find((x) => x.categoryId === current.categoryId)?.total ?? 0)
-      .filter((amount) => amount > 0);
-
-    // Necesitamos al menos 2 meses de referencia para no disparar falsos
-    // positivos con categorías nuevas o de uso muy esporádico
-    if (history.length < 2) continue;
-
-    const average = history.reduce((sum, v) => sum + v, 0) / history.length;
-    const increase = current.total - average;
-
-    // Al menos 60% más que tu promedio, y que la diferencia no sea insignificante
-    const isUnusual = average > 0 && current.total >= average * 1.6 && increase >= 25000;
-
-    const key = `${current.categoryId}-${currentYear}-${currentMonth}`;
-    if (isUnusual && notified[key] !== today) {
-      const percentOver = Math.round((current.total / average - 1) * 100);
-      toNotify.push({
-        key,
-        title: `Gasto inusual en ${current.categoryName}`,
-        body: `Llevas $${Math.round(current.total).toLocaleString('es-CO')} este mes, ${percentOver}% más que tu promedio habitual de $${Math.round(average).toLocaleString('es-CO')}.`,
-      });
-    }
+  let changed = false;
+  for (const insight of insights) {
+    const key = `${insight.categoryId}-${now.getFullYear()}-${now.getMonth() + 1}-${insight.kind}`;
+    if (notified[key] === today) continue;
+    const { title, body } = describeInsight(insight);
+    await sendAlert(title, body);
+    notified[key] = today;
+    changed = true;
   }
-
-  if (toNotify.length === 0) return;
-
-  for (const n of toNotify) {
-    await sendAlert(n.title, n.body);
-    notified[n.key] = today;
-  }
-  await AsyncStorage.setItem(UNUSUAL_NOTIFIED_KEY, JSON.stringify(notified));
+  if (changed) await AsyncStorage.setItem(UNUSUAL_NOTIFIED_KEY, JSON.stringify(notified));
 }
 
 export async function evaluateAlerts(): Promise<void> {

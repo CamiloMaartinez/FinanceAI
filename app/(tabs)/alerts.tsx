@@ -1,4 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { getMonthInsights } from '../../src/services/alertEngine';
+import { describeInsight, type CategoryInsight } from '../../src/utils/spendingInsights';
 import {
   View,
   Text,
@@ -32,6 +35,11 @@ export default function AlertsScreen() {
   const alerts = useAlerts();
   const transactions = useTransactions();
   const [formVisible, setFormVisible] = useState(false);
+  // Análisis automático del mes (no depende de las alertas que cree el usuario)
+  const [insights, setInsights] = useState<CategoryInsight[]>([]);
+  useFocusEffect(useCallback(() => {
+    getMonthInsights().then(setInsights).catch(() => setInsights([]));
+  }, []));
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
 
@@ -98,6 +106,35 @@ export default function AlertsScreen() {
         </View>
 
         <View style={styles.divider} />
+
+        <View style={styles.insightsCard}>
+          <View style={styles.insightsHeader}>
+            <Ionicons name="sparkles" size={14} color={c.accent} />
+            <Text style={styles.insightsTitle}>Análisis del mes</Text>
+          </View>
+          {insights.length === 0 ? (
+            <Text style={styles.insightsEmpty}>
+              Vas en línea con tu promedio de los últimos meses. Te avisaremos si alguna categoría se dispara.
+            </Text>
+          ) : (
+            insights.map((insight) => {
+              const { title, body } = describeInsight(insight);
+              return (
+                <View key={`${insight.categoryId}-${insight.kind}`} style={styles.insightRow}>
+                  <Ionicons
+                    name={insight.kind === 'over' ? 'alert-circle' : 'speedometer-outline'}
+                    size={16}
+                    color={insight.kind === 'over' ? c.expense : c.orange}
+                  />
+                  <View style={styles.insightText}>
+                    <Text style={styles.insightRowTitle}>{title}</Text>
+                    <Text style={styles.insightRowBody}>{body}</Text>
+                  </View>
+                </View>
+              );
+            })
+          )}
+        </View>
 
         {alerts.alerts.length === 0 ? (
           <View style={styles.empty}>
@@ -234,4 +271,12 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     fontSize: 11, color: c.textTertiary,
     textAlign: 'center', marginTop: spacing.xl, letterSpacing: 0.3,
   },
+  insightsCard: { backgroundColor: c.surface, borderRadius: 14, padding: spacing.lg, marginBottom: spacing.xl, gap: spacing.md },
+  insightsHeader: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  insightsTitle: { fontSize: 13, fontWeight: '600', color: c.textPrimary, letterSpacing: 0.2 },
+  insightsEmpty: { fontSize: 13, color: c.textSecondary, lineHeight: 19 },
+  insightRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' },
+  insightText: { flex: 1 },
+  insightRowTitle: { fontSize: 14, fontWeight: '600', color: c.textPrimary },
+  insightRowBody: { fontSize: 13, color: c.textSecondary, lineHeight: 19, marginTop: 2 },
 }); 
