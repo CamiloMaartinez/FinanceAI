@@ -46,7 +46,8 @@ if (leaked.length > 0) {
 
 // El servidor lee APP_TOKEN (y GEMINI_API_KEY) de las variables de EAS del
 // entorno production, no de .env. Sin ella, todas las rutas responden 500.
-const easVars = execSync('npx eas env:list production', { encoding: 'utf8' });
+// Se quitan los códigos de color de la terminal (eas-cli resalta los nombres)
+const easVars = execSync('npx eas env:list production', { encoding: 'utf8' }).replace(/\x1b\[[0-9;]*m/g, '');
 if (!/^APP_TOKEN=/m.test(easVars)) {
   console.error(
     'Falta APP_TOKEN en las variables de EAS (production). Créala con el mismo valor de .env:\n' +
