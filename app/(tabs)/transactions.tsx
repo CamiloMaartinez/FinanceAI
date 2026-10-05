@@ -97,11 +97,15 @@ export default function TransactionsScreen() {
   const activeFilterCount = countActiveFilters(filters);
   const hasActiveSearch = searchQuery.trim().length > 0 || activeFilterCount > 0;
 
-  const handleSave = async (input: TransactionInput, recurrence: RecurrenceFrequency | null) => {
+  const handleSave = async (
+    input: TransactionInput,
+    recurrence: RecurrenceFrequency | null,
+    splitWith: string[] | null
+  ) => {
     if (editingTx) {
       await data.editTransaction(editingTx, input);
     } else {
-      await data.addTransaction(input, recurrence);
+      await data.addTransaction(input, recurrence, splitWith);
     }
     hapticSave();
   };

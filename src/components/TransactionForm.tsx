@@ -22,6 +22,8 @@ import { DateField } from './DateField';
 import { ReceiptAttachment } from './ReceiptAttachment';
 import { saveReceiptPhoto, resolveReceiptUri, deleteReceiptPhoto } from '../services/receiptStorage';
 import { atLocalNoon, RECURRENCE_LABELS, type RecurrenceFrequency } from '../utils/recurrence';
+import { splitAmount } from '../utils/splitExpense';
+import { formatCurrency } from '../utils/currency';
 import type { Account, Category, TransactionInput, TransactionType, TransactionWithCategory } from '../models/types';
 
 type FormType = 'expense' | 'income' | 'transfer';
@@ -42,7 +44,8 @@ interface TransactionFormProps {
   prefill?: { amount?: number; notes?: string; type?: 'expense' | 'income' } | null;
   onClose: () => void;
   // `recurrence` solo llega en movimientos nuevos de ingreso o gasto
-  onSave: (input: TransactionInput, recurrence: RecurrenceFrequency | null) => void;
+  // splitWith: personas con quienes se divide un gasto nuevo (null = no se divide)
+  onSave: (input: TransactionInput, recurrence: RecurrenceFrequency | null, splitWith: string[] | null) => void;
 }
 
 // Anillo de foco animado (§4/§15 apple-design): interpola el borde entre
@@ -82,6 +85,10 @@ export function TransactionForm({
   const [notes,      setNotes]      = useState('');
   const [date,       setDate]       = useState<Date>(() => new Date());
   const [recurrence, setRecurrence] = useState<RecurrenceFrequency | null>(null);
+  // Dividir un gasto nuevo con otras personas (crea deudas "me deben")
+  const [isSplitting, setIsSplitting] = useState(false);
+  const [splitPeople, setSplitPeople] = useState<string[]>([]);
+  const [splitName, setSplitName] = useState('');
   // Recibo: receiptPath = el ya guardado (ruta relativa); pendingPhotoUri =
   // una foto nueva que se copia a la carpeta de la app solo al guardar
   const [receiptPath, setReceiptPath] = useState<string | null>(null);
@@ -179,8 +186,19 @@ export function TransactionForm({
     setLegacyType(null); // el usuario eligió un tipo: ya no es el antiguo
     if (next !== 'expense') setCategoryId(null);
     if (next === 'transfer') setRecurrence(null);
+    if (next !== 'expense') { setIsSplitting(false); setSplitPeople([]); }
     setError('');
   };
+
+  const addSplitPerson = () => {
+    const name = splitName.trim();
+    if (!name) return;
+    if (!splitPeople.some((p) => p.toLowerCase() === name.toLowerCase())) {
+      setSplitPeople((prev) => [...prev, name]);
+    }
+    setSplitName('');
+  };
+  const splitting = !isEditing && type === 'expense' && isSplitting && splitPeople.length > 0;
 
   // Hora que se guarda: si es hoy, la hora actual (así queda arriba en la
   // lista); si se editó sin cambiar el día, la original; si es otro día,
@@ -239,7 +257,8 @@ export function TransactionForm({
         notes: notes.trim(),
         receiptUri: finalReceipt,
       },
-      !isEditing && type !== 'transfer' ? recurrence : null
+      !isEditing && type !== 'transfer' && !splitting ? recurrence : null,
+      splitting ? splitPeople : null
     );
     handleClose();
   };
@@ -255,6 +274,9 @@ export function TransactionForm({
     setNotes('');
     setDate(new Date());
     setRecurrence(null);
+    setIsSplitting(false);
+    setSplitPeople([]);
+    setSplitName('');
     setReceiptPath(null);
     setPendingPhotoUri(null);
     setError('');
@@ -503,8 +525,67 @@ export function TransactionForm({
             </View>
           )}
 
+          {/* Dividir — solo gastos nuevos: tu parte es el gasto, los demás te deben */}
+          {!isEditing && type === 'expense' && (
+            <View style={styles.field}>
+              <View style={styles.categoryLabelRow}>
+                <Text style={styles.fieldLabel}>Dividir gasto</Text>
+                <AnimatedPressable
+                  onPress={() => { setIsSplitting((v) => !v); setRecurrence(null); }}
+                  onPressFeedback={hapticToggle}
+                  hitSlop={8}
+                >
+                  <Text style={styles.linkText}>{isSplitting ? 'No dividir' : 'Dividir con otros'}</Text>
+                </AnimatedPressable>
+              </View>
+              {isSplitting && (
+                <>
+                  <View style={styles.splitInputRow}>
+                    <TextInput
+                      style={[styles.input, styles.inputText, styles.splitInput]}
+                      placeholder="Nombre de la persona"
+                      placeholderTextColor={c.textTertiary}
+                      value={splitName}
+                      onChangeText={setSplitName}
+                      onSubmitEditing={addSplitPerson}
+                      returnKeyType="done"
+                    />
+                    <AnimatedPressable style={styles.splitAddButton} onPress={addSplitPerson} onPressFeedback={hapticToggle}>
+                      <Ionicons name="add" size={20} color={c.accent} />
+                    </AnimatedPressable>
+                  </View>
+                  <View style={[styles.chipRow, styles.chipWrap]}>
+                    {splitPeople.map((name) => (
+                      <AnimatedPressable
+                        key={name}
+                        style={[styles.chip, styles.chipSelected]}
+                        onPress={() => setSplitPeople((prev) => prev.filter((p) => p !== name))}
+                        onPressFeedback={hapticToggle}
+                        accessibilityLabel={`Quitar a ${name}`}
+                      >
+                        <Text style={styles.chipLabel}>{name}</Text>
+                        <Ionicons name="close" size={14} color={c.textSecondary} />
+                      </AnimatedPressable>
+                    ))}
+                  </View>
+                  {splitPeople.length > 0 && (() => {
+                    const total = parseFloat(amount.replace(/\./g, '').replace(',', '.'));
+                    if (!(total > 0)) return <Text style={styles.helperText}>Escribe el monto para ver cuánto le toca a cada uno.</Text>;
+                    const { myShare, otherShare } = splitAmount(total, splitPeople.length + 1);
+                    return (
+                      <Text style={styles.helperText}>
+                        Entre {splitPeople.length + 1} personas: tu gasto es {formatCurrency(myShare)} y cada persona te debe {formatCurrency(otherShare)}.
+                        Las deudas quedan en Más → Deudas y préstamos.
+                      </Text>
+                    );
+                  })()}
+                </>
+              )}
+            </View>
+          )}
+
           {/* Repetir — solo ingresos y gastos nuevos (salario, arriendo...) */}
-          {!isEditing && type !== 'transfer' && (
+          {!isEditing && type !== 'transfer' && !isSplitting && (
             <View style={styles.field}>
               <Text style={styles.fieldLabel}>Repetir</Text>
               <View style={styles.chipRow}>
@@ -635,6 +716,33 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     color: c.textTertiary,
     marginTop: spacing.sm,
     lineHeight: 17,
+  },
+  linkText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: c.accent,
+    marginBottom: spacing.sm,
+  },
+  splitInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  splitInput: {
+    flex: 1,
+    paddingVertical: spacing.md,
+  },
+  splitAddButton: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    backgroundColor: c.accent + '1F',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chipWrap: {
+    flexWrap: 'wrap',
   },
   chipSelected: {
     borderColor: c.accent,

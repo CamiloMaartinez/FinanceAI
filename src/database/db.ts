@@ -19,6 +19,7 @@ import type {
 import { getExchangeRates, convertToCOP } from '../services/exchangeRates';
 import { dueOccurrences, atLocalNoon, type RecurrenceFrequency } from '../utils/recurrence';
 import { advanceBillingDate } from '../utils/subscriptionCalculations';
+import { splitAmount } from '../utils/splitExpense';
 
 // Filas crudas de SQLite: los campos que se guardan como JSON en texto
 // (tags, subcategories, benefits) llegan como string y hay que parsearlos.
@@ -710,31 +711,67 @@ export interface DebtInput {
   accountId: string | null; // null = no mover dinero de ninguna cuenta
 }
 
+// Inserta la deuda sin abrir transacción propia (la usan createDebt y
+// createSplitExpense, que ya están dentro de una). txNotes: nota del
+// movimiento que mueve el dinero, si se eligió una cuenta.
+async function insertDebt(database: SQLite.SQLiteDatabase, input: DebtInput, txNotes?: string): Promise<string> {
+  const id = newId('debt');
+  let transactionId: string | null = null;
+  if (input.accountId) {
+    // Le presto a alguien: sale dinero. Alguien me presta: entra dinero.
+    transactionId = await insertTransaction(database, {
+      amount: input.amount,
+      type: input.direction === 'owed_to_me' ? 'debt_out' : 'debt_in',
+      date: input.date,
+      accountId: input.accountId,
+      toAccountId: null,
+      categoryId: null,
+      notes: txNotes ?? (input.direction === 'owed_to_me' ? `Préstamo a ${input.personName}` : `Préstamo de ${input.personName}`),
+    });
+  }
+  await database.runAsync(
+    `INSERT INTO debts (id, direction, personName, amount, notes, date, dueDate, accountId, transactionId, isSettled, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
+    [id, input.direction, input.personName, input.amount, input.notes, input.date,
+      input.dueDate, input.accountId, transactionId, new Date().toISOString()]
+  );
+  return id;
+}
+
 export async function createDebt(input: DebtInput): Promise<string> {
   const database = await getDb();
-  const id = newId('debt');
+  let id = '';
   await database.withTransactionAsync(async () => {
-    let transactionId: string | null = null;
-    if (input.accountId) {
-      // Le presto a alguien: sale dinero. Alguien me presta: entra dinero.
-      transactionId = await insertTransaction(database, {
-        amount: input.amount,
-        type: input.direction === 'owed_to_me' ? 'debt_out' : 'debt_in',
-        date: input.date,
-        accountId: input.accountId,
-        toAccountId: null,
-        categoryId: null,
-        notes: input.direction === 'owed_to_me' ? `Préstamo a ${input.personName}` : `Préstamo de ${input.personName}`,
-      });
-    }
-    await database.runAsync(
-      `INSERT INTO debts (id, direction, personName, amount, notes, date, dueDate, accountId, transactionId, isSettled, createdAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
-      [id, input.direction, input.personName, input.amount, input.notes, input.date,
-        input.dueDate, input.accountId, transactionId, new Date().toISOString()]
-    );
+    id = await insertDebt(database, input);
   });
   return id;
+}
+
+// Gasto compartido: el usuario pagó todo desde su cuenta. Se registra como
+// gasto solo SU parte (lo que cuenta en reportes y presupuestos) y cada
+// persona queda debiéndole la suya. La cuenta baja el total, porque el
+// dinero sí salió completo. Todo en una sola transacción.
+export async function createSplitExpense(input: TransactionInput, people: string[]): Promise<void> {
+  if (input.type !== 'expense') throw new Error('Solo se pueden dividir gastos');
+  const names = people.map((p) => p.trim()).filter(Boolean);
+  if (names.length === 0) throw new Error('Agrega al menos una persona');
+  const { myShare, otherShare } = splitAmount(input.amount, names.length + 1);
+  const label = input.notes || 'Gasto compartido';
+
+  const database = await getDb();
+  await database.withTransactionAsync(async () => {
+    await insertTransaction(database, { ...input, amount: myShare });
+    for (const name of names) {
+      await insertDebt(
+        database,
+        {
+          direction: 'owed_to_me', personName: name, amount: otherShare,
+          notes: label, date: input.date, dueDate: null, accountId: input.accountId,
+        },
+        `${label} (parte de ${name})`
+      );
+    }
+  });
 }
 
 // Registra un abono. Cuando lo pendiente llega a cero, la deuda queda

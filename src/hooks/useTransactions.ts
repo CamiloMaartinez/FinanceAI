@@ -7,6 +7,7 @@ import {
   updateTransaction,
   deleteTransaction,
   createRecurring,
+  createSplitExpense,
 } from '../database/db';
 import { getAllAccounts } from '../database/db';
 import type { TransactionWithCategory, TransactionInput, Category, Account } from '../models/types';
@@ -22,7 +23,13 @@ interface UseTransactionsResult {
   refresh: () => Promise<void>;
   // Si viene `recurrence`, además del movimiento se crea la regla que lo
   // repetirá automáticamente (solo ingresos y gastos)
-  addTransaction: (input: TransactionInput, recurrence?: RecurrenceFrequency | null) => Promise<void>;
+  // Si viene `splitWith`, el gasto se divide en partes iguales: se registra
+  // solo la parte del usuario y cada persona queda debiéndole la suya
+  addTransaction: (
+    input: TransactionInput,
+    recurrence?: RecurrenceFrequency | null,
+    splitWith?: string[] | null
+  ) => Promise<void>;
   editTransaction: (tx: TransactionWithCategory, updated: TransactionInput) => Promise<void>;
   removeTransaction: (tx: TransactionWithCategory) => Promise<void>;
 }
@@ -61,8 +68,14 @@ export function useTransactions(): UseTransactionsResult {
 
   const addTransaction = useCallback(async (
     input: TransactionInput,
-    recurrence?: RecurrenceFrequency | null
+    recurrence?: RecurrenceFrequency | null,
+    splitWith?: string[] | null
   ) => {
+    if (splitWith && splitWith.length > 0 && input.type === 'expense') {
+      await createSplitExpense(input, splitWith);
+      await load();
+      return;
+    }
     await createTransaction(input);
     if (recurrence && (input.type === 'income' || input.type === 'expense')) {
       await createRecurring({ ...input, type: input.type }, recurrence, new Date(input.date));
