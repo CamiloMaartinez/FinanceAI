@@ -13,6 +13,10 @@ interface FinancialContext {
   monthlyExpenses: number;
   topCategories: { name: string; amount: number }[];
   activeGoals: { name: string; targetAmount: number; currentAmount: number; targetDate: string }[];
+  openDebts?: { personName: string; direction: 'owed_to_me' | 'i_owe'; remaining: number; dueDate: string | null }[];
+  subscriptions?: { name: string; monthlyCost: number; nextBillingDate: string }[];
+  budget?: { totalLimit: number; spent: number } | null;
+  recurring?: { notes: string; type: 'income' | 'expense'; amount: number; frequency: string }[];
 }
 
 export interface PurchaseEvaluation {

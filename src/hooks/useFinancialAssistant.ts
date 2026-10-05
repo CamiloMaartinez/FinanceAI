@@ -12,7 +12,12 @@ import {
   getAllGoals,
   getTotalsInRange,
   getCategoryBreakdownInRange,
+  getAllDebts,
+  getAllSubscriptions,
+  getBudgetForMonth,
+  getAllRecurring,
 } from '../database/db';
+import { getAnnualCost } from '../utils/subscriptionCalculations';
 
 const WEEKLY_SUMMARY_KEY = 'weekly-summary-last-shown';
 
@@ -41,16 +46,32 @@ async function buildFinancialContext() {
   const month = now.getMonth() + 1;
   const year = now.getFullYear();
 
-  const [balance, totals, breakdown, goals] = await Promise.all([
+  const [balance, totals, breakdown, goals, debts, subscriptions, budget, recurring] = await Promise.all([
     getTotalBalance(),
     getMonthlyTotals(month, year),
     getCategoryBreakdown(month, year),
     getAllGoals(),
+    getAllDebts(),
+    getAllSubscriptions(),
+    getBudgetForMonth(month, year),
+    getAllRecurring(),
   ]);
 
   const topCategories = breakdown
-    .slice(0, 3)
+    .slice(0, 5)
     .map((c) => ({ name: c.categoryName, amount: c.total }));
+
+  // Lo demás que el asistente necesita para responder preguntas como
+  // "¿cuánto me falta por pagar?" o "¿qué suscripción podría cancelar?"
+  const openDebts = debts
+    .filter((d) => !d.isSettled)
+    .map((d) => ({ personName: d.personName, direction: d.direction, remaining: d.remaining, dueDate: d.dueDate }));
+  const subscriptionsContext = subscriptions.map((s) => ({
+    name: s.name, monthlyCost: getAnnualCost(s) / 12, nextBillingDate: s.nextBillingDate,
+  }));
+  const recurringContext = recurring.map((r) => ({
+    notes: r.notes, type: r.type, amount: r.amount, frequency: r.frequency,
+  }));
 
   const activeGoals = goals.map((g) => ({
     name: g.name,
@@ -65,6 +86,10 @@ async function buildFinancialContext() {
     monthlyExpenses: totals.expense,
     topCategories,
     activeGoals,
+    openDebts,
+    subscriptions: subscriptionsContext,
+    budget: budget ? { totalLimit: budget.totalLimit, spent: totals.expense } : null,
+    recurring: recurringContext,
   };
 }
 
@@ -73,7 +98,7 @@ export function useFinancialAssistant(): UseFinancialAssistantResult {
     {
       id: 'welcome',
       role: 'assistant',
-      text: '¡Hola! Soy tu asistente financiero. Pregúntame sobre tus gastos, ingresos o metas, o usa "¿Puedo comprarlo?" para evaluar una compra. Por ejemplo: "¿Estoy gastando demasiado en restaurantes?"',
+      text: '¡Hola! Soy tu asistente financiero. Conozco tus gastos, metas, presupuesto, deudas y suscripciones. Pregúntame, por ejemplo: "¿Cuánto me falta por pagar de mis deudas?" o "¿Qué suscripción podría cancelar?". También puedes usar "¿Puedo comprarlo?" para evaluar una compra.',
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);

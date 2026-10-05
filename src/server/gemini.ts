@@ -14,7 +14,21 @@ export interface FinancialContext {
   monthlyExpenses: number;
   topCategories: { name: string; amount: number }[];
   activeGoals: { name: string; targetAmount: number; currentAmount: number; targetDate: string }[];
+  // Opcionales: las versiones anteriores de la app no los envían
+  openDebts?: { personName: string; direction: 'owed_to_me' | 'i_owe'; remaining: number; dueDate: string | null }[];
+  subscriptions?: { name: string; monthlyCost: number; nextBillingDate: string }[];
+  budget?: { totalLimit: number; spent: number } | null;
+  recurring?: { notes: string; type: 'income' | 'expense'; amount: number; frequency: string }[];
 }
+
+// Tope de elementos por lista: acota el tamaño del mensaje a la IA
+const MAX_ITEMS = 10;
+const peso = (n: number) => `${Math.round(n)} pesos`;
+const day = (iso: string) => new Date(iso).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
+
+const FREQUENCY_LABELS: Record<string, string> = {
+  weekly: 'semanal', biweekly: 'quincenal', monthly: 'mensual',
+};
 
 function getApiKey(): string {
   const key = process.env.GEMINI_API_KEY;
@@ -24,8 +38,43 @@ function getApiKey(): string {
   return key;
 }
 
+// Secciones opcionales del contexto: solo aparecen si la app las envió
+function buildExtraSections(context: FinancialContext): string {
+  const sections: string[] = [];
+
+  if (context.budget && context.budget.totalLimit > 0) {
+    const pct = Math.round((context.budget.spent / context.budget.totalLimit) * 100);
+    sections.push(`Presupuesto del mes: llevas ${peso(context.budget.spent)} de ${peso(context.budget.totalLimit)} (${pct}%).`);
+  }
+
+  const debts = (context.openDebts ?? []).slice(0, MAX_ITEMS);
+  if (debts.length > 0) {
+    const lines = debts.map((d) =>
+      `- ${d.direction === 'owed_to_me' ? `${d.personName} le debe al usuario` : `El usuario le debe a ${d.personName}`}: ${peso(d.remaining)}${d.dueDate ? ` (vence ${day(d.dueDate)})` : ''}`
+    );
+    sections.push(`Deudas y préstamos pendientes:\n${lines.join('\n')}`);
+  }
+
+  const subs = (context.subscriptions ?? []).slice(0, MAX_ITEMS);
+  if (subs.length > 0) {
+    const total = subs.reduce((s, x) => s + x.monthlyCost, 0);
+    const lines = subs.map((s) => `- ${s.name}: ${peso(s.monthlyCost)} al mes (próximo cobro ${day(s.nextBillingDate)})`);
+    sections.push(`Suscripciones (total ${peso(total)} al mes):\n${lines.join('\n')}`);
+  }
+
+  const recurring = (context.recurring ?? []).slice(0, MAX_ITEMS);
+  if (recurring.length > 0) {
+    const lines = recurring.map((r) =>
+      `- ${r.notes || (r.type === 'income' ? 'Ingreso' : 'Gasto')}: ${r.type === 'income' ? 'ingreso' : 'gasto'} ${FREQUENCY_LABELS[r.frequency] ?? r.frequency} de ${peso(r.amount)}`
+    );
+    sections.push(`Movimientos recurrentes:\n${lines.join('\n')}`);
+  }
+
+  return sections.length > 0 ? `\n\n${sections.join('\n\n')}` : '';
+}
+
 // Construye el "contexto financiero" en texto que se envía a la IA junto con la pregunta
-function buildSystemContext(context: FinancialContext): string {
+export function buildSystemContext(context: FinancialContext): string {
   const categoriesText = context.topCategories.length > 0
     ? context.topCategories.map((c) => `- ${c.name}: $${c.amount.toLocaleString('es-CO')}`).join('\n')
     : 'Sin gastos registrados este mes';
@@ -47,7 +96,7 @@ Top categorías de gasto este mes:
 ${categoriesText}
 
 Metas activas:
-${goalsText}
+${goalsText}${buildExtraSections(context)}
 
 Responde la siguiente pregunta del usuario usando estos datos reales cuando sea relevante.`;
 }
