@@ -15,6 +15,7 @@ import type {
   Debt,
   DebtDirection,
   DebtPayment,
+  GoalAutoContribution,
 } from '../models/types';
 import { getExchangeRates, convertToCOP } from '../services/exchangeRates';
 import { dueOccurrences, atLocalNoon, type RecurrenceFrequency } from '../utils/recurrence';
@@ -180,6 +181,16 @@ async function initDb(database: SQLite.SQLiteDatabase) {
       accountId     TEXT,
       transactionId TEXT,
       createdAt     TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS goal_auto_contributions (
+      id        TEXT PRIMARY KEY NOT NULL,
+      goalId    TEXT NOT NULL,
+      amount    REAL NOT NULL,
+      frequency TEXT NOT NULL,
+      anchorDay INTEGER NOT NULL,
+      nextDate  TEXT NOT NULL,
+      isActive  INTEGER NOT NULL DEFAULT 1,
+      createdAt TEXT NOT NULL
     );
     CREATE TABLE IF NOT EXISTS recurring_transactions (
       id         TEXT PRIMARY KEY NOT NULL,
@@ -910,6 +921,86 @@ export async function contributeToGoal(
 export async function deleteGoal(id: string): Promise<void> {
   const database = await getDb();
   await database.runAsync(`DELETE FROM goals WHERE id = ?`, [id]);
+  // Sus aportes automáticos dejan de tener a dónde ir
+  await database.runAsync(`UPDATE goal_auto_contributions SET isActive = 0 WHERE goalId = ?`, [id]);
+}
+
+// ─── Aportes automáticos a metas ───────────────────────────
+// "$100.000 cada quincena a la meta Viaje". Igual que los aportes manuales,
+// suman a la meta sin mover el saldo de ninguna cuenta.
+
+export async function getGoalAutoContributions(): Promise<GoalAutoContribution[]> {
+  const database = await getDb();
+  const rows = await database.getAllAsync<Omit<GoalAutoContribution, 'isActive'> & { isActive: number }>(
+    `SELECT * FROM goal_auto_contributions WHERE isActive = 1 ORDER BY nextDate ASC`
+  );
+  return rows.map((r) => ({ ...r, isActive: !!r.isActive }));
+}
+
+// `firstDate` = el aporte que el usuario acaba de hacer a mano; la regla
+// empieza a aportar desde la siguiente repetición. Reemplaza la regla
+// anterior de esa meta, si había.
+export async function createGoalAutoContribution(
+  goalId: string,
+  amount: number,
+  frequency: RecurrenceFrequency,
+  firstDate: Date = new Date()
+): Promise<void> {
+  if (!(amount > 0)) throw new Error('El aporte debe ser mayor que cero');
+  const database = await getDb();
+  const anchorDay = firstDate.getDate();
+  const { next } = dueOccurrences(atLocalNoon(firstDate), frequency, anchorDay, firstDate);
+  await database.withTransactionAsync(async () => {
+    await database.runAsync(`UPDATE goal_auto_contributions SET isActive = 0 WHERE goalId = ?`, [goalId]);
+    await database.runAsync(
+      `INSERT INTO goal_auto_contributions (id, goalId, amount, frequency, anchorDay, nextDate, isActive, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?, 1, ?)`,
+      [newId('gauto'), goalId, amount, frequency, anchorDay, next.toISOString(), new Date().toISOString()]
+    );
+  });
+}
+
+export async function deleteGoalAutoContribution(id: string): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(`UPDATE goal_auto_contributions SET isActive = 0 WHERE id = ?`, [id]);
+}
+
+// Aplica los aportes vencidos al abrir la app. Si la meta se completa (o ya
+// no existe), la regla se detiene sola. Devuelve cuántos aportes aplicó.
+export async function processDueGoalContributions(now: Date = new Date()): Promise<number> {
+  const database = await getDb();
+  const rules = await database.getAllAsync<GoalAutoContribution>(
+    `SELECT * FROM goal_auto_contributions WHERE isActive = 1 AND nextDate <= ?`,
+    [now.toISOString()]
+  );
+
+  let applied = 0;
+  for (const rule of rules) {
+    const { due, next } = dueOccurrences(new Date(rule.nextDate), rule.frequency, rule.anchorDay, now);
+    await database.withTransactionAsync(async () => {
+      let stop = false;
+      for (let i = 0; i < due.length; i++) {
+        const goal = await database.getFirstAsync<{ isCompleted: number }>(
+          `SELECT isCompleted FROM goals WHERE id = ?`, [rule.goalId]
+        );
+        if (!goal || goal.isCompleted) { stop = true; break; }
+        await database.runAsync(`UPDATE goals SET currentAmount = currentAmount + ? WHERE id = ?`, [rule.amount, rule.goalId]);
+        await database.runAsync(
+          `UPDATE goals SET isCompleted = 1 WHERE id = ? AND currentAmount >= targetAmount`, [rule.goalId]
+        );
+        applied++;
+      }
+      const after = await database.getFirstAsync<{ isCompleted: number }>(
+        `SELECT isCompleted FROM goals WHERE id = ?`, [rule.goalId]
+      );
+      if (stop || !after || after.isCompleted) {
+        await database.runAsync(`UPDATE goal_auto_contributions SET isActive = 0 WHERE id = ?`, [rule.id]);
+      } else {
+        await database.runAsync(`UPDATE goal_auto_contributions SET nextDate = ? WHERE id = ?`, [next.toISOString(), rule.id]);
+      }
+    });
+  }
+  return applied;
 }
 
 export async function updateGoal(

@@ -120,6 +120,18 @@ export interface Goal {
   createdAt: string;
 }
 
+// Aporte automático a una meta ("$100.000 cada quincena")
+export interface GoalAutoContribution {
+  id: string;
+  goalId: string;
+  amount: number;
+  frequency: 'weekly' | 'biweekly' | 'monthly';
+  anchorDay: number;
+  nextDate: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
 // ─── Suscripciones ─────────────────────────────────────────
 export type BillingFrequency = 'weekly' | 'monthly' | 'quarterly' | 'annual';
 

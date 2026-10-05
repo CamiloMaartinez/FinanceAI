@@ -12,7 +12,7 @@ import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { Onboarding } from '../src/components/Onboarding';
 import { hasSeenOnboarding } from '../src/services/onboarding';
 import { getActiveProfile } from '../src/services/profiles';
-import { setDatabaseFileName, processDueRecurring } from '../src/database/db';
+import { setDatabaseFileName, processDueRecurring, processDueGoalContributions } from '../src/database/db';
 import { scheduleBackupReminder } from '../src/services/backup';
 import { refreshSubscriptionBilling } from '../src/services/subscriptionBilling';
 import { refreshExchangeRates } from '../src/services/exchangeRates';
@@ -51,6 +51,7 @@ function RootLayoutInner() {
       // Antes de las alertas, para que los recurrentes generados cuenten
       // en los presupuestos. Si falla, la app arranca igual.
       await processDueRecurring().catch(() => 0);
+      await processDueGoalContributions().catch(() => 0);
       await refreshSubscriptionBilling().catch(() => 0);
       await evaluateAlerts();
       // No bloquea el arranque: si falla, simplemente no hay recordatorio

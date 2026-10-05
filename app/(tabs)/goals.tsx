@@ -23,7 +23,8 @@ import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
 import { Button } from '../../src/components/ui/Button';
 import { hapticSave, hapticSuccess } from '../../src/utils/haptics';
-import type { Goal } from '../../src/models/types';
+import type { Goal, GoalAutoContribution } from '../../src/models/types';
+import { RECURRENCE_LABELS, type RecurrenceFrequency } from '../../src/utils/recurrence';
 
 export default function GoalsScreen() {
   const c = useColors();
@@ -33,6 +34,7 @@ export default function GoalsScreen() {
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [contributeGoal, setContributeGoal] = useState<Goal | null>(null);
   const [contributeAmount, setContributeAmount] = useState('');
+  const [contributeRepeat, setContributeRepeat] = useState<RecurrenceFrequency | null>(null);
 
   const handleSaveGoal = async (
     name: string, targetAmount: number, targetDate: string,
@@ -75,7 +77,7 @@ export default function GoalsScreen() {
     const goalName = contributeGoal.name;
     const goalTarget = contributeGoal.targetAmount;
 
-    await goals.contribute(contributeGoal.id, amount);
+    await goals.contribute(contributeGoal.id, amount, willComplete ? null : contributeRepeat);
 
     if (!wasCompleted && willComplete) {
       hapticSuccess(); // 🎉 la meta se acaba de completar con este aporte
@@ -95,6 +97,18 @@ export default function GoalsScreen() {
 
     setContributeGoal(null);
     setContributeAmount('');
+    setContributeRepeat(null);
+  };
+
+  const handleStopAuto = (auto: GoalAutoContribution, goalName: string) => {
+    Alert.alert(
+      'Detener aporte automático',
+      `Dejarás de aportar $${Math.round(auto.amount).toLocaleString('es-CO')} a "${goalName}". Lo ya aportado se mantiene.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Detener', style: 'destructive', onPress: () => goals.stopAutoContribution(auto.id) },
+      ]
+    );
   };
 
   const shareAchievement = async (goalName: string, targetAmount: number) => {
@@ -151,16 +165,31 @@ export default function GoalsScreen() {
             </AnimatedPressable>
           </View>
         ) : (
-          goals.goals.map((goal, i) => (
-            <Animated.View key={goal.id} entering={FadeInDown.duration(300).delay(i * 60)}>
-              <GoalCard
-                goal={goal}
-                onContribute={(g) => setContributeGoal(g)}
-                onEdit={handleEdit}
-                onLongPress={handleLongPress}
-              />
-            </Animated.View>
-          ))
+          goals.goals.map((goal, i) => {
+            const auto = goals.autoContributions.find((a) => a.goalId === goal.id);
+            return (
+              <Animated.View key={goal.id} entering={FadeInDown.duration(300).delay(i * 60)}>
+                <GoalCard
+                  goal={goal}
+                  onContribute={(g) => setContributeGoal(g)}
+                  onEdit={handleEdit}
+                  onLongPress={handleLongPress}
+                />
+                {auto && (
+                  <View style={styles.autoRow}>
+                    <Ionicons name="repeat" size={14} color={c.textSecondary} />
+                    <Text style={styles.autoText}>
+                      Aporte automático: ${Math.round(auto.amount).toLocaleString('es-CO')} {RECURRENCE_LABELS[auto.frequency].toLowerCase()} · próximo{' '}
+                      {new Date(auto.nextDate).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
+                    </Text>
+                    <AnimatedPressable onPress={() => handleStopAuto(auto, goal.name)} hitSlop={8}>
+                      <Text style={styles.autoStop}>Detener</Text>
+                    </AnimatedPressable>
+                  </View>
+                )}
+              </Animated.View>
+            );
+          })
         )}
 
         {goals.goals.length > 0 && (
@@ -200,11 +229,30 @@ export default function GoalsScreen() {
                 autoFocus
               />
             </View>
+            <Text style={styles.repeatLabel}>Repetir automáticamente</Text>
+            <View style={styles.repeatRow}>
+              {([null, 'weekly', 'biweekly', 'monthly'] as const).map((freq) => (
+                <AnimatedPressable
+                  key={freq ?? 'none'}
+                  style={[styles.repeatChip, contributeRepeat === freq && styles.repeatChipActive]}
+                  onPress={() => setContributeRepeat(freq)}
+                >
+                  <Text style={[styles.repeatChipText, contributeRepeat === freq && styles.repeatChipTextActive]}>
+                    {freq ? RECURRENCE_LABELS[freq] : 'No'}
+                  </Text>
+                </AnimatedPressable>
+              ))}
+            </View>
+            {contributeRepeat && (
+              <Text style={styles.repeatHint}>
+                Se aportará este monto solo, al abrir la app, hasta completar la meta.
+              </Text>
+            )}
             <View style={styles.modalButtons}>
               <Button
                 label="Cancelar"
                 variant="secondary"
-                onPress={() => { setContributeGoal(null); setContributeAmount(''); }}
+                onPress={() => { setContributeGoal(null); setContributeAmount(''); setContributeRepeat(null); }}
                 haptic={null}
                 style={styles.flexBtn}
               />
@@ -267,4 +315,23 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   input: { flex: 1, fontSize: 24, fontWeight: '200', color: c.textPrimary },
   modalButtons: { flexDirection: 'row', gap: spacing.md },
   flexBtn: { flex: 1 },
+  autoRow: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    marginTop: -spacing.sm, marginBottom: spacing.md, paddingHorizontal: spacing.sm,
+  },
+  autoText: { flex: 1, fontSize: 12, color: c.textSecondary },
+  autoStop: { fontSize: 12, fontWeight: '600', color: c.expense },
+  repeatLabel: {
+    fontSize: 11.5, fontWeight: '500', color: c.textSecondary,
+    textTransform: 'uppercase', letterSpacing: 0.4, marginTop: spacing.md,
+  },
+  repeatRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.sm },
+  repeatChip: {
+    paddingVertical: 6, paddingHorizontal: spacing.md, borderRadius: radius.md,
+    backgroundColor: c.surfaceSecondary, borderWidth: 1.5, borderColor: 'transparent',
+  },
+  repeatChipActive: { borderColor: c.accent, backgroundColor: c.accent + '1F' },
+  repeatChipText: { fontSize: 13, color: c.textSecondary },
+  repeatChipTextActive: { color: c.textPrimary, fontWeight: '600' },
+  repeatHint: { fontSize: 12, color: c.textTertiary, marginTop: spacing.sm, lineHeight: 17 },
 });
