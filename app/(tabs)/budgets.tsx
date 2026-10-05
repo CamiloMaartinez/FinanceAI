@@ -18,6 +18,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useBudgets } from '../../src/hooks/useBudgets';
 import { BudgetForm } from '../../src/components/BudgetForm';
+import type { BudgetSuggestion } from '../../src/utils/budgetSuggestion';
 import { getAllCategories } from '../../src/database/db';
 import { useColors, spacing, typography, radius } from '../../src/constants/theme';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
@@ -64,6 +65,9 @@ export default function BudgetsScreen() {
   const budgets = useBudgets();
   const [formVisible, setFormVisible] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  // Propuesta de la IA abierta en el formulario (null = edición normal)
+  const [suggestion, setSuggestion] = useState<BudgetSuggestion | null>(null);
+  const [isSuggesting, setIsSuggesting] = useState(false);
 
   useEffect(() => {
     getAllCategories().then(setCategories);
@@ -71,11 +75,36 @@ export default function BudgetsScreen() {
 
   const handleSave = useCallback(
     async (totalLimit: number, categoryLimits: Record<string, number>) => {
-      await budgets.saveBudget(totalLimit, categoryLimits);
+      await budgets.saveBudget(totalLimit, categoryLimits, suggestion !== null);
       hapticSave();
       setFormVisible(false);
+      setSuggestion(null);
     },
-    [budgets]
+    [budgets, suggestion]
+  );
+
+  const handleSuggest = useCallback(async () => {
+    setIsSuggesting(true);
+    try {
+      const result = await budgets.suggestWithAI();
+      setSuggestion(result);
+      setFormVisible(true);
+    } catch (err) {
+      Alert.alert('No se pudo sugerir', err instanceof Error ? err.message : 'Inténtalo de nuevo');
+    } finally {
+      setIsSuggesting(false);
+    }
+  }, [budgets]);
+
+  const suggestButton = (
+    <AnimatedPressable style={styles.aiButton} onPress={handleSuggest} disabled={isSuggesting} onPressFeedback={hapticToggle}>
+      {isSuggesting ? (
+        <ActivityIndicator size="small" color={c.accent} />
+      ) : (
+        <Ionicons name="sparkles" size={14} color={c.accent} />
+      )}
+      <Text style={styles.aiButtonText}>{isSuggesting ? 'Analizando tus gastos...' : 'Sugerir con IA'}</Text>
+    </AnimatedPressable>
   );
 
   const handleDelete = useCallback(() => {
@@ -135,6 +164,7 @@ export default function BudgetsScreen() {
             <AnimatedPressable style={styles.emptyButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
               <Text style={styles.emptyButtonText}>+ Crear presupuesto</Text>
             </AnimatedPressable>
+            {suggestButton}
           </View>
         ) : (
           <>
@@ -189,6 +219,14 @@ export default function BudgetsScreen() {
               </View>
             )}
 
+            {budgets.budget.isAIGenerated && (
+              <View style={styles.aiBadge}>
+                <Ionicons name="sparkles" size={12} color={c.accent} />
+                <Text style={styles.aiBadgeText}>Presupuesto sugerido por IA</Text>
+              </View>
+            )}
+            <View style={styles.aiRow}>{suggestButton}</View>
+
             <AnimatedPressable style={styles.deleteLink} onPress={handleDelete}>
               <Text style={styles.deleteLinkText}>Eliminar presupuesto de este mes</Text>
             </AnimatedPressable>
@@ -199,9 +237,10 @@ export default function BudgetsScreen() {
       <BudgetForm
         visible={formVisible}
         categories={categories}
-        initialTotalLimit={budgets.totalLimit}
-        initialCategoryLimits={budgets.budget?.categoryLimits ?? {}}
-        onClose={() => setFormVisible(false)}
+        initialTotalLimit={suggestion?.totalLimit ?? budgets.totalLimit}
+        initialCategoryLimits={suggestion?.categoryLimits ?? budgets.budget?.categoryLimits ?? {}}
+        note={suggestion?.explanation ?? null}
+        onClose={() => { setFormVisible(false); setSuggestion(null); }}
         onSave={handleSave}
       />
     </SafeAreaView>
@@ -271,4 +310,13 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   categoryPercent: { fontSize: 15, fontWeight: '700' },
   deleteLink: { alignItems: 'center', marginTop: spacing.xl, paddingVertical: spacing.sm },
   deleteLinkText: { fontSize: 12, color: c.textTertiary, textDecorationLine: 'underline' },
+  aiButton: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm,
+    marginTop: spacing.md, paddingVertical: spacing.sm, paddingHorizontal: spacing.lg,
+    borderRadius: radius.md, backgroundColor: c.accent + '1A',
+  },
+  aiButtonText: { fontSize: 13, fontWeight: '600', color: c.accent },
+  aiRow: { alignItems: 'center', marginTop: spacing.sm },
+  aiBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'center', marginTop: spacing.lg },
+  aiBadgeText: { fontSize: 12, color: c.textSecondary },
 });

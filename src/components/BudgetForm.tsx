@@ -24,6 +24,8 @@ interface BudgetFormProps {
   initialCategoryLimits: Record<string, number>;
   onClose: () => void;
   onSave: (totalLimit: number, categoryLimits: Record<string, number>) => void;
+  // Explicación de una propuesta de la IA, mostrada arriba del formulario
+  note?: string | null;
 }
 
 // Convierte "150.000" -> 150000
@@ -86,6 +88,7 @@ export function BudgetForm({
   initialCategoryLimits,
   onClose,
   onSave,
+  note,
 }: BudgetFormProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
@@ -159,6 +162,13 @@ export function BudgetForm({
           {error ? (
             <View style={styles.errorBox}>
               <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+
+          {note ? (
+            <View style={styles.noteBox}>
+              <Ionicons name="sparkles" size={14} color={c.accent} />
+              <Text style={styles.noteText}>{note}</Text>
             </View>
           ) : null}
 
@@ -339,4 +349,13 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     paddingVertical: spacing.sm,
     textAlign: 'right',
   },
+  noteBox: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    backgroundColor: c.accent + '14',
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  noteText: { flex: 1, fontSize: 13, lineHeight: 19, color: c.textPrimary },
 });

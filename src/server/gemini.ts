@@ -5,6 +5,14 @@
 // el prefijo EXPO_PUBLIC_, que es justamente lo que la mantiene fuera del
 // bundle del cliente).
 
+import {
+  baselineSuggestion,
+  sanitizeBudgetSuggestion,
+  extractJsonObject,
+  type BudgetHistory,
+  type BudgetSuggestion,
+} from '../utils/budgetSuggestion';
+
 const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1/models/gemini-3.8-flash:generateContent';
 
@@ -356,5 +364,39 @@ Si no puedes identificar claramente el monto o el comercio, usa null en ese camp
     };
   } catch {
     throw new Error('No se pudo interpretar la información del recibo');
+  }
+}
+
+// Presupuesto sugerido: la IA propone límites por categoría a partir del
+// promedio de los últimos meses. La respuesta se valida siempre
+// (sanitizeBudgetSuggestion): si no sirve, se usa el promedio como respaldo.
+export async function suggestBudgetServer(history: BudgetHistory): Promise<BudgetSuggestion> {
+  if (history.categories.length === 0) return baselineSuggestion(history);
+
+  const categoriesText = history.categories
+    .slice(0, 20)
+    .map((c) => `- id "${c.categoryId}" (${c.name}): promedio ${Math.round(c.monthlyAverage)} pesos al mes`)
+    .join('\n');
+
+  const prompt = `Eres un asesor de finanzas personales en Colombia. Propón un presupuesto mensual realista para este usuario.
+
+Ingreso promedio mensual: ${Math.round(history.monthlyIncome)} pesos (meses analizados: ${history.monthsAnalyzed}).
+Gasto promedio por categoría:
+${categoriesText}
+
+Reglas:
+- Usa SOLO los ids de categoría de la lista.
+- Propón para cada categoría un límite cercano a su promedio; recorta un poco las categorías prescindibles (restaurantes, entretenimiento, compras) para que el usuario ahorre, y no recortes las esenciales (vivienda, servicios, salud, transporte).
+- Si el ingreso es mayor que cero, el total no debe superar el 90% del ingreso.
+- "explanation": 2 o 3 oraciones en español, en texto plano, sin Markdown, explicando dónde propones ahorrar y cuánto. Escribe los montos con signo de pesos y puntos de miles, por ejemplo $100.000.
+
+Responde ÚNICAMENTE con un objeto JSON con esta forma exacta:
+{"totalLimit": número, "categoryLimits": {"<id>": número}, "explanation": "texto"}`;
+
+  try {
+    const text = await callGeminiWithRetry([{ role: 'user', parts: [{ text: prompt }] }], 900, 0.3);
+    return sanitizeBudgetSuggestion(extractJsonObject(text), history);
+  } catch {
+    return baselineSuggestion(history);
   }
 }

@@ -2,6 +2,8 @@
 // La API Key de Gemini NUNCA vive aquí ni en ningún archivo del cliente:
 // vive del lado del servidor en src/server/gemini.ts.
 
+import type { BudgetHistory, BudgetSuggestion } from '../utils/budgetSuggestion';
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? '';
 // Token que exige src/server/guard.ts. Se incrusta al compilar (secreto de
 // GitHub Actions); no es infalible, pero impide que cualquiera use la API.
@@ -99,4 +101,10 @@ export interface MonthPredictionContext {
 export async function generateMonthPrediction(context: MonthPredictionContext): Promise<string> {
   const { text } = await postJson<{ text: string }>('/api/month-prediction', context);
   return text;
+}
+
+// Presupuesto sugerido por IA a partir del promedio de los últimos meses.
+// El servidor valida la respuesta y, si la IA falla, devuelve el promedio.
+export async function suggestBudget(history: BudgetHistory): Promise<BudgetSuggestion> {
+  return postJson<BudgetSuggestion>('/api/suggest-budget', { history });
 }

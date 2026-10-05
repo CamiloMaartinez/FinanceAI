@@ -8,6 +8,8 @@ import {
   getMonthlyTotals,
 } from '../database/db';
 import type { Budget } from '../models/types';
+import { suggestBudget } from '../services/ai';
+import { averageCategorySpending, baselineSuggestion, type BudgetSuggestion } from '../utils/budgetSuggestion';
 
 export interface CategoryBudgetProgress {
   categoryId: string;
@@ -30,7 +32,9 @@ interface UseBudgetsResult {
   isLoading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
-  saveBudget: (totalLimit: number, categoryLimits: Record<string, number>) => Promise<void>;
+  saveBudget: (totalLimit: number, categoryLimits: Record<string, number>, isAIGenerated?: boolean) => Promise<void>;
+  // Propuesta de presupuesto (IA, o el promedio si no hay conexión)
+  suggestWithAI: () => Promise<BudgetSuggestion>;
   removeBudget: () => Promise<void>;
 }
 
@@ -95,12 +99,35 @@ export function useBudgets(): UseBudgetsResult {
   }, [load]);
 
   const saveBudget = useCallback(
-    async (totalLimit: number, categoryLimits: Record<string, number>) => {
-      await upsertBudget(month, year, totalLimit, categoryLimits, false);
+    async (totalLimit: number, categoryLimits: Record<string, number>, isAIGenerated = false) => {
+      await upsertBudget(month, year, totalLimit, categoryLimits, isAIGenerated);
       await load();
     },
     [month, year, load]
   );
+
+  // Analiza los últimos 3 meses completos (sin contar el actual)
+  const suggestWithAI = useCallback(async (): Promise<BudgetSuggestion> => {
+    const months = await Promise.all([1, 2, 3].map(async (back) => {
+      const d = new Date(year, month - 1 - back, 1);
+      const m = d.getMonth() + 1;
+      const y = d.getFullYear();
+      const [breakdown, totals] = await Promise.all([getCategoryBreakdown(m, y), getMonthlyTotals(m, y)]);
+      return {
+        income: totals.income,
+        categories: breakdown.map((b) => ({ categoryId: b.categoryId, name: b.categoryName, total: b.total })),
+      };
+    }));
+    const history = averageCategorySpending(months);
+    if (history.categories.length === 0) {
+      throw new Error('Necesitas al menos un mes completo de gastos registrados para sugerir un presupuesto.');
+    }
+    try {
+      return await suggestBudget(history);
+    } catch {
+      return baselineSuggestion(history); // sin conexión: el promedio
+    }
+  }, [month, year]);
 
   const removeBudget = useCallback(async () => {
     if (!budget) return;
@@ -123,6 +150,7 @@ export function useBudgets(): UseBudgetsResult {
     error,
     refresh: load,
     saveBudget,
+    suggestWithAI,
     removeBudget,
   };
 }
