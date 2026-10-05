@@ -120,7 +120,13 @@ export default function DebtsScreen() {
             <Text style={styles.label}>DEUDAS Y PRÉSTAMOS</Text>
             <Text style={styles.count}>{open.length} abierta{open.length !== 1 ? 's' : ''}</Text>
           </View>
-          <AnimatedPressable style={styles.addButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
+          <AnimatedPressable
+            style={styles.addButton}
+            onPress={() => setFormVisible(true)}
+            onPressFeedback={hapticSave}
+            accessibilityRole="button"
+            accessibilityLabel="Nueva deuda"
+          >
             <Ionicons name="add" size={20} color={c.textPrimary} />
           </AnimatedPressable>
         </View>

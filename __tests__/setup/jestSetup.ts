@@ -8,6 +8,17 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 );
 
+// Pruebas de pantallas: animaciones (Reanimated 4 + Worklets) con sus mocks
+// oficiales, y el selector de fecha nativo como un componente vacío
+jest.mock('react-native-safe-area-context', () => require('react-native-safe-area-context/jest/mock').default);
+jest.mock('react-native-worklets', () => require('react-native-worklets/src/mock'));
+require('react-native-reanimated').setUpTests();
+jest.mock('@react-native-community/datetimepicker', () => {
+  const React = require('react');
+  const Picker = () => React.createElement('DateTimePicker');
+  return { __esModule: true, default: Picker, DateTimePickerAndroid: { open: jest.fn(), dismiss: jest.fn() } };
+});
+
 // node:sqlite avisa que es experimental; no aporta nada en la salida de pruebas
 const originalEmitWarning = process.emitWarning;
 process.emitWarning = ((warning: string | Error, ...rest: unknown[]) => {
