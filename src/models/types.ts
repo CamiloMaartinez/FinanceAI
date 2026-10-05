@@ -54,6 +54,9 @@ export interface Transaction {
   // Solo en transferencias: la cuenta que recibe el dinero (accountId es
   // la que lo envía)
   toAccountId?: string | null;
+  // Transferencias entre monedas: monto que llega, en la moneda de la
+  // cuenta destino (null = mismo monto)
+  toAmount?: number | null;
   // Ruta relativa de la foto del recibo (services/receiptStorage.ts)
   receiptUri?: string | null;
 }
@@ -66,6 +69,7 @@ export interface TransactionWithCategory extends Transaction {
   accountName?: string;
   accountColor?: string;
   toAccountName?: string;
+  toAccountCurrency?: string;
 }
 
 // Lo que se necesita para crear o editar un movimiento
@@ -75,6 +79,7 @@ export interface TransactionInput {
   date: string;
   accountId: string;
   toAccountId: string | null;
+  toAmount?: number | null;
   categoryId: string | null;
   notes: string;
   receiptUri?: string | null;

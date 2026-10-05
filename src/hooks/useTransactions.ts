@@ -95,7 +95,7 @@ export function useTransactions(): UseTransactionsResult {
   ) => {
     await updateTransaction(
       tx.id,
-      { amount: tx.amount, type: tx.type, accountId: tx.accountId, toAccountId: tx.toAccountId ?? null },
+      { amount: tx.amount, type: tx.type, accountId: tx.accountId, toAccountId: tx.toAccountId ?? null, toAmount: tx.toAmount ?? null },
       updated
     );
     await load();

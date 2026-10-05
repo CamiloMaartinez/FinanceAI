@@ -71,6 +71,9 @@ export function TransactionRow({ transaction, onPress, onLongPress }: Transactio
           {isTransfer
             ? `${transaction.accountName ?? ''} → ${transaction.toAccountName ?? ''}`
             : transaction.accountName}
+          {isTransfer && transaction.toAmount != null
+            ? ` · llegan ${transaction.toAmount.toLocaleString('es-CO', { maximumFractionDigits: 2 })} ${transaction.toAccountCurrency ?? ''}`
+            : ''}
           {transaction.categoryName ? ` · ${transaction.categoryName}` : ''}
         </Text>
       </View>

@@ -23,6 +23,8 @@ import { ReceiptAttachment } from './ReceiptAttachment';
 import { saveReceiptPhoto, resolveReceiptUri, deleteReceiptPhoto } from '../services/receiptStorage';
 import { atLocalNoon, RECURRENCE_LABELS, type RecurrenceFrequency } from '../utils/recurrence';
 import { splitAmount } from '../utils/splitExpense';
+import { parseShortcutAmount } from '../utils/shortcutParams';
+import { getExchangeRates, convertBetween } from '../services/exchangeRates';
 import { formatCurrency } from '../utils/currency';
 import type { Account, Category, TransactionInput, TransactionType, TransactionWithCategory } from '../models/types';
 
@@ -105,11 +107,35 @@ export function TransactionForm({
   const notesRing = useFocusRing(c);
 
   const fromAccount = accounts.find((a) => a.id === accountId);
-  // Solo se puede transferir entre cuentas de la misma moneda: el monto
-  // que sale es el mismo que entra.
-  const transferTargets = accounts.filter(
-    (a) => a.id !== accountId && (!fromAccount || a.currency === fromAccount.currency)
-  );
+  const transferTargets = accounts.filter((a) => a.id !== accountId);
+  const toAccount = accounts.find((a) => a.id === toAccountId);
+  // Entre monedas distintas: sale `amount` en la moneda de origen y llega
+  // `receivedAmount` en la de destino (calculado con la tasa del día, editable)
+  const isCrossCurrency = !!fromAccount && !!toAccount && fromAccount.currency !== toAccount.currency;
+  const [rates, setRates] = useState<Record<string, number>>({});
+  const [receivedAmount, setReceivedAmount] = useState('');
+  const [receivedEdited, setReceivedEdited] = useState(false);
+
+  useEffect(() => {
+    if (visible) getExchangeRates().then(setRates).catch(() => {});
+  }, [visible]);
+
+  // Recalcula lo que se recibe mientras el usuario no lo haya corregido a mano
+  useEffect(() => {
+    if (!isCrossCurrency || receivedEdited || !fromAccount || !toAccount) return;
+    const sent = parseFloat(amount.replace(/\./g, '').replace(',', '.'));
+    if (!(sent > 0)) { setReceivedAmount(''); return; }
+    const value = convertBetween(sent, fromAccount.currency, toAccount.currency, rates);
+    setReceivedAmount(value.toLocaleString('es-CO', { maximumFractionDigits: 2 }));
+  }, [amount, accountId, toAccountId, rates, isCrossCurrency, receivedEdited]);
+
+  // "1 USD = $3.311,64 COP" para la moneda extranjera de la transferencia
+  const rateLabel = (() => {
+    if (!isCrossCurrency || !fromAccount || !toAccount) return '';
+    const foreign = fromAccount.currency !== 'COP' ? fromAccount.currency : toAccount.currency;
+    const rate = rates[foreign];
+    return rate ? `1 ${foreign} = $${rate.toLocaleString('es-CO', { maximumFractionDigits: 2 })} COP` : '';
+  })();
 
   // Selecciona la primera cuenta automáticamente cuando se abre (solo si no estamos editando)
   useEffect(() => {
@@ -118,7 +144,7 @@ export function TransactionForm({
     }
   }, [visible, accounts]);
 
-  // Si la cuenta destino deja de ser válida (misma cuenta u otra moneda), se quita
+  // Si la cuenta destino pasa a ser la misma de origen, se quita
   useEffect(() => {
     if (toAccountId && !transferTargets.some((a) => a.id === toAccountId)) {
       setToAccountId(null);
@@ -134,6 +160,10 @@ export function TransactionForm({
       setAmount(String(Math.round(editingTransaction.amount)));
       setAccountId(editingTransaction.accountId);
       setToAccountId(editingTransaction.toAccountId ?? null);
+      if (editingTransaction.toAmount != null) {
+        setReceivedAmount(editingTransaction.toAmount.toLocaleString('es-CO', { maximumFractionDigits: 2 }));
+        setReceivedEdited(true); // respeta el valor que se guardó
+      }
       setCategoryId(editingTransaction.categoryId);
       setNotes(editingTransaction.notes ?? '');
       setReceiptPath(editingTransaction.receiptUri ?? null);
@@ -226,6 +256,11 @@ export function TransactionForm({
       setError('Selecciona la cuenta de destino');
       return;
     }
+    const received = isCrossCurrency ? parseShortcutAmount(receivedAmount) : null;
+    if (type === 'transfer' && isCrossCurrency && !received) {
+      setError(`Ingresa cuánto llega a ${toAccount?.name ?? 'la cuenta destino'}`);
+      return;
+    }
     // Un pago o una inversión antiguos pueden no tener categoría: se guardan igual
     if (type === 'expense' && !categoryId && !legacyType) {
       setError('Selecciona una categoría');
@@ -253,6 +288,7 @@ export function TransactionForm({
         date: resolveDateISO(),
         accountId,
         toAccountId: type === 'transfer' ? toAccountId : null,
+        toAmount: type === 'transfer' && isCrossCurrency ? received : null,
         categoryId: type === 'expense' || legacyType ? categoryId : null,
         notes: notes.trim(),
         receiptUri: finalReceipt,
@@ -277,6 +313,8 @@ export function TransactionForm({
     setIsSplitting(false);
     setSplitPeople([]);
     setSplitName('');
+    setReceivedAmount('');
+    setReceivedEdited(false);
     setReceiptPath(null);
     setPendingPhotoUri(null);
     setError('');
@@ -443,13 +481,7 @@ export function TransactionForm({
           {type === 'transfer' && (
             <View style={styles.field}>
               <Text style={styles.fieldLabel}>Hacia</Text>
-              {transferTargets.length === 0 ? (
-                <Text style={styles.helperText}>
-                  No tienes otra cuenta en {fromAccount?.currency ?? 'esta moneda'}.
-                  Solo se puede transferir entre cuentas de la misma moneda.
-                </Text>
-              ) : (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View style={styles.chipRow}>
                     {transferTargets.map((acc) => (
                       <AnimatedPressable
@@ -462,16 +494,39 @@ export function TransactionForm({
                             borderColor: acc.colorHex,
                           },
                         ]}
-                        onPress={() => { setToAccountId(acc.id); setError(''); }}
+                        onPress={() => { setToAccountId(acc.id); setReceivedEdited(false); setError(''); }}
                         onPressFeedback={hapticToggle}
                       >
                         <View style={[styles.chipDot, { backgroundColor: acc.colorHex }]} />
-                        <Text style={styles.chipLabel}>{acc.name}</Text>
+                        <Text style={styles.chipLabel}>
+                          {acc.name}{fromAccount && acc.currency !== fromAccount.currency ? ` (${acc.currency})` : ''}
+                        </Text>
                       </AnimatedPressable>
                     ))}
                   </View>
-                </ScrollView>
-              )}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Entre monedas distintas: cuánto llega a la cuenta destino */}
+          {type === 'transfer' && isCrossCurrency && fromAccount && toAccount && (
+            <View style={styles.field}>
+              <Text style={styles.fieldLabel}>Recibes en {toAccount.name}</Text>
+              <View style={[styles.input, styles.receivedRow]}>
+                <TextInput
+                  style={[styles.inputText, styles.receivedInput]}
+                  placeholder="0"
+                  placeholderTextColor={c.textTertiary}
+                  value={receivedAmount}
+                  onChangeText={(t) => { setReceivedAmount(t); setReceivedEdited(true); setError(''); }}
+                  keyboardType="decimal-pad"
+                />
+                <Text style={styles.receivedCurrency}>{toAccount.currency}</Text>
+              </View>
+              <Text style={styles.helperText}>
+                Calculado con la tasa del día
+                {rateLabel ? ` (${rateLabel})` : ''}. Corrígelo si tu banco o casa de cambio te dio otro valor.
+              </Text>
             </View>
           )}
 
@@ -732,6 +787,19 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   splitInput: {
     flex: 1,
     paddingVertical: spacing.md,
+  },
+  receivedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingRight: spacing.lg,
+  },
+  receivedInput: {
+    flex: 1,
+  },
+  receivedCurrency: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: c.textSecondary,
   },
   splitAddButton: {
     width: 44,

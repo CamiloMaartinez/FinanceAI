@@ -125,3 +125,17 @@ export function convertToCOP(amount: number, currencyCode: string, rates: Record
   const rate = rates[currencyCode] ?? 1;
   return amount * rate;
 }
+
+// Convierte entre dos monedas cualesquiera pasando por pesos colombianos
+// (1.000.000 COP → USD = 1.000.000 / 3.311,64). Redondeado a centavos.
+export function convertBetween(
+  amount: number,
+  fromCurrency: string,
+  toCurrency: string,
+  rates: Record<string, number>
+): number {
+  if (fromCurrency === toCurrency) return amount;
+  const cop = convertToCOP(amount, fromCurrency, rates);
+  const result = toCurrency === 'COP' ? cop : cop / (rates[toCurrency] ?? 1);
+  return Math.round(result * 100) / 100;
+}

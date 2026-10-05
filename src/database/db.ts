@@ -227,6 +227,13 @@ async function initDb(database: SQLite.SQLiteDatabase) {
   } catch {
     // La columna ya existe — no hay nada que hacer
   }
+  try {
+    // Transferencias entre monedas: monto que llega a la cuenta destino, en
+    // SU moneda (null = el mismo monto, misma moneda)
+    await database.execAsync(`ALTER TABLE transactions ADD COLUMN toAmount REAL;`);
+  } catch {
+    // La columna ya existe — no hay nada que hacer
+  }
 }
 
 // ─── Queries del Dashboard ──────────────────────────────────
@@ -460,7 +467,8 @@ export async function getAllTransactionsWithCategory(): Promise<TransactionWithC
        c.colorHex as categoryColor,
        a.name     as accountName,
        a.colorHex as accountColor,
-       ta.name    as toAccountName
+       ta.name    as toAccountName,
+       ta.currency as toAccountCurrency
      FROM transactions t
      LEFT JOIN categories c ON c.id = t.categoryId
      LEFT JOIN accounts a ON a.id = t.accountId
@@ -489,17 +497,20 @@ function newId(prefix: string): string {
   return `${prefix}-${Date.now()}-${idCounter}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
-type BalanceSource = Pick<TransactionInput, 'amount' | 'type' | 'accountId' | 'toAccountId'>;
+type BalanceSource = Pick<TransactionInput, 'amount' | 'type' | 'accountId' | 'toAccountId'> & {
+  toAmount?: number | null;
+};
 
 // Cómo afecta un movimiento a los saldos. Las transferencias mueven dinero
 // entre dos cuentas propias: no son ingreso ni gasto, por eso los totales
-// (getMonthlyTotals, etc.) ya las ignoran.
+// (getMonthlyTotals, etc.) ya las ignoran. Entre monedas distintas, sale
+// `amount` (moneda de origen) y llega `toAmount` (moneda de destino).
 function balanceEffects(tx: BalanceSource): { accountId: string; delta: number }[] {
   if (tx.type === 'transfer') {
     if (!tx.toAccountId) throw new Error('La transferencia necesita una cuenta destino');
     return [
       { accountId: tx.accountId, delta: -tx.amount },
-      { accountId: tx.toAccountId, delta: tx.amount },
+      { accountId: tx.toAccountId, delta: tx.toAmount ?? tx.amount },
     ];
   }
   const positive = tx.type === 'income' || tx.type === 'loan' || tx.type === 'debt_in';
@@ -527,11 +538,12 @@ async function insertTransaction(
 ): Promise<string> {
   const id = newId('tx');
   await database.runAsync(
-    `INSERT INTO transactions (id, amount, type, date, accountId, toAccountId, categoryId, notes, receiptUri, tags, createdAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', ?)`,
+    `INSERT INTO transactions (id, amount, type, date, accountId, toAccountId, toAmount, categoryId, notes, receiptUri, tags, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', ?)`,
     [
       id, input.amount, input.type, input.date, input.accountId,
       input.type === 'transfer' ? input.toAccountId : null,
+      input.type === 'transfer' ? input.toAmount ?? null : null,
       input.type === 'transfer' ? null : input.categoryId,
       input.notes, input.receiptUri ?? null, new Date().toISOString(),
     ]
@@ -550,7 +562,7 @@ export async function createTransaction(input: TransactionInput): Promise<void> 
 }
 
 export async function deleteTransaction(
-  tx: Pick<Transaction, 'id' | 'amount' | 'type' | 'accountId' | 'toAccountId'>
+  tx: Pick<Transaction, 'id' | 'amount' | 'type' | 'accountId' | 'toAccountId' | 'toAmount'>
 ): Promise<void> {
   const database = await getDb();
   await database.withTransactionAsync(async () => {
@@ -571,11 +583,12 @@ export async function updateTransaction(
     await applyBalance(database, updated, 1);
     await database.runAsync(
       `UPDATE transactions
-       SET amount = ?, type = ?, date = ?, accountId = ?, toAccountId = ?, categoryId = ?, notes = ?, receiptUri = ?
+       SET amount = ?, type = ?, date = ?, accountId = ?, toAccountId = ?, toAmount = ?, categoryId = ?, notes = ?, receiptUri = ?
        WHERE id = ?`,
       [
         updated.amount, updated.type, updated.date, updated.accountId,
         updated.type === 'transfer' ? updated.toAccountId : null,
+        updated.type === 'transfer' ? updated.toAmount ?? null : null,
         updated.type === 'transfer' ? null : updated.categoryId,
         updated.notes, updated.receiptUri ?? null, id,
       ]
