@@ -1,51 +1,23 @@
 import React from 'react';
-import { Tabs } from 'expo-router';
+import { Tabs } from 'expo-router/js-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { useColors } from '../../src/constants/theme';
-import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
-import { GlassView } from '../../src/components/ui/GlassView';
-import { Platform, type ColorValue } from 'react-native';
+import type { ColorValue } from 'react-native';
+import { AnimatedTabBar } from '../../src/components/navigation/AnimatedTabBar';
 
 // Ícono relleno cuando la pestaña está activa, outline cuando no — el
 // relleno ES el estado seleccionado, sin depender solo del color (§16).
 function TabIcon(outline: keyof typeof Ionicons.glyphMap, filled: keyof typeof Ionicons.glyphMap) {
   return ({ color, focused }: { color: ColorValue; size: number; focused: boolean }) => (
-    <Ionicons name={focused ? filled : outline} size={20} color={color as string} />
+    <Ionicons name={focused ? filled : outline} size={22} color={color as string} />
   );
 }
 
 export default function TabsLayout() {
-  const c = useColors();
-
   return (
     <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: c.textPrimary,
-        tabBarInactiveTintColor: c.textTertiary,
-        // Flota sobre el contenido en vez de empujarlo — el material
-        // translúcido solo tiene sentido si algo se desliza debajo (§12).
-        tabBarStyle: {
-          position: 'absolute',
-          backgroundColor: 'transparent',
-          borderTopWidth: 0.5,
-          borderTopColor: c.borderStrong,
-          paddingTop: 8,
-          paddingBottom: Platform.OS === 'ios' ? 20 : 10,
-          height: TAB_BAR_HEIGHT,
-          elevation: 0,
-        },
-        tabBarBackground: () => (
-          <GlassView weight="thick" style={{ flex: 1 }} />
-        ),
-        tabBarLabelStyle: {
-          fontSize: 9,
-          fontWeight: '500',
-          letterSpacing: 0.5,
-          textTransform: 'uppercase',
-          marginTop: 2,
-        },
-      }}
+      // Barra propia: píldora flotante con indicador animado
+      tabBar={(props) => <AnimatedTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen
         name="index"

@@ -1,7 +1,12 @@
-import { Platform } from 'react-native';
+// Barra de pestañas flotante (src/components/navigation/AnimatedTabBar.tsx):
+// una píldora separada del borde inferior. Las pantallas usan
+// TAB_BAR_HEIGHT como padding inferior extra para que lo último de la
+// lista no quede debajo de la barra.
+export const TAB_BAR_PILL_HEIGHT = 64;
 
-// Alto de la tab bar (coincide con app/(tabs)/_layout.tsx). Ahora que la
-// barra flota sobre el contenido con blur (§12 apple-design: "content
-// scrolls under it"), cada pantalla necesita este valor como padding
-// inferior extra para que lo último de la lista no quede tapado.
-export const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 80 : 60;
+/** Separación mínima entre la píldora y el borde cuando no hay área segura. */
+export const TAB_BAR_GAP = 12;
+
+// Alto de la píldora + el área segura inferior más grande habitual (34 en
+// iPhone con Face ID; en Android con gestos es menor) + un respiro.
+export const TAB_BAR_HEIGHT = TAB_BAR_PILL_HEIGHT + 34 + TAB_BAR_GAP;
