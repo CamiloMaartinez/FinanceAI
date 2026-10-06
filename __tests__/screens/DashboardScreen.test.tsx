@@ -1,6 +1,7 @@
 import { describe, expect, it, jest } from '@jest/globals';
+import { AccessibilityInfo } from 'react-native';
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react-native';
 
 const mockNavigate = jest.fn();
 jest.mock('expo-router', () => ({
@@ -50,5 +51,25 @@ describe('dashboard', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Ocultar saldos' }));
     expect(screen.getByLabelText('Saldo oculto')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Mostrar saldos' })).toBeTruthy();
+  });
+
+  it('ocultar saldos también tapa el encabezado compacto', async () => {
+    await render(<DashboardScreen />);
+    await waitFor(() => expect(screen.getByText('Mi saldo')).toBeTruthy());
+    await fireEvent.press(screen.getByRole('button', { name: 'Ocultar saldos' }));
+    const compact = screen.getByTestId('encabezado-compacto', { includeHiddenElements: true });
+    expect(within(compact).getByText('••••', { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it('el lector de pantalla puede recargar con la acción "Actualizar" del saldo', async () => {
+    const announce = jest.spyOn(AccessibilityInfo, 'announceForAccessibility');
+    await render(<DashboardScreen />);
+    await waitFor(() => expect(screen.getByTestId('saldo-total')).toBeTruthy());
+
+    const balance = screen.getByTestId('saldo-total');
+    expect(balance.props.accessibilityActions).toEqual([{ name: 'refresh', label: 'Actualizar' }]);
+    await fireEvent(balance, 'accessibilityAction', { nativeEvent: { actionName: 'refresh' } });
+    await waitFor(() => expect(announce).toHaveBeenCalledWith('Datos actualizados'));
+    announce.mockRestore();
   });
 });

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Platform, StyleSheet, Text as RNText, TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
+import { Platform, StyleSheet, Text as RNText, TextInput, View, type StyleProp, type TextInputProps, type ViewProps, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useColors, fonts, tabularNums } from '../../constants/theme';
 import { timingCountUp } from '../../constants/motion';
@@ -41,6 +41,9 @@ interface AnimatedAmountProps {
   animateOnMount?: boolean;
   style?: StyleProp<ViewStyle>;
   testID?: string;
+  /** Acciones para el lector de pantalla (p. ej. "Actualizar" en Inicio). */
+  accessibilityActions?: ViewProps['accessibilityActions'];
+  onAccessibilityAction?: ViewProps['onAccessibilityAction'];
 }
 
 /**
@@ -60,6 +63,8 @@ export function AnimatedAmount({
   animateOnMount = true,
   style,
   testID,
+  accessibilityActions,
+  onAccessibilityAction,
 }: AnimatedAmountProps) {
   const c = useColors();
   const parts = splitAmount(value, currency, { decimals });
@@ -102,6 +107,8 @@ export function AnimatedAmount({
       accessible
       accessibilityRole="text"
       accessibilityLabel={full}
+      accessibilityActions={accessibilityActions}
+      onAccessibilityAction={onAccessibilityAction}
       style={[styles.row, style]}
     >
       <RNText style={[{ fontFamily: fonts.semibold, fontSize: Math.round(fontSize * 0.6), color: muted }, noFontPadding]}>
