@@ -6,11 +6,10 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useDashboard } from '../../src/hooks/useDashboard';
 import { useAccounts } from '../../src/hooks/useAccounts';
-import { useCountUp } from '../../src/hooks/useCountUp';
 import { NetWorthChart } from '../../src/components/dashboard/NetWorthChart';
 import { MonthlyBarChart } from '../../src/components/dashboard/MonthlyBarChart';
 import { AssetRow } from '../../src/components/dashboard/AssetRow';
-import { AmountText } from '../../src/components/ui/AmountText';
+import { AnimatedAmount } from '../../src/components/ui/AnimatedAmount';
 import { CircleAction } from '../../src/components/ui/CircleAction';
 import { BottomSheetCard } from '../../src/components/ui/BottomSheetCard';
 import { IconBadge } from '../../src/components/ui/IconBadge';
@@ -52,7 +51,6 @@ export default function DashboardScreen() {
   const { isDark } = useTheme();
   const [hideBalances, setHideBalances] = useState(false);
   const active = useActiveProfile();
-  const animatedBalance = useCountUp(dashboard.totalBalance, 900);
 
   const refreshAll = useCallback(async () => {
     await Promise.all([dashboard.refresh(), accountsState.refresh()]);
@@ -136,8 +134,8 @@ export default function DashboardScreen() {
           {hideBalances ? (
             <Text style={s.hiddenBalance} accessibilityLabel="Saldo oculto">{HIDDEN}</Text>
           ) : (
-            <AmountText
-              value={animatedBalance}
+            <AnimatedAmount
+              value={dashboard.totalBalance}
               size={44}
               color={c.heroText}
               mutedColor={c.heroTextSecondary}

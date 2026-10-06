@@ -15,13 +15,12 @@ import { springPress } from '../constants/motion';
 import { ACCOUNT_TYPE_LABELS, balanceHint } from '../constants/accounts';
 import { currencyIcon } from '../constants/accountStyles';
 import { useAccessibilityPreferences } from '../hooks/useAccessibilityPreferences';
-import { useCountUp } from '../hooks/useCountUp';
 import { hapticToggle } from '../utils/haptics';
 import { readableTextOn } from '../utils/color';
 import { measureOrigin } from '../utils/accountNavigation';
 import { formatWithCurrency } from '../constants/currencies';
 import { AppIcon } from './icons/AppIcon';
-import { AmountText } from './ui/AmountText';
+import { AnimatedAmount } from './ui/AnimatedAmount';
 import { IconBadge } from './ui/IconBadge';
 import { Text } from './ui/Text';
 import type { Account } from '../models/types';
@@ -65,7 +64,6 @@ export function AccountCard({
   const rotateX = useSharedValue(0);
   const rotateY = useSharedValue(0);
   const shimmerX = useSharedValue(-SHIMMER_WIDTH * 2);
-  const balance = useCountUp(account.balance, 600, account.balance);
 
   const text = readableTextOn(account.colorHex);
   const textSoft = text === ink ? 'rgba(42,27,107,0.72)' : 'rgba(255,255,255,0.78)';
@@ -171,7 +169,7 @@ export function AccountCard({
             {hidden ? (
               <Text style={[styles.hidden, { color: text }]}>••••</Text>
             ) : (
-              <AmountText value={balance} currency={account.currency} size={28} color={text} mutedColor={textSoft} style={styles.amount} />
+              <AnimatedAmount value={account.balance} currency={account.currency} size={28} animateOnMount={false} color={text} mutedColor={textSoft} style={styles.amount} />
             )}
             <Text style={[styles.hint, { color: textSoft }]}>{hint}</Text>
           </View>
