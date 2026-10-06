@@ -16,6 +16,7 @@ import type {
   DebtDirection,
   DebtPayment,
   GoalAutoContribution,
+  NetWorthPeriod,
 } from '../models/types';
 import { getExchangeRates, convertToCOP } from '../services/exchangeRates';
 import { dueOccurrences, atLocalNoon, type RecurrenceFrequency } from '../utils/recurrence';
@@ -301,6 +302,98 @@ export async function getMonthlyBalanceChange(month: number, year: number): Prom
     [start, end]
   );
   return row?.total ?? 0;
+}
+
+// Cuánto cambió el patrimonio (en pesos) desde `sinceIso` hasta hoy. Igual
+// que getMonthlyBalanceChange, pero convierte cada movimiento desde la
+// moneda de su cuenta: un gasto de US$10 no resta 10 pesos.
+export async function getBalanceChangeSince(sinceIso: string): Promise<number> {
+  const database = await getDb();
+  const rows = await database.getAllAsync<{ currency: string; total: number | null }>(
+    `SELECT a.currency as currency, SUM(CASE
+       WHEN t.type IN ('income', 'loan', 'debt_in') THEN t.amount
+       WHEN t.type = 'transfer' THEN 0
+       ELSE -t.amount END) as total
+     FROM transactions t JOIN accounts a ON a.id = t.accountId
+     WHERE t.date >= ?
+     GROUP BY a.currency`,
+    [sinceIso]
+  );
+  const rates = await getExchangeRates();
+  return rows.reduce((sum, r) => sum + convertToCOP(r.total ?? 0, r.currency, rates), 0);
+}
+
+export type { NetWorthPeriod };
+
+const DAY_MS = 86_400_000;
+
+// Fechas de corte de cada periodo, de la más antigua a la más reciente
+// (sin incluir "hoy", que se agrega aparte con el saldo actual).
+function netWorthCutoffs(period: NetWorthPeriod, now: Date, firstTx: Date | null): Date[] {
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const daysBack = (n: number, step: number) =>
+    Array.from({ length: Math.floor(n / step) }, (_, i) => new Date(startOfDay.getTime() - (n - i * step) * DAY_MS));
+  const monthsBack = (n: number) =>
+    Array.from({ length: n }, (_, i) => new Date(now.getFullYear(), now.getMonth() - (n - 1 - i), 1));
+
+  switch (period) {
+    case '7d':  return daysBack(7, 1);
+    case '30d': return daysBack(30, 3);
+    case '3m':  return daysBack(91, 7);
+    case '6m':  return monthsBack(6);
+    case '1a':  return monthsBack(12);
+    case 'all': {
+      if (!firstTx) return monthsBack(1);
+      const months = (now.getFullYear() - firstTx.getFullYear()) * 12 + now.getMonth() - firstTx.getMonth() + 1;
+      return monthsBack(Math.min(Math.max(months, 1), 60));
+    }
+  }
+}
+
+// Patrimonio total en distintos momentos del periodo, reconstruido hacia
+// atrás desde el saldo actual (exacto: los saldos solo cambian con movimientos).
+export async function getNetWorthSeries(
+  period: NetWorthPeriod,
+  now: Date = new Date()
+): Promise<{ label: string; value: number; date: string }[]> {
+  const database = await getDb();
+  const currentTotal = await getTotalBalance();
+  const first = await database.getFirstAsync<{ first: string | null }>(`SELECT MIN(date) as first FROM transactions`);
+  const firstTx = first?.first ? new Date(first.first) : null;
+
+  const daily = period === '7d' || period === '30d' || period === '3m';
+  const points: { label: string; value: number; date: string }[] = [];
+  for (const cutoff of netWorthCutoffs(period, now, firstTx)) {
+    const change = await getBalanceChangeSince(cutoff.toISOString());
+    points.push({
+      label: daily ? `${cutoff.getDate()} ${MONTH_ABBR[cutoff.getMonth()]}` : `${MONTH_ABBR[cutoff.getMonth()]} ${String(cutoff.getFullYear()).slice(2)}`,
+      value: currentTotal - change,
+      date: cutoff.toISOString(),
+    });
+  }
+  points.push({ label: 'Hoy', value: currentTotal, date: now.toISOString() });
+  return points;
+}
+
+// Cambio del saldo de cada cuenta desde `sinceIso`, en la moneda de la
+// cuenta. Las transferencias cuentan para las dos cuentas (sale de una y
+// llega a la otra, con toAmount si fue entre monedas).
+export async function getAccountChangesSince(sinceIso: string): Promise<Record<string, number>> {
+  const database = await getDb();
+  const rows = await database.getAllAsync<{ id: string; delta: number | null }>(
+    `SELECT accountId as id, SUM(CASE
+       WHEN type IN ('income', 'loan', 'debt_in') THEN amount
+       ELSE -amount END) as delta
+     FROM transactions WHERE date >= ? GROUP BY accountId
+     UNION ALL
+     SELECT toAccountId as id, SUM(COALESCE(toAmount, amount)) as delta
+     FROM transactions WHERE type = 'transfer' AND toAccountId IS NOT NULL AND date >= ?
+     GROUP BY toAccountId`,
+    [sinceIso, sinceIso]
+  );
+  const result: Record<string, number> = {};
+  for (const r of rows) result[r.id] = (result[r.id] ?? 0) + (r.delta ?? 0);
+  return result;
 }
 
 export async function getMonthlyTotals(

@@ -1,5 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
-import { getTotalBalance, getMonthlyTotals, getRecentTransactions, getNetWorthHistory } from '../database/db';
+import {
+  getTotalBalance, getMonthlyTotals, getRecentTransactions, getNetWorthSeries, getAccountChangesSince,
+  type NetWorthPeriod,
+} from '../database/db';
 import type { DashboardData, MonthlyChartPoint } from '../models/types';
 
 const MONTH_NAMES = [
@@ -14,6 +17,8 @@ export function useDashboard(): DashboardData {
   const [monthlyChart,       setMonthlyChart]       = useState<MonthlyChartPoint[]>([]);
   const [netWorthHistory,    setNetWorthHistory]    = useState<{ label: string; value: number }[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<DashboardData['recentTransactions']>([]);
+  const [accountChanges,     setAccountChanges]     = useState<Record<string, number>>({});
+  const [netWorthPeriod,     setNetWorthPeriod]     = useState<NetWorthPeriod>('30d');
   const [isLoading,          setIsLoading]          = useState(true);
   const [error,              setError]              = useState<string | null>(null);
 
@@ -59,9 +64,9 @@ export function useDashboard(): DashboardData {
 
       setMonthlyChart(chartData);
 
-      // Evolución del patrimonio total (últimos 6 meses + hoy)
-      const netWorth = await getNetWorthHistory(6);
-      setNetWorthHistory(netWorth);
+      // Cuánto se movió cada cuenta en el mes (variación en la lista de cuentas)
+      const monthStart = new Date(currentYear, now.getMonth(), 1).toISOString();
+      setAccountChanges(await getAccountChangesSince(monthStart));
 
     } catch (err) {
       setError(
@@ -72,10 +77,27 @@ export function useDashboard(): DashboardData {
     }
   }, []);
 
+  // La gráfica se recarga sola al cambiar de periodo, sin recargar lo demás
+  const loadNetWorth = useCallback(async () => {
+    try {
+      setNetWorthHistory(await getNetWorthSeries(netWorthPeriod));
+    } catch {
+      setNetWorthHistory([]);
+    }
+  }, [netWorthPeriod]);
+
   // Carga los datos automáticamente cuando el componente aparece
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    loadNetWorth();
+  }, [loadNetWorth]);
+
+  const refresh = useCallback(async () => {
+    await Promise.all([load(), loadNetWorth()]);
+  }, [load, loadNetWorth]);
 
   const monthlyNet    = monthlyIncome - monthlyExpenses;
   const savingsRate   = monthlyIncome > 0
@@ -91,8 +113,11 @@ export function useDashboard(): DashboardData {
     monthlyChart,
     netWorthHistory,
     recentTransactions,
+    accountChanges,
+    netWorthPeriod,
+    setNetWorthPeriod,
     isLoading,
     error,
-    refresh: load,
+    refresh,
   };
 }

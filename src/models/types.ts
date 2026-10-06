@@ -168,6 +168,9 @@ export interface MonthlyChartPoint {
   expense: number;
 }
 
+/** Periodos de la gráfica de patrimonio del dashboard. */
+export type NetWorthPeriod = '7d' | '30d' | '3m' | '6m' | '1a' | 'all';
+
 export interface DashboardData {
   totalBalance: number;
   monthlyIncome: number;
@@ -177,6 +180,10 @@ export interface DashboardData {
   monthlyChart: MonthlyChartPoint[];
   netWorthHistory: { label: string; value: number }[];
   recentTransactions: TransactionWithCategory[];
+  /** Cambio del saldo de cada cuenta en el mes, en su moneda (id → monto). */
+  accountChanges: Record<string, number>;
+  netWorthPeriod: NetWorthPeriod;
+  setNetWorthPeriod: (period: NetWorthPeriod) => void;
   isLoading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
