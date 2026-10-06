@@ -20,6 +20,7 @@ import { MonthlyBarChart } from '../../src/components/dashboard/MonthlyBarChart'
 import { RecentTransactions } from '../../src/components/dashboard/RecentTransactions';
 import { useColors, spacing, typography } from '../../src/constants/theme';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
+import { useTheme } from '../../src/context/ThemeContext';
 import { getGreeting } from '../../src/utils/currency';
 
 export default function DashboardScreen() {
@@ -27,6 +28,7 @@ export default function DashboardScreen() {
   const accountsState = useAccounts();
   const router = useRouter();
   const c = useColors();
+  const { isDark } = useTheme();
   // Con una tarjeta abierta el scroll se bloquea: el arrastre vertical de la
   // tarjeta (cerrar) y el del ScrollView competirían por el mismo dedo.
   const [walletOpen, setWalletOpen] = useState(false);
@@ -68,7 +70,7 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView style={s.container}>
-      <StatusBar barStyle={c.background === '#000000' ? 'light-content' : 'dark-content'} backgroundColor={c.background} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={c.background} />
       <Animated.ScrollView entering={FadeIn.duration(350)}
         contentContainerStyle={s.content}
         showsVerticalScrollIndicator={false}

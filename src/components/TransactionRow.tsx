@@ -29,7 +29,7 @@ const getTypeColors = (c: ReturnType<typeof useColors>): Record<string, string> 
   transfer:   c.blue,
   investment: c.purple,
   loan:       c.orange,
-  payment:    c.pink,
+  payment:    c.teal,
   debt_in:    c.orange,
   debt_out:   c.orange,
 });

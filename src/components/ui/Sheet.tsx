@@ -12,6 +12,7 @@ import Animated, {
 import { useColors, radius } from '../../constants/theme';
 import { projectMomentum, rubberband, springSheet } from '../../constants/motion';
 import { GlassView } from './GlassView';
+import { SheetHandle } from './BottomSheetCard';
 
 const OFFSCREEN = 1200;
 const CLOSE_VELOCITY = 900; // px/s hacia abajo → cierra sin importar posición
@@ -114,7 +115,7 @@ export function Sheet({ visible, onClose, children }: SheetProps) {
             style={[styles.sheet, { paddingBottom: insets.bottom + 12 }, sheetStyle]}
           >
             <GlassView weight="thick" style={styles.glass}>
-              <View style={styles.handle} />
+              <SheetHandle />
               {children}
             </GlassView>
           </Animated.View>
@@ -132,17 +133,9 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   glass: {
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
+    borderTopLeftRadius: radius.sheet,
+    borderTopRightRadius: radius.sheet,
     overflow: 'hidden',
-    paddingTop: 8,
-  },
-  handle: {
-    alignSelf: 'center',
-    width: 36,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: 'rgba(128,128,128,0.4)',
-    marginBottom: 8,
+    paddingTop: 10,
   },
 });

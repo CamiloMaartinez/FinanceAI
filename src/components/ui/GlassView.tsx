@@ -2,7 +2,7 @@ import React from 'react';
 import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '../../context/ThemeContext';
-import { materials } from '../../constants/theme';
+import { materials, useColors } from '../../constants/theme';
 import { useAccessibilityPreferences } from '../../hooks/useAccessibilityPreferences';
 
 interface GlassViewProps {
@@ -19,6 +19,7 @@ interface GlassViewProps {
  */
 export function GlassView({ weight = 'regular', style, children }: GlassViewProps) {
   const { isDark } = useTheme();
+  const c = useColors();
   const { reduceTransparency } = useAccessibilityPreferences();
   const m = materials[weight];
   const tint = isDark ? m.tintDark : m.tintLight;
@@ -26,8 +27,7 @@ export function GlassView({ weight = 'regular', style, children }: GlassViewProp
   // En Android, BlurView sin BlurTargetView no difumina: solo pinta el tinte
   // semitransparente y el contenido de atrás se transparenta. Mejor sólido.
   if (reduceTransparency || Platform.OS === 'android') {
-    const solidTint = isDark ? 'rgba(12,12,12,0.96)' : 'rgba(255,255,255,0.96)';
-    return <View style={[style, { backgroundColor: solidTint }]}>{children}</View>;
+    return <View style={[style, { backgroundColor: c.surface }]}>{children}</View>;
   }
 
   return (

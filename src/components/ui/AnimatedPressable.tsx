@@ -1,13 +1,14 @@
 import React from 'react';
 import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring, type AnimatedStyle } from 'react-native-reanimated';
 import { springPress } from '../../constants/motion';
 import { useAccessibilityPreferences } from '../../hooks/useAccessibilityPreferences';
 
 const AnimatedPressableBase = Animated.createAnimatedComponent(Pressable);
 
-interface AnimatedPressableProps extends PressableProps {
-  style?: StyleProp<ViewStyle>;
+interface AnimatedPressableProps extends Omit<PressableProps, 'style'> {
+  /** Acepta estilos animados (useAnimatedStyle) además de los normales. */
+  style?: StyleProp<AnimatedStyle<ViewStyle>>;
   /** Escala al presionar. 0.97 por defecto (apple-design §4). */
   pressScale?: number;
   /** Se dispara en pressIn, no en press — el feedback debe ser instantáneo (§1). */

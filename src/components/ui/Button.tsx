@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
-import { ActivityIndicator, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
-import { useColors, radius, spacing } from '../../constants/theme';
+import { ActivityIndicator, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { useColors, radius, spacing, fonts } from '../../constants/theme';
 import { hapticSave } from '../../utils/haptics';
 import { AnimatedPressable } from './AnimatedPressable';
+import { Text } from './Text';
 
 type Variant = 'primary' | 'secondary' | 'plain' | 'destructive';
 type Size = 'md' | 'sm';
@@ -62,7 +63,7 @@ export function Button({
       accessibilityLabel={label}
     >
       {loading
-        ? <ActivityIndicator size="small" color={variant === 'primary' ? '#fff' : c.textPrimary} />
+        ? <ActivityIndicator size="small" color={variant === 'primary' ? c.onAccent : c.textPrimary} />
         : <Text style={textStyle}>{label}</Text>}
     </AnimatedPressable>
   );
@@ -71,23 +72,23 @@ export function Button({
 function createStyles(c: ReturnType<typeof useColors>) {
   return StyleSheet.create({
     base: {
-      borderRadius: radius.md,
+      borderRadius: radius.pill,
       alignItems: 'center',
       justifyContent: 'center',
       flexDirection: 'row',
     },
-    sizeMd: { paddingVertical: spacing.md, paddingHorizontal: spacing.xl },
+    sizeMd: { paddingVertical: spacing.lg, paddingHorizontal: spacing.xl },
     sizeSm: { paddingVertical: spacing.sm, paddingHorizontal: spacing.lg },
     primary: { backgroundColor: c.accent, ...c.shadow.sm },
     secondary: { backgroundColor: c.surfaceSecondary, borderWidth: 1, borderColor: c.border },
     destructive: { backgroundColor: c.expense },
     plain: { backgroundColor: 'transparent' },
     disabled: { opacity: 0.4 },
-    text: { fontSize: 15, fontWeight: '600', letterSpacing: -0.2 },
+    text: { fontSize: 16, fontFamily: fonts.semibold, letterSpacing: -0.2 },
     textSm: { fontSize: 13 },
-    textPrimary: { color: '#fff' },
+    textPrimary: { color: c.onAccent },
     textSecondary: { color: c.textPrimary },
-    textDestructive: { color: '#fff' },
+    textDestructive: { color: c.background },
     textPlain: { color: c.accent },
   });
 }

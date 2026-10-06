@@ -2,6 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { LogBox, View, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import {
+  useFonts,
+  Outfit_300Light,
+  Outfit_400Regular,
+  Outfit_500Medium,
+  Outfit_600SemiBold,
+  Outfit_700Bold,
+  Outfit_800ExtraBold,
+} from '@expo-google-fonts/outfit';
 import { seedIfEmpty } from '../src/database/seed';
 import { isBiometricAvailable } from '../src/services/biometricAuth';
 import { LockScreen } from '../src/components/LockScreen';
@@ -38,6 +47,16 @@ function RootLayoutInner() {
   const [needsBiometric, setNeedsBiometric] = useState(false);
   const [onboardingSeen, setOnboardingSeen] = useState(false);
   const [activeProfileId, setActiveProfileId] = useState('default');
+  // Si la fuente falla, la app sigue con la del sistema en vez de quedarse cargando
+  const [fontsLoaded, fontError] = useFonts({
+    Outfit_300Light,
+    Outfit_400Regular,
+    Outfit_500Medium,
+    Outfit_600SemiBold,
+    Outfit_700Bold,
+    Outfit_800ExtraBold,
+  });
+  const fontsReady = fontsLoaded || fontError != null;
 
   useEffect(() => {
     const init = async () => {
@@ -71,7 +90,8 @@ function RootLayoutInner() {
     init();
   }, []);
 
-  if (!isReady) {
+  // La pantalla de carga hace de splash hasta que estén la base de datos y la fuente
+  if (!isReady || !fontsReady) {
     return (
       <View style={{ flex: 1, backgroundColor: c.background, alignItems: 'center', justifyContent: 'center' }}>
         <ActivityIndicator size="large" color={c.blue} />
