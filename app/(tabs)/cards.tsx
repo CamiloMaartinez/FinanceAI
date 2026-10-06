@@ -1,13 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  Alert,
-  RefreshControl,
-} from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Alert, RefreshControl } from 'react-native';
+import { Text } from '../../src/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,9 +12,10 @@ import { Chip } from '../../src/components/ui/Chip';
 import { CardForm } from '../../src/components/CardForm';
 import { InvestmentCard } from '../../src/components/InvestmentCard';
 import { INVESTMENT_OPTIONS } from '../../src/data/investmentOptions';
-import { useColors, spacing, typography, radius } from '../../src/constants/theme';
+import { useColors, spacing, typography, radius, fonts } from '../../src/constants/theme';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { BackButton } from '../../src/components/ui/BackButton';
 import { hapticSave, hapticToggle } from '../../src/utils/haptics';
 import type { Card } from '../../src/models/types';
 import type { CardExtra } from '../../src/database/db';
@@ -105,7 +100,8 @@ export default function CardsScreen() {
         }
       >
         <View style={styles.header}>
-          <View>
+          <BackButton />
+          <View style={{ flex: 1 }}>
             <Text style={styles.label}>COMPARADOR</Text>
             <Text style={styles.count}>
               {segment === 'cards'
@@ -115,7 +111,7 @@ export default function CardsScreen() {
           </View>
           {segment === 'cards' && (
             <AnimatedPressable style={styles.addButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
-              <Ionicons name="add" size={20} color={c.textPrimary} />
+              <Ionicons name="add" size={20} color={c.onAccent} />
             </AnimatedPressable>
           )}
         </View>
@@ -224,20 +220,11 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   },
   container: { flex: 1, backgroundColor: c.background },
   content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    paddingVertical: spacing.lg,
-  },
-  label: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
-  count: { fontSize: 24, fontWeight: '200', color: c.textPrimary, letterSpacing: -0.5 },
-  addButton: {
-    width: 36, height: 36, borderRadius: 18,
-    borderWidth: 0.5, borderColor: c.borderStrong,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  divider: { height: 0.5, backgroundColor: c.borderStrong, marginBottom: spacing.xl },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.lg },
+  label: { fontFamily: fonts.medium, fontSize: 12, letterSpacing: 0.6, textTransform: 'uppercase', color: c.textSecondary, marginBottom: 2 },
+  count: { fontFamily: fonts.extrabold, fontSize: 28, lineHeight: 34, letterSpacing: -0.6, color: c.textPrimary },
+  addButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' },
+  divider: { height: spacing.sm },
   segmentedControl: {
     flexDirection: 'row',
     backgroundColor: c.surfaceSecondary,

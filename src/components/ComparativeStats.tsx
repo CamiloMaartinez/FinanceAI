@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Text } from './ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius, typography } from '../constants/theme';
 import { SPENDING_BENCHMARKS } from '../data/spendingBenchmarks';

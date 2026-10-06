@@ -1,14 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  Alert,
-  RefreshControl,
-  TextInput,
-} from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Alert, RefreshControl } from 'react-native';
+import { Text } from '../../src/components/ui/Text';
+import { TextInput } from '../../src/components/ui/TextInput';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,7 +19,7 @@ import {
 import { filterTransactions } from '../../src/utils/transactionFilters';
 import { parseShortcutAmount } from '../../src/utils/shortcutParams';
 import { hapticSave, hapticToggle } from '../../src/utils/haptics';
-import { useColors, spacing, typography } from '../../src/constants/theme';
+import { useColors, spacing, typography, fonts } from '../../src/constants/theme';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
 import type { TransactionInput, TransactionWithCategory } from '../../src/models/types';
@@ -182,7 +176,7 @@ export default function TransactionsScreen() {
             onPressFeedback={hapticToggle}
             accessibilityLabel="Movimientos recurrentes"
           >
-            <Ionicons name="repeat" size={18} color={c.textPrimary} />
+            <Ionicons name="repeat" size={18} color={c.onAccent} />
           </AnimatedPressable>
           <AnimatedPressable
             style={[
@@ -334,32 +328,10 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   },
   container: { flex: 1, backgroundColor: c.background },
   content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    paddingVertical: spacing.lg,
-  },
-  label: {
-    ...typography.label,
-    color: c.textTertiary,
-    marginBottom: spacing.xs,
-  },
-  count: {
-    fontSize: 24,
-    fontWeight: '200',
-    color: c.textPrimary,
-    letterSpacing: -0.5,
-  },
-  addButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 0.5,
-    borderColor: c.borderStrong,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.lg },
+  label: { fontFamily: fonts.medium, fontSize: 12, letterSpacing: 0.6, textTransform: 'uppercase', color: c.textSecondary, marginBottom: 2 },
+  count: { fontFamily: fonts.extrabold, fontSize: 28, lineHeight: 34, letterSpacing: -0.6, color: c.textPrimary },
+  addButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' },
   addButtonDisabled: { opacity: 0.3 },
   headerActions: { flexDirection: 'row', gap: spacing.sm },
   searchRow: {
@@ -419,11 +391,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     borderRadius: 6,
   },
   clearSearchButtonText: { fontSize: 13, color: c.textPrimary },
-  divider: {
-    height: 0.5,
-    backgroundColor: c.borderStrong,
-    marginBottom: spacing.xl,
-  },
+  divider: { height: spacing.sm },
   errorText: { fontSize: 12, color: c.expense, marginBottom: spacing.md },
   empty: {
     paddingVertical: spacing.xxl * 2,

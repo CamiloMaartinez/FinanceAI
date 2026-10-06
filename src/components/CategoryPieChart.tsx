@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Text } from './ui/Text';
 import { PieChart } from 'react-native-gifted-charts';
 import { useColors, spacing, radius } from '../constants/theme';
 import { formatCurrency } from '../utils/currency';

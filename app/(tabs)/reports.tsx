@@ -1,12 +1,6 @@
 import React, { useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  RefreshControl,
-  Alert,
-} from 'react-native';
+import { View, StyleSheet, ActivityIndicator, RefreshControl, Alert } from 'react-native';
+import { Text } from '../../src/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,7 +9,7 @@ import { CategoryPieChart } from '../../src/components/CategoryPieChart';
 import { MonthComparisonCard } from '../../src/components/MonthComparisonCard';
 import { MonthPredictionCard } from '../../src/components/MonthPredictionCard';
 import { ComparativeStats } from '../../src/components/ComparativeStats';
-import { useColors, spacing, typography } from '../../src/constants/theme';
+import { useColors, spacing, typography, fonts } from '../../src/constants/theme';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
 import { hapticSave } from '../../src/utils/haptics';
@@ -111,29 +105,10 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   },
   container: { flex: 1, backgroundColor: c.background },
   content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    paddingVertical: spacing.lg,
-  },
-  label: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
-  monthName: {
-    fontSize: 22,
-    fontWeight: '200',
-    color: c.textPrimary,
-    letterSpacing: -0.5,
-    textTransform: 'capitalize',
-  },
-  exportButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 0.5,
-    borderColor: c.borderStrong,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  divider: { height: 0.5, backgroundColor: c.borderStrong, marginBottom: spacing.xl },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.lg },
+  label: { fontFamily: fonts.medium, fontSize: 12, letterSpacing: 0.6, textTransform: 'uppercase', color: c.textSecondary, marginBottom: 2 },
+  monthName: { fontFamily: fonts.extrabold, fontSize: 28, lineHeight: 34, letterSpacing: -0.6, color: c.textPrimary, textTransform: 'capitalize' },
+  exportButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center', ...c.shadow.sm },
+  divider: { height: spacing.sm },
   errorText: { fontSize: 12, color: c.expense, marginBottom: spacing.md },
 });

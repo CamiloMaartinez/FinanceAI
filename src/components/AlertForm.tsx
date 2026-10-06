@@ -1,14 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  Modal,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
+import { View, StyleSheet, Modal, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Text } from './ui/Text';
+import { TextInput } from './ui/TextInput';
 import Animated, { useAnimatedStyle, useSharedValue, interpolateColor, withSpring } from 'react-native-reanimated';
 import { useColors, spacing, typography, radius } from '../constants/theme';
 import { springDefault } from '../constants/motion';

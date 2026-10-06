@@ -1,13 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  TextInput,
-  Modal,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
+import { View, StyleSheet, Modal, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { TextInput } from './ui/TextInput';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, fonts, radius, spacing, type ThemeColors } from '../constants/theme';

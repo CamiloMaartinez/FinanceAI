@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Image, Modal, Alert } from 'react-native';
+import { View, StyleSheet, Image, Modal, Alert } from 'react-native';
+import { Text } from './ui/Text';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

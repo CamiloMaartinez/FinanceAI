@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  View, Text, StyleSheet, Modal, ScrollView, TextInput, KeyboardAvoidingView, Platform,
-} from 'react-native';
+import { View, StyleSheet, Modal, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Text } from './ui/Text';
+import { TextInput } from './ui/TextInput';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { useColors, spacing, radius } from '../constants/theme';
 import { useTheme } from '../context/ThemeContext';

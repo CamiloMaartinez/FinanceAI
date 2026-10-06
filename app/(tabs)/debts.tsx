@@ -1,13 +1,15 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Alert, RefreshControl } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Alert, RefreshControl } from 'react-native';
+import { Text } from '../../src/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useDebts } from '../../src/hooks/useDebts';
 import { DebtForm, DebtPaymentForm } from '../../src/components/DebtForms';
-import { useColors, spacing, typography, radius } from '../../src/constants/theme';
+import { useColors, spacing, typography, radius, fonts } from '../../src/constants/theme';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { BackButton } from '../../src/components/ui/BackButton';
 import { hapticSave, hapticToggle } from '../../src/utils/haptics';
 import { formatCurrency } from '../../src/utils/currency';
 import type { Debt } from '../../src/models/types';
@@ -116,7 +118,8 @@ export default function DebtsScreen() {
         refreshControl={<RefreshControl refreshing={data.isLoading} onRefresh={data.refresh} tintColor={c.textTertiary} />}
       >
         <View style={styles.header}>
-          <View>
+          <BackButton />
+          <View style={{ flex: 1 }}>
             <Text style={styles.label}>DEUDAS Y PRÉSTAMOS</Text>
             <Text style={styles.count}>{open.length} abierta{open.length !== 1 ? 's' : ''}</Text>
           </View>
@@ -127,7 +130,7 @@ export default function DebtsScreen() {
             accessibilityRole="button"
             accessibilityLabel="Nueva deuda"
           >
-            <Ionicons name="add" size={20} color={c.textPrimary} />
+            <Ionicons name="add" size={20} color={c.onAccent} />
           </AnimatedPressable>
         </View>
 
@@ -192,14 +195,11 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   container: { flex: 1, backgroundColor: c.background },
   content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
   flex: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', paddingVertical: spacing.lg },
-  label: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
-  count: { fontSize: 24, fontWeight: '200', color: c.textPrimary, letterSpacing: -0.5 },
-  addButton: {
-    width: 36, height: 36, borderRadius: 18, borderWidth: 0.5, borderColor: c.borderStrong,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  divider: { height: 0.5, backgroundColor: c.borderStrong, marginBottom: spacing.xl },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.lg },
+  label: { fontFamily: fonts.medium, fontSize: 12, letterSpacing: 0.6, textTransform: 'uppercase', color: c.textSecondary, marginBottom: 2 },
+  count: { fontFamily: fonts.extrabold, fontSize: 28, lineHeight: 34, letterSpacing: -0.6, color: c.textPrimary },
+  addButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' },
+  divider: { height: spacing.sm },
   totalsRow: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.xl },
   totalBox: { flex: 1, backgroundColor: c.surface, borderRadius: radius.lg, padding: spacing.lg },
   totalLabel: { fontSize: 12, color: c.textTertiary, marginBottom: spacing.xs },

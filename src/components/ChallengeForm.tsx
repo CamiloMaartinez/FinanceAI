@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, Modal, ScrollView } from 'react-native';
+import { View, StyleSheet, Modal, ScrollView } from 'react-native';
+import { Text } from './ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
 import type { Category } from '../models/types';

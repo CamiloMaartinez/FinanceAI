@@ -2,23 +2,18 @@ import React, { useCallback, useState, useMemo } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { getMonthInsights } from '../../src/services/alertEngine';
 import { describeInsight, type CategoryInsight } from '../../src/utils/spendingInsights';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  Alert,
-  RefreshControl,
-} from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Alert, RefreshControl } from 'react-native';
+import { Text } from '../../src/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useAlerts } from '../../src/hooks/useAlerts';
 import { useTransactions } from '../../src/hooks/useTransactions';
 import { AlertForm } from '../../src/components/AlertForm';
-import { useColors, spacing, typography } from '../../src/constants/theme';
+import { useColors, spacing, typography, fonts } from '../../src/constants/theme';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { BackButton } from '../../src/components/ui/BackButton';
 import { hapticSave } from '../../src/utils/haptics';
 import { ALERT_TYPE_LABELS, ALERT_TYPE_UNITS } from '../../src/hooks/useAlerts';
 import type { Alert as AlertRecord, AlertType } from '../../src/hooks/useAlerts';
@@ -90,7 +85,8 @@ export default function AlertsScreen() {
         }
       >
         <View style={styles.header}>
-          <View>
+          <BackButton />
+          <View style={{ flex: 1 }}>
             <Text style={styles.label}>ALERTAS</Text>
             <Text style={styles.count}>
               {alerts.alerts.length} activa{alerts.alerts.length !== 1 ? 's' : ''}
@@ -101,7 +97,7 @@ export default function AlertsScreen() {
             onPress={() => setFormVisible(true)}
             onPressFeedback={hapticSave}
           >
-            <Ionicons name="add" size={20} color={c.textPrimary} />
+            <Ionicons name="add" size={20} color={c.onAccent} />
           </AnimatedPressable>
         </View>
 
@@ -222,20 +218,11 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   },
   container: { flex: 1, backgroundColor: c.background },
   content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    paddingVertical: spacing.lg,
-  },
-  label: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
-  count: { fontSize: 24, fontWeight: '200', color: c.textPrimary, letterSpacing: -0.5 },
-  addButton: {
-    width: 36, height: 36, borderRadius: 18,
-    borderWidth: 0.5, borderColor: c.borderStrong,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  divider: { height: 0.5, backgroundColor: c.borderStrong, marginBottom: spacing.xl },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.lg },
+  label: { fontFamily: fonts.medium, fontSize: 12, letterSpacing: 0.6, textTransform: 'uppercase', color: c.textSecondary, marginBottom: 2 },
+  count: { fontFamily: fonts.extrabold, fontSize: 28, lineHeight: 34, letterSpacing: -0.6, color: c.textPrimary },
+  addButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' },
+  divider: { height: spacing.sm },
   empty: { paddingVertical: spacing.xxl * 2, alignItems: 'center', gap: spacing.sm },
   emptyTitle: { fontSize: 16, fontWeight: '300', color: c.textPrimary },
   emptySubtitle: {

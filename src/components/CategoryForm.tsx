@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { TextInput } from './ui/TextInput';
 import { useColors, fonts, radius, spacing, PASTEL_LIST, type ThemeColors } from '../constants/theme';
 import { CATEGORY_ICONS, type AppIconName } from './icons/iconSet';
 import { CategoryBadge } from './icons/CategoryBadge';

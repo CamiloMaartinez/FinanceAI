@@ -1,12 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  RefreshControl,
-  Alert,
-} from 'react-native';
+import { View, StyleSheet, ActivityIndicator, RefreshControl, Alert } from 'react-native';
+import { Text } from '../../src/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
@@ -20,9 +14,10 @@ import { useBudgets } from '../../src/hooks/useBudgets';
 import { BudgetForm } from '../../src/components/BudgetForm';
 import type { BudgetSuggestion } from '../../src/utils/budgetSuggestion';
 import { getAllCategories } from '../../src/database/db';
-import { useColors, spacing, typography, radius } from '../../src/constants/theme';
+import { useColors, spacing, typography, radius, fonts } from '../../src/constants/theme';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { BackButton } from '../../src/components/ui/BackButton';
 import { CategoryBadge } from '../../src/components/icons/CategoryBadge';
 import { springDefault } from '../../src/constants/motion';
 import {
@@ -142,7 +137,8 @@ export default function BudgetsScreen() {
         }
       >
         <View style={styles.header}>
-          <View>
+          <BackButton />
+          <View style={{ flex: 1 }}>
             <Text style={styles.label}>PRESUPUESTO</Text>
             <Text style={styles.count}>Capitalizado en {monthLabel}</Text>
           </View>
@@ -250,20 +246,11 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   loadingContainer: { flex: 1, backgroundColor: c.background, alignItems: 'center', justifyContent: 'center' },
   container: { flex: 1, backgroundColor: c.background },
   content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    paddingVertical: spacing.lg,
-  },
-  label: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
-  count: { fontSize: 20, fontWeight: '200', color: c.textPrimary, letterSpacing: -0.3, textTransform: 'capitalize' },
-  editButton: {
-    width: 36, height: 36, borderRadius: 18,
-    borderWidth: 0.5, borderColor: c.borderStrong,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  divider: { height: 0.5, backgroundColor: c.borderStrong, marginBottom: spacing.xl },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.lg },
+  label: { fontFamily: fonts.medium, fontSize: 12, letterSpacing: 0.6, textTransform: 'uppercase', color: c.textSecondary, marginBottom: 2 },
+  count: { fontFamily: fonts.extrabold, fontSize: 28, lineHeight: 34, letterSpacing: -0.6, color: c.textPrimary, textTransform: 'capitalize' },
+  editButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center', ...c.shadow.sm },
+  divider: { height: spacing.sm },
   empty: { paddingVertical: spacing.xxl * 2, alignItems: 'center', gap: spacing.sm },
   emptyTitle: { fontSize: 16, fontWeight: '300', color: c.textPrimary, marginTop: spacing.md },
   emptySubtitle: { fontSize: 13, fontWeight: '300', color: c.textTertiary, textAlign: 'center', paddingHorizontal: spacing.lg },

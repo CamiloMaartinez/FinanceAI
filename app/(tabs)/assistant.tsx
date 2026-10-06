@@ -1,21 +1,16 @@
 import React, { useState, useRef, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
-  ActivityIndicator,
-} from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { Text } from '../../src/components/ui/Text';
+import { TextInput } from '../../src/components/ui/TextInput';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useFinancialAssistant } from '../../src/hooks/useFinancialAssistant';
 import { PurchaseEvaluatorModal } from '../../src/components/PurchaseEvaluatorModal';
-import { useColors, spacing, typography } from '../../src/constants/theme';
+import { useColors, spacing, typography, fonts } from '../../src/constants/theme';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { BackButton } from '../../src/components/ui/BackButton';
 import { hapticSave, hapticToggle } from '../../src/utils/haptics';
 
 const VERDICT_CONFIG = {
@@ -59,7 +54,8 @@ export default function AssistantScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <View>
+          <BackButton />
+          <View style={{ flex: 1 }}>
             <Text style={styles.label}>ASISTENTE</Text>
             <Text style={styles.title}>FinanceAI</Text>
           </View>
@@ -199,14 +195,7 @@ export default function AssistantScreen() {
 
 const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   container: { flex: 1, backgroundColor: c.background },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.sm,
-  },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.lg },
   evaluatorButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -241,9 +230,9 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     marginBottom: spacing.sm,
   },
   summaryBadgeText: { fontSize: 12, fontWeight: '700', color: c.blue },
-  label: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
-  title: { fontSize: 22, fontWeight: '200', color: c.textPrimary, letterSpacing: -0.5 },
-  divider: { height: 0.5, backgroundColor: c.borderStrong, marginHorizontal: spacing.xl },
+  label: { fontFamily: fonts.medium, fontSize: 12, letterSpacing: 0.6, textTransform: 'uppercase', color: c.textSecondary, marginBottom: 2 },
+  title: { fontFamily: fonts.extrabold, fontSize: 28, lineHeight: 34, letterSpacing: -0.6, color: c.textPrimary },
+  divider: { height: spacing.sm },
   chatArea: { flex: 1 },
   chatContent: { padding: spacing.xl, gap: spacing.lg },
   bubble: { maxWidth: '85%' },

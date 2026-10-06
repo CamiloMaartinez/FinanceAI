@@ -1,12 +1,6 @@
 import React, { useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Modal,
-  ScrollView,
-  SafeAreaView,
-} from 'react-native';
+import { View, StyleSheet, Modal, ScrollView, SafeAreaView } from 'react-native';
+import { Text } from './ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
 import type { Account, Category } from '../models/types';

@@ -1,14 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  TextInput,
-  Modal,
-  Switch,
-  Alert,
-} from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Modal, Switch, Alert } from 'react-native';
+import { Text } from '../../src/components/ui/Text';
+import { TextInput } from '../../src/components/ui/TextInput';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';

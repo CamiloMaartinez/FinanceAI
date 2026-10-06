@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  View, Text, StyleSheet, TextInput, KeyboardAvoidingView, Platform, Switch, Linking, ActivityIndicator,
-} from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Platform, Switch, Linking, ActivityIndicator } from 'react-native';
+import { Text } from './ui/Text';
+import { TextInput } from './ui/TextInput';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
 import {

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
+import { Text } from '../ui/Text';
 import { BarChart } from 'react-native-gifted-charts';
 import { useColors, spacing, typography } from '../../constants/theme';
 import { formatCurrencyCompact } from '../../utils/currency';
