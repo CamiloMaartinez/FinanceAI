@@ -14,6 +14,7 @@ import { AmountText } from '../../src/components/ui/AmountText';
 import { CircleAction } from '../../src/components/ui/CircleAction';
 import { BottomSheetCard } from '../../src/components/ui/BottomSheetCard';
 import { IconBadge } from '../../src/components/ui/IconBadge';
+import { CategoryBadge } from '../../src/components/icons/CategoryBadge';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
 import { Text } from '../../src/components/ui/Text';
 import { useColors, spacing, radius, fonts, pastels, type ThemeColors } from '../../src/constants/theme';
@@ -185,7 +186,7 @@ export default function DashboardScreen() {
                 <AssetRow
                   key={account.id}
                   index={i}
-                  badge={<IconBadge icon={account.iconName as any} color={account.colorHex + '33'} iconColor={account.colorHex} />}
+                  badge={<CategoryBadge iconName={account.iconName} colorHex={account.colorHex} />}
                   title={account.name}
                   detail={`${ACCOUNT_TYPE_LABELS[account.type] ?? account.type} · ${account.currency}`}
                   amount={hideBalances ? HIDDEN : formatWithCurrency(account.balance, account.currency)}
@@ -240,7 +241,7 @@ function TransactionAssetRow({ tx, index, hidden, c }: {
       badge={
         isTransfer
           ? <IconBadge icon="swap-horizontal" color={pastels.sky} />
-          : <IconBadge icon={(tx.categoryIcon ?? 'ellipsis-horizontal') as any} color={color + '33'} iconColor={color} />
+          : <CategoryBadge iconName={tx.categoryIcon ?? 'otros'} colorHex={color} />
       }
       title={title}
       detail={[tx.categoryName && tx.categoryName !== title ? tx.categoryName : null, tx.accountName].filter(Boolean).join(' · ')}

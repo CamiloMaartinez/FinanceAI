@@ -45,7 +45,7 @@ export const pastels = {
 } as const;
 
 export type PastelName = keyof typeof pastels;
-export const PASTEL_LIST = Object.values(pastels);
+export const PASTEL_LIST: string[] = Object.values(pastels);
 
 /** Color de los íconos y del texto que va sobre un pastel. */
 export const ink = '#2A1B6B';

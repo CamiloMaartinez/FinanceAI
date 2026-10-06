@@ -58,6 +58,12 @@ const MENU_ITEMS: MenuItem[] = [
     route: '/(tabs)/debts',
   },
   {
+    label: 'Categorías',
+    description: 'Íconos y colores de tus gastos',
+    icon: 'pricetags-outline',
+    route: '/(tabs)/categories',
+  },
+  {
     label: 'Asistente IA',
     description: 'Consulta financiera inteligente',
     icon: 'sparkles-outline',

@@ -27,6 +27,23 @@ import { splitAmount } from '../utils/splitExpense';
 // (tags, subcategories, benefits) llegan como string y hay que parsearlos.
 type TransactionRow = Omit<TransactionWithCategory, 'tags'> & { tags: string };
 type CategoryRow = Omit<Category, 'subcategories'> & { subcategories: string };
+
+// Ícono y color actuales de las categorías por defecto, y los que tenían
+// antes del set propio (para migrar solo las que el usuario no cambió).
+export const DEFAULT_CATEGORY_STYLE = [
+  { id: 'cat-alimentacion',    iconName: 'comida',          colorHex: '#F8C98F', legacyIcon: 'restaurant',          legacyColor: '#FF9500' },
+  { id: 'cat-transporte',      iconName: 'transporte',      colorHex: '#CDEEF7', legacyIcon: 'car',                 legacyColor: '#007AFF' },
+  { id: 'cat-entretenimiento', iconName: 'entretenimiento', colorHex: '#FBDDE6', legacyIcon: 'tv',                  legacyColor: '#FF375F' },
+  { id: 'cat-salud',           iconName: 'salud',           colorHex: '#F9C9C0', legacyIcon: 'medkit',              legacyColor: '#FF2D55' },
+  { id: 'cat-educacion',       iconName: 'educacion',       colorHex: '#D9DAFB', legacyIcon: 'book',                legacyColor: '#5856D6' },
+  { id: 'cat-tecnologia',      iconName: 'tecnologia',      colorHex: '#E8D5F7', legacyIcon: 'laptop',              legacyColor: '#636366' },
+  { id: 'cat-hogar',           iconName: 'hogar',           colorHex: '#CDEFD9', legacyIcon: 'home',                legacyColor: '#34C759' },
+  { id: 'cat-viajes',          iconName: 'viajes',          colorHex: '#FBEFB8', legacyIcon: 'airplane',            legacyColor: '#32ADE6' },
+  { id: 'cat-inversiones',     iconName: 'inversiones',     colorHex: '#CDEFD9', legacyIcon: 'trending-up',         legacyColor: '#30B0C7' },
+  { id: 'cat-suscripciones',   iconName: 'suscripciones',   colorHex: '#E8D5F7', legacyIcon: 'repeat',              legacyColor: '#BF5AF2' },
+  { id: 'cat-mascotas',        iconName: 'mascotas',        colorHex: '#F8C98F', legacyIcon: 'paw',                 legacyColor: '#AC8E68' },
+  { id: 'cat-otros',           iconName: 'otros',           colorHex: '#D9DAFB', legacyIcon: 'ellipsis-horizontal', legacyColor: '#8E8E93' },
+];
 type CardRow = Omit<Card, 'benefits'> & { benefits: string };
 
 // Variable que guarda la conexión abierta a la base de datos
@@ -246,6 +263,20 @@ async function initDb(database: SQLite.SQLiteDatabase) {
   } catch {
     // La columna ya existe — no hay nada que hacer
   }
+
+  await migrateDefaultCategoryStyle(database);
+}
+
+// Íconos propios: las categorías por defecto pasan del ícono de Ionicons
+// y el color saturado al set propio y un pastel. Solo si siguen como
+// venían de fábrica (si el usuario ya las cambió, se respetan).
+export async function migrateDefaultCategoryStyle(database: SQLite.SQLiteDatabase): Promise<void> {
+  for (const c of DEFAULT_CATEGORY_STYLE) {
+    await database.runAsync(
+      `UPDATE categories SET iconName = ?, colorHex = ? WHERE id = ? AND iconName = ? AND colorHex = ?`,
+      [c.iconName, c.colorHex, c.id, c.legacyIcon, c.legacyColor]
+    );
+  }
 }
 
 // ─── Queries del Dashboard ──────────────────────────────────
@@ -458,19 +489,21 @@ export async function getTotalsInRange(
 export async function getCategoryBreakdownInRange(
   startISO: string,
   endISO: string
-): Promise<{ categoryId: string; categoryName: string; categoryColor: string; total: number }[]> {
+): Promise<{ categoryId: string; categoryName: string; categoryColor: string; categoryIcon: string; total: number }[]> {
   const database = await getDb();
 
   const rows = await database.getAllAsync<{
     categoryId: string;
     categoryName: string;
     categoryColor: string;
+    categoryIcon: string;
     total: number;
   }>(
     `SELECT
        c.id as categoryId,
        c.name as categoryName,
        c.colorHex as categoryColor,
+       c.iconName as categoryIcon,
        SUM(t.amount) as total
      FROM transactions t
      INNER JOIN categories c ON c.id = t.categoryId
@@ -580,6 +613,49 @@ export async function getAllTransactionsWithCategory(): Promise<TransactionWithC
      ORDER BY t.date DESC`
   );
   return rows.map((r) => ({ ...r, tags: JSON.parse(r.tags || '[]') }));
+}
+
+export interface CategoryInput {
+  name: string;
+  iconName: string;
+  colorHex: string;
+}
+
+export async function insertCategory(input: CategoryInput): Promise<string> {
+  const database = await getDb();
+  const id = newId('cat');
+  await database.runAsync(
+    `INSERT INTO categories (id, name, iconName, colorHex, isDefault, subcategories) VALUES (?, ?, ?, ?, 0, '[]')`,
+    [id, input.name.trim(), input.iconName, input.colorHex]
+  );
+  return id;
+}
+
+// Las categorías por defecto también se pueden editar (nombre, ícono, color);
+// lo que no se puede es borrarlas.
+export async function updateCategory(id: string, input: CategoryInput): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(
+    `UPDATE categories SET name = ?, iconName = ?, colorHex = ? WHERE id = ?`,
+    [input.name.trim(), input.iconName, input.colorHex, id]
+  );
+}
+
+// Borra una categoría propia. Los movimientos, recurrentes y alertas que la
+// usaban quedan sin categoría; si un reto depende de ella, no se borra.
+export async function deleteCategory(id: string): Promise<void> {
+  const database = await getDb();
+  const cat = await database.getFirstAsync<{ isDefault: number }>(`SELECT isDefault FROM categories WHERE id = ?`, [id]);
+  if (!cat) return;
+  if (cat.isDefault) throw new Error('Las categorías por defecto no se pueden borrar');
+  const used = await database.getFirstAsync<{ n: number }>(`SELECT COUNT(*) as n FROM challenges WHERE categoryId = ?`, [id]);
+  if ((used?.n ?? 0) > 0) throw new Error('Un reto usa esta categoría. Borra o cambia el reto primero.');
+  await database.withTransactionAsync(async () => {
+    await database.runAsync(`UPDATE transactions SET categoryId = NULL WHERE categoryId = ?`, [id]);
+    await database.runAsync(`UPDATE recurring_transactions SET categoryId = NULL WHERE categoryId = ?`, [id]);
+    await database.runAsync(`UPDATE alerts SET categoryId = NULL WHERE categoryId = ?`, [id]);
+    await database.runAsync(`DELETE FROM categories WHERE id = ?`, [id]);
+  });
 }
 
 export async function getAllCategories(): Promise<Category[]> {
@@ -1201,7 +1277,7 @@ export async function advanceDueSubscriptions(now: Date = new Date()): Promise<S
 export async function getCategoryBreakdown(
   month: number,
   year: number
-): Promise<{ categoryId: string; categoryName: string; categoryColor: string; total: number }[]> {
+): Promise<{ categoryId: string; categoryName: string; categoryColor: string; categoryIcon: string; total: number }[]> {
   const database = await getDb();
   const start = new Date(year, month - 1, 1).toISOString();
   const end = new Date(year, month, 1).toISOString();
@@ -1210,12 +1286,14 @@ export async function getCategoryBreakdown(
     categoryId: string;
     categoryName: string;
     categoryColor: string;
+    categoryIcon: string;
     total: number;
   }>(
     `SELECT
        c.id as categoryId,
        c.name as categoryName,
        c.colorHex as categoryColor,
+       c.iconName as categoryIcon,
        SUM(t.amount) as total
      FROM transactions t
      INNER JOIN categories c ON c.id = t.categoryId

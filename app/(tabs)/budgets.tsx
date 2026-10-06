@@ -23,6 +23,7 @@ import { getAllCategories } from '../../src/database/db';
 import { useColors, spacing, typography, radius } from '../../src/constants/theme';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { CategoryBadge } from '../../src/components/icons/CategoryBadge';
 import { springDefault } from '../../src/constants/motion';
 import {
   getBudgetProgressColor,
@@ -199,9 +200,7 @@ export default function BudgetsScreen() {
                   return (
                     <Animated.View key={cat.categoryId} entering={FadeInDown.duration(300).delay(i * 60)} style={styles.categoryCard}>
                       <View style={styles.categoryRow}>
-                        <View style={[styles.categoryIcon, { backgroundColor: cat.categoryColor + '20' }]}>
-                          <Ionicons name={cat.categoryIcon as any} size={16} color={cat.categoryColor} />
-                        </View>
+                        <CategoryBadge iconName={cat.categoryIcon} colorHex={cat.categoryColor} size={36} />
                         <View style={styles.categoryInfo}>
                           <Text style={styles.categoryName}>{cat.categoryName}</Text>
                           <Text style={styles.categoryAmounts}>

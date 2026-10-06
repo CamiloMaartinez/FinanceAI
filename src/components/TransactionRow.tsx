@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing } from '../constants/theme';
 import { formatCurrency } from '../utils/currency';
 import { AnimatedPressable } from './ui/AnimatedPressable';
+import { CategoryBadge } from './icons/CategoryBadge';
 import type { TransactionWithCategory } from '../models/types';
 
 interface TransactionRowProps {
@@ -37,9 +38,7 @@ const getTypeColors = (c: ReturnType<typeof useColors>): Record<string, string> 
 export function TransactionRow({ transaction, onPress, onLongPress }: TransactionRowProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
-  const icon     = transaction.categoryIcon
-    ? (transaction.categoryIcon as keyof typeof Ionicons.glyphMap)
-    : (TYPE_ICONS[transaction.type] ?? 'ellipse');
+  const icon     = transaction.categoryIcon || TYPE_ICONS[transaction.type] || 'otros';
   const color    = transaction.categoryColor ?? getTypeColors(c)[transaction.type] ?? c.textSecondary;
   const isIncome = transaction.type === 'income' || transaction.type === 'loan' || transaction.type === 'debt_in';
   // Las transferencias no son ingreso ni gasto: sin signo y en color neutro
@@ -54,9 +53,7 @@ export function TransactionRow({ transaction, onPress, onLongPress }: Transactio
       onPress={onPress ? () => onPress(transaction) : undefined}
       onLongPress={onLongPress ? () => onLongPress(transaction) : undefined}
     >
-      <View style={[styles.iconCircle, { backgroundColor: color + '20' }]}>
-        <Ionicons name={icon} size={18} color={color} />
-      </View>
+      <CategoryBadge iconName={icon} colorHex={color} size={40} />
 
       <View style={styles.info}>
         <View style={styles.titleRow}>

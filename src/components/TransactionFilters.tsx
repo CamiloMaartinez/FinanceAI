@@ -11,6 +11,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
 import type { Account, Category } from '../models/types';
 import { AnimatedPressable } from './ui/AnimatedPressable';
+import { AppIcon } from './icons/AppIcon';
+import { badgeColors } from './icons/CategoryBadge';
 import { Button } from './ui/Button';
 import { hapticToggle } from '../utils/haptics';
 
@@ -189,20 +191,21 @@ export function TransactionFilters({
               <View style={styles.chipRow}>
                 {categories.map((cat) => {
                   const selected = draft.categoryIds.includes(cat.id);
+                  const tone = badgeColors(cat.colorHex);
                   return (
                     <AnimatedPressable
                       key={cat.id}
-                      style={[styles.chip, selected && { backgroundColor: cat.colorHex + '25', borderColor: cat.colorHex }]}
+                      style={[styles.chip, selected && { backgroundColor: tone.bg, borderColor: tone.fg }]}
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: selected }}
+                      accessibilityLabel={cat.name}
                       onPress={() => toggleCategory(cat.id)}
                       onPressFeedback={hapticToggle}
                     >
-                      <Ionicons
-                        name={cat.iconName as any}
-                        size={13}
-                        color={selected ? cat.colorHex : c.textSecondary}
-                        style={{ marginRight: 4 }}
-                      />
-                      <Text style={[styles.chipLabel, selected && { color: cat.colorHex, fontWeight: '600' }]}>
+                      <View style={{ marginRight: 4 }}>
+                        <AppIcon name={cat.iconName} size={15} color={selected ? tone.fg : c.textSecondary} />
+                      </View>
+                      <Text style={[styles.chipLabel, selected && { color: tone.fg, fontWeight: '600' }]}>
                         {cat.name}
                       </Text>
                     </AnimatedPressable>

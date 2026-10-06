@@ -1,4 +1,4 @@
-import { getDb } from './db';
+import { getDb, DEFAULT_CATEGORY_STYLE } from './db';
 
 export async function seedIfEmpty(): Promise<void> {
   const database = await getDb();
@@ -16,26 +16,27 @@ export async function seedIfEmpty(): Promise<void> {
   // Esto SÍ se crea siempre en una base de datos nueva (incluyendo cada
   // perfil nuevo) — son solo definiciones necesarias para que la app
   // funcione, no "datos financieros" del usuario.
-  const categories = [
-    ['cat-alimentacion',    'Alimentación',    'restaurant',          '#FF9500'],
-    ['cat-transporte',      'Transporte',      'car',                 '#007AFF'],
-    ['cat-entretenimiento', 'Entretenimiento', 'tv',                  '#FF375F'],
-    ['cat-salud',           'Salud',           'medkit',              '#FF2D55'],
-    ['cat-educacion',       'Educación',       'book',                '#5856D6'],
-    ['cat-tecnologia',      'Tecnología',      'laptop',              '#636366'],
-    ['cat-hogar',           'Hogar',           'home',                '#34C759'],
-    ['cat-viajes',          'Viajes',          'airplane',            '#32ADE6'],
-    ['cat-inversiones',     'Inversiones',     'trending-up',         '#30B0C7'],
-    ['cat-suscripciones',   'Suscripciones',   'repeat',              '#BF5AF2'],
-    ['cat-mascotas',        'Mascotas',        'paw',                 '#AC8E68'],
-    ['cat-otros',           'Otros',           'ellipsis-horizontal', '#8E8E93'],
-  ];
+  const names: Record<string, string> = {
+    'cat-alimentacion':    'Alimentación',
+    'cat-transporte':      'Transporte',
+    'cat-entretenimiento': 'Entretenimiento',
+    'cat-salud':           'Salud',
+    'cat-educacion':       'Educación',
+    'cat-tecnologia':      'Tecnología',
+    'cat-hogar':           'Hogar',
+    'cat-viajes':          'Viajes',
+    'cat-inversiones':     'Inversiones',
+    'cat-suscripciones':   'Suscripciones',
+    'cat-mascotas':        'Mascotas',
+    'cat-otros':           'Otros',
+  };
 
-  for (const [id, name, icon, color] of categories) {
+  // Ícono del set propio y fondo pastel (mismos ids de siempre)
+  for (const { id, iconName, colorHex } of DEFAULT_CATEGORY_STYLE) {
     await database.runAsync(
       `INSERT INTO categories (id, name, iconName, colorHex, isDefault, subcategories)
        VALUES (?, ?, ?, ?, 1, '[]')`,
-      [id, name, icon, color]
+      [id, names[id], iconName, colorHex]
     );
   }
 

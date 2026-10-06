@@ -15,6 +15,7 @@ import { useColors, spacing, radius } from '../constants/theme';
 import { springDefault } from '../constants/motion';
 import type { Category } from '../models/types';
 import { AnimatedPressable } from './ui/AnimatedPressable';
+import { CategoryBadge } from './icons/CategoryBadge';
 import { hapticSave } from '../utils/haptics';
 
 interface BudgetFormProps {
@@ -60,9 +61,7 @@ function CategoryLimitRow({
   const ring = useFocusRing(c);
   return (
     <View style={styles.categoryRow}>
-      <View style={[styles.categoryIcon, { backgroundColor: cat.colorHex + '20' }]}>
-        <Ionicons name={cat.iconName as any} size={16} color={cat.colorHex} />
-      </View>
+      <CategoryBadge iconName={cat.iconName} colorHex={cat.colorHex} size={36} />
       <Text style={styles.categoryName} numberOfLines={1}>{cat.name}</Text>
       <Animated.View style={[styles.categoryInputWrap, ring.style]}>
         <Text style={styles.categoryInputPrefix}>$</Text>

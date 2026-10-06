@@ -4,6 +4,7 @@ import { PieChart } from 'react-native-gifted-charts';
 import { useColors, spacing, radius } from '../constants/theme';
 import { formatCurrency } from '../utils/currency';
 import type { CategoryBreakdownItem } from '../hooks/useReports';
+import { CategoryBadge } from './icons/CategoryBadge';
 
 interface CategoryPieChartProps {
   data: CategoryBreakdownItem[];
@@ -80,7 +81,7 @@ export function CategoryPieChart({ data }: CategoryPieChartProps) {
               selectedIndex === index && styles.legendRowSelected,
             ]}
           >
-            <View style={[styles.legendDot, { backgroundColor: item.categoryColor }]} />
+            <CategoryBadge iconName={item.categoryIcon} colorHex={item.categoryColor} size={28} />
             <Text style={styles.legendName} numberOfLines={1}>
               {item.categoryName}
             </Text>

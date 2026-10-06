@@ -17,6 +17,8 @@ import { springDefault } from '../constants/motion';
 import { ReceiptScannerButton } from './ReceiptScannerButton';
 import { suggestCategory } from '../services/ai';
 import { AnimatedPressable } from './ui/AnimatedPressable';
+import { AppIcon } from './icons/AppIcon';
+import { badgeColors } from './icons/CategoryBadge';
 import { hapticSave, hapticToggle } from '../utils/haptics';
 import { DateField } from './DateField';
 import { ReceiptAttachment } from './ReceiptAttachment';
@@ -556,21 +558,21 @@ export function TransactionForm({
                     style={[
                       styles.categoryOption,
                       categoryId === cat.id && {
-                        backgroundColor: cat.colorHex + '20',
-                        borderColor: cat.colorHex,
+                        backgroundColor: badgeColors(cat.colorHex).bg,
+                        borderColor: badgeColors(cat.colorHex).fg,
                       },
                     ]}
                     onPress={() => { setCategoryId(cat.id); setCategoryFromAI(false); setError(''); }}
                     onPressFeedback={hapticToggle}
                   >
-                    <Ionicons
-                      name={cat.iconName as any}
-                      size={18}
-                      color={categoryId === cat.id ? cat.colorHex : c.textSecondary}
+                    <AppIcon
+                      name={cat.iconName}
+                      size={20}
+                      color={categoryId === cat.id ? badgeColors(cat.colorHex).fg : c.textSecondary}
                     />
                     <Text style={[
                       styles.categoryLabel,
-                      categoryId === cat.id && { color: cat.colorHex, fontWeight: '600' },
+                      categoryId === cat.id && { color: badgeColors(cat.colorHex).fg, fontWeight: '600' },
                     ]}>
                       {cat.name}
                     </Text>

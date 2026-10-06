@@ -13,6 +13,8 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 jest.mock('react-native-safe-area-context', () => require('react-native-safe-area-context/jest/mock').default);
 jest.mock('react-native-worklets', () => require('react-native-worklets/src/mock'));
 require('react-native-reanimated').setUpTests();
+// Hojas y gestos (Sheet, deslizar para confirmar): mock oficial de Gesture Handler
+require('react-native-gesture-handler/jestSetup');
 jest.mock('@react-native-community/datetimepicker', () => {
   const React = require('react');
   const Picker = () => React.createElement('DateTimePicker');
