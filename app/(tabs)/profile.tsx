@@ -28,6 +28,9 @@ import { ImportStatementModal } from '../../src/components/ImportStatementModal'
 import { ProfileSwitcherModal } from '../../src/components/ProfileSwitcherModal';
 import { getActiveProfileId } from '../../src/services/profiles';
 import type { Achievement } from '../../src/hooks/useProfile';
+import { Avatar } from '../../src/components/ui/Avatar';
+import { AvatarEditorSheet } from '../../src/components/AvatarEditorSheet';
+import { useActiveProfile } from '../../src/hooks/useActiveProfile';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -55,6 +58,8 @@ export default function ProfileScreen() {
   const [isExportingCsv, setIsExportingCsv] = useState(false);
   const [importStatementVisible, setImportStatementVisible] = useState(false);
   const [lastBackup, setLastBackup] = useState<Date | null>(null);
+  const [avatarVisible, setAvatarVisible] = useState(false);
+  const active = useActiveProfile();
 
   useEffect(() => {
     getLastBackupDate().then(setLastBackup).catch(() => {});
@@ -70,6 +75,12 @@ export default function ProfileScreen() {
     container: { flex: 1, backgroundColor: c.background },
     content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
     header: { paddingVertical: spacing.lg },
+    avatarButton: { alignSelf: 'flex-start', marginTop: spacing.md, marginBottom: spacing.md },
+    avatarEdit: {
+      position: 'absolute', right: -2, bottom: -2, width: 30, height: 30, borderRadius: 15,
+      backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center',
+      borderWidth: 3, borderColor: c.background,
+    },
     label: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
     nameRow: {
       flexDirection: 'row', alignItems: 'center',
@@ -279,6 +290,18 @@ export default function ProfileScreen() {
         {/* Header */}
         <View style={s.header}>
           <Text style={s.label}>PERFIL</Text>
+          <AnimatedPressable
+            style={s.avatarButton}
+            onPress={() => setAvatarVisible(true)}
+            onPressFeedback={hapticToggle}
+            accessibilityRole="button"
+            accessibilityLabel="Cambiar foto o avatar"
+          >
+            <Avatar profile={active.profile} name={profile?.name} size={88} />
+            <View style={s.avatarEdit}>
+              <Ionicons name="camera" size={14} color={c.onAccent} />
+            </View>
+          </AnimatedPressable>
           <AnimatedPressable style={s.nameRow} onPress={handleEditName} onPressFeedback={hapticToggle}>
             <Text style={s.userName}>{profile?.name ?? 'Mi Perfil'}</Text>
             <Ionicons name="pencil-outline" size={14} color={c.textTertiary} />
@@ -514,6 +537,13 @@ export default function ProfileScreen() {
       <ProfileSwitcherModal
         visible={profileModalVisible}
         onClose={() => setProfileModalVisible(false)}
+      />
+
+      <AvatarEditorSheet
+        visible={avatarVisible}
+        profile={active.profile}
+        name={profile?.name ?? active.displayName}
+        onClose={() => setAvatarVisible(false)}
       />
     </SafeAreaView>
   );

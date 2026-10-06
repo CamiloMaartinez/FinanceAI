@@ -1,16 +1,38 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SQLite from 'expo-sqlite';
+import { deleteAvatarPhoto } from './avatarStorage';
 
 const PROFILES_KEY = 'app-profiles';
 const ACTIVE_PROFILE_KEY = 'active-profile-id';
 const DEFAULT_PROFILE_ID = 'default';
 const DEFAULT_DB_FILENAME = 'financeai.db'; // el archivo que ya usan todos los usuarios existentes
 
-export interface AppProfile {
+export type AvatarType = 'initials' | 'emoji' | 'photo';
+
+export interface AvatarSettings {
+  avatarType: AvatarType;
+  /** Ruta RELATIVA de la foto dentro de la carpeta de la app ("avatars/…"). */
+  avatarUri: string | null;
+  avatarEmoji: string | null;
+  /** Fondo pastel para iniciales o emoji. */
+  avatarColor: string | null;
+}
+
+export interface AppProfile extends Partial<AvatarSettings> {
   id: string;
   name: string;
   dbFileName: string;
   createdAt: string;
+}
+
+// Avisa a las pantallas abiertas (dashboard, perfil) cuando cambia la lista
+// de perfiles o un avatar, para que se actualicen sin recargar.
+type Listener = () => void;
+const listeners = new Set<Listener>();
+
+export function onProfilesChanged(listener: Listener): () => void {
+  listeners.add(listener);
+  return () => { listeners.delete(listener); };
 }
 
 function defaultProfile(): AppProfile {
@@ -35,6 +57,12 @@ export async function getProfiles(): Promise<AppProfile[]> {
 
 async function saveProfiles(profiles: AppProfile[]): Promise<void> {
   await AsyncStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+  listeners.forEach((l) => l());
+}
+
+export async function updateProfileAvatar(id: string, avatar: AvatarSettings): Promise<void> {
+  const profiles = await getProfiles();
+  await saveProfiles(profiles.map((p) => (p.id === id ? { ...p, ...avatar } : p)));
 }
 
 export async function getActiveProfileId(): Promise<string> {
@@ -83,6 +111,7 @@ export async function deleteProfile(id: string): Promise<void> {
 
   const profile = profiles.find((p) => p.id === id);
   await saveProfiles(profiles.filter((p) => p.id !== id));
+  if (profile?.avatarUri) deleteAvatarPhoto(profile.avatarUri);
 
   if (profile) {
     try {

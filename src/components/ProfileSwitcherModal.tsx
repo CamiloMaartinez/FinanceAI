@@ -14,6 +14,7 @@ import { Sheet } from './ui/Sheet';
 import { Button } from './ui/Button';
 import { AnimatedPressable } from './ui/AnimatedPressable';
 import { hapticToggle } from '../utils/haptics';
+import { Avatar } from './ui/Avatar';
 
 interface ProfileSwitcherModalProps {
   visible: boolean;
@@ -115,10 +116,12 @@ export function ProfileSwitcherModal({ visible, onClose }: ProfileSwitcherModalP
                     onLongPress={() => profile.id !== 'default' && handleDelete(profile)}
                     onPressFeedback={hapticToggle}
                     pressScale={0.99}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isActive }}
+                    accessibilityLabel={isActive ? `${profile.name}, perfil activo` : `Cambiar a ${profile.name}`}
+                    accessibilityHint={profile.id !== 'default' ? 'Mantén presionado para eliminarlo' : undefined}
                   >
-                    <View style={[styles.radio, isActive && styles.radioActive]}>
-                      {isActive && <View style={styles.radioDot} />}
-                    </View>
+                    <Avatar profile={profile} size={36} style={isActive ? styles.avatarActive : undefined} />
                     <Text style={styles.profileName}>{profile.name}</Text>
                     {isActive && <Text style={styles.activeLabel}>Activo</Text>}
                   </AnimatedPressable>
@@ -172,6 +175,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   radioActive: { borderColor: c.accent },
+  avatarActive: { borderWidth: 2, borderColor: c.accent },
   radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: c.accent },
   profileName: { flex: 1, fontSize: 14, color: c.textPrimary },
   activeLabel: { fontSize: 11, fontWeight: '600', color: c.accent },

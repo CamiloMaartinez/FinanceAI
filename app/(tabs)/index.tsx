@@ -15,6 +15,8 @@ import { CircleAction } from '../../src/components/ui/CircleAction';
 import { BottomSheetCard } from '../../src/components/ui/BottomSheetCard';
 import { IconBadge } from '../../src/components/ui/IconBadge';
 import { CategoryBadge } from '../../src/components/icons/CategoryBadge';
+import { Avatar } from '../../src/components/ui/Avatar';
+import { useActiveProfile } from '../../src/hooks/useActiveProfile';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
 import { Text } from '../../src/components/ui/Text';
 import { useColors, spacing, radius, fonts, pastels, type ThemeColors } from '../../src/constants/theme';
@@ -48,6 +50,7 @@ export default function DashboardScreen() {
   const s = useMemo(() => createStyles(c), [c]);
   const { isDark } = useTheme();
   const [hideBalances, setHideBalances] = useState(false);
+  const active = useActiveProfile();
   const animatedBalance = useCountUp(dashboard.totalBalance, 900);
 
   const refreshAll = useCallback(async () => {
@@ -96,13 +99,12 @@ export default function DashboardScreen() {
             </AnimatedPressable>
             <Text style={s.greeting}>{getGreeting()}</Text>
             <AnimatedPressable
-              style={s.roundButton}
               onPress={() => router.navigate('/profile')}
               onPressFeedback={hapticToggle}
               accessibilityRole="button"
               accessibilityLabel="Abrir tu perfil"
             >
-              <Ionicons name="person" size={18} color={c.heroText} />
+              <Avatar profile={active.profile} name={active.displayName} size={40} style={s.avatar} />
             </AnimatedPressable>
           </View>
 
@@ -293,6 +295,7 @@ function createStyles(c: ThemeColors) {
       justifyContent: 'center',
     },
     greeting: { fontFamily: fonts.medium, fontSize: 14, color: c.heroTextSecondary },
+    avatar: { borderWidth: 2, borderColor: c.sheet },
     balanceLabelRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: 2 },
     balanceLabel: { fontFamily: fonts.medium, fontSize: 15, color: c.heroTextSecondary },
     hiddenBalance: { fontFamily: fonts.extrabold, fontSize: 44, lineHeight: 50, color: c.heroText },
