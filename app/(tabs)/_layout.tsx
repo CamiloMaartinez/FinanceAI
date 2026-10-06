@@ -47,25 +47,16 @@ export default function TabsLayout() {
           tabBarIcon: TabIcon('person-outline', 'person'),
         }}
       />
+      {/* "Más" es un Stack: el menú y, encima, el módulo que se abra (ver (more)/_layout) */}
       <Tabs.Screen
-        name="more"
+        name="(more)"
         options={{
           title: 'Más',
           tabBarIcon: TabIcon('grid-outline', 'grid'),
+          // Al volver a la pestaña se ve el menú, no el último módulo abierto
+          popToTopOnBlur: true,
         }}
       />
-
-      {/* Pantallas ocultas de la barra pero accesibles */}
-      <Tabs.Screen name="accounts"      options={{ href: null }} />
-      <Tabs.Screen name="goals"         options={{ href: null }} />
-      <Tabs.Screen name="subscriptions" options={{ href: null }} />
-      <Tabs.Screen name="assistant"     options={{ href: null }} />
-      <Tabs.Screen name="cards"         options={{ href: null }} />
-      <Tabs.Screen name="alerts"        options={{ href: null }} />
-      <Tabs.Screen name="budgets"       options={{ href: null }} />
-      <Tabs.Screen name="challenges"    options={{ href: null }} />
-      <Tabs.Screen name="debts"         options={{ href: null }} />
-      <Tabs.Screen name="categories"    options={{ href: null }} />
     </Tabs>
   );
 }

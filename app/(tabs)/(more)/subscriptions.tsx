@@ -1,20 +1,20 @@
 import React, { useState, useMemo } from 'react';
 import { View, StyleSheet, ActivityIndicator, Alert, RefreshControl } from 'react-native';
-import { Text } from '../../src/components/ui/Text';
+import { Text } from '../../../src/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { useSubscriptions } from '../../src/hooks/useSubscriptions';
-import { SubscriptionCard } from '../../src/components/SubscriptionCard';
-import { SubscriptionForm } from '../../src/components/SubscriptionForm';
-import { useColors, spacing, typography, fonts } from '../../src/constants/theme';
-import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
-import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
-import { BackButton } from '../../src/components/ui/BackButton';
-import { formatCurrency } from '../../src/utils/currency';
-import { getTotalAnnualCost, getTotalMonthlyCost } from '../../src/utils/subscriptionCalculations';
-import { hapticSave } from '../../src/utils/haptics';
-import type { Subscription } from '../../src/models/types';
+import { useSubscriptions } from '../../../src/hooks/useSubscriptions';
+import { SubscriptionCard } from '../../../src/components/SubscriptionCard';
+import { SubscriptionForm } from '../../../src/components/SubscriptionForm';
+import { useColors, spacing, typography, fonts } from '../../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../../src/constants/layout';
+import { AnimatedPressable } from '../../../src/components/ui/AnimatedPressable';
+import { BackButton } from '../../../src/components/ui/BackButton';
+import { formatCurrency } from '../../../src/utils/currency';
+import { getTotalAnnualCost, getTotalMonthlyCost } from '../../../src/utils/subscriptionCalculations';
+import { hapticSave } from '../../../src/utils/haptics';
+import type { Subscription } from '../../../src/models/types';
 
 export default function SubscriptionsScreen() {
   const data = useSubscriptions();

@@ -1,22 +1,22 @@
 import React, { useCallback, useState, useMemo } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { getMonthInsights } from '../../src/services/alertEngine';
-import { describeInsight, type CategoryInsight } from '../../src/utils/spendingInsights';
+import { getMonthInsights } from '../../../src/services/alertEngine';
+import { describeInsight, type CategoryInsight } from '../../../src/utils/spendingInsights';
 import { View, StyleSheet, ActivityIndicator, Alert, RefreshControl } from 'react-native';
-import { Text } from '../../src/components/ui/Text';
+import { Text } from '../../../src/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { useAlerts } from '../../src/hooks/useAlerts';
-import { useTransactions } from '../../src/hooks/useTransactions';
-import { AlertForm } from '../../src/components/AlertForm';
-import { useColors, spacing, typography, fonts } from '../../src/constants/theme';
-import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
-import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
-import { BackButton } from '../../src/components/ui/BackButton';
-import { hapticSave } from '../../src/utils/haptics';
-import { ALERT_TYPE_LABELS, ALERT_TYPE_UNITS } from '../../src/hooks/useAlerts';
-import type { Alert as AlertRecord, AlertType } from '../../src/hooks/useAlerts';
+import { useAlerts } from '../../../src/hooks/useAlerts';
+import { useTransactions } from '../../../src/hooks/useTransactions';
+import { AlertForm } from '../../../src/components/AlertForm';
+import { useColors, spacing, typography, fonts } from '../../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../../src/constants/layout';
+import { AnimatedPressable } from '../../../src/components/ui/AnimatedPressable';
+import { BackButton } from '../../../src/components/ui/BackButton';
+import { hapticSave } from '../../../src/utils/haptics';
+import { ALERT_TYPE_LABELS, ALERT_TYPE_UNITS } from '../../../src/hooks/useAlerts';
+import type { Alert as AlertRecord, AlertType } from '../../../src/hooks/useAlerts';
 
 const ALERT_ICONS: Record<string, keyof typeof import('@expo/vector-icons').Ionicons.glyphMap> = {
   balance_below:          'wallet-outline',

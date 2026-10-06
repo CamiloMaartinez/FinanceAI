@@ -7,12 +7,12 @@ function setup(focusedIndex: number, preventDefault = false) {
   const routes = [
     { key: 'index-1', name: 'index', params: undefined },
     { key: 'reports-1', name: 'reports', params: undefined },
-    { key: 'more-1', name: 'more', params: undefined },
+    { key: 'more-1', name: '(more)', params: undefined },
     { key: 'budgets-1', name: 'budgets', params: undefined }, // oculta (href: null)
   ];
   const descriptors = Object.fromEntries(routes.map((r) => [r.key, {
     options: {
-      title: { index: 'Inicio', reports: 'Reportes', more: 'Más', budgets: 'Presupuestos' }[r.name],
+      title: { index: 'Inicio', reports: 'Reportes', '(more)': 'Más', budgets: 'Presupuestos' }[r.name],
       tabBarIcon: () => null,
       tabBarItemStyle: r.name === 'budgets' ? { display: 'none' } : undefined,
     },

@@ -1,16 +1,16 @@
 import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Text } from '../../src/components/ui/Text';
+import { Text } from '../../../src/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useColors, spacing, radius, fonts, PASTEL_LIST } from '../../src/constants/theme';
-import { ScreenHeader } from '../../src/components/ui/ScreenHeader';
-import { IconBadge } from '../../src/components/ui/IconBadge';
-import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
-import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
-import { hapticToggle } from '../../src/utils/haptics';
+import { useColors, spacing, radius, fonts, PASTEL_LIST } from '../../../src/constants/theme';
+import { ScreenHeader } from '../../../src/components/ui/ScreenHeader';
+import { IconBadge } from '../../../src/components/ui/IconBadge';
+import { TAB_BAR_HEIGHT } from '../../../src/constants/layout';
+import { AnimatedPressable } from '../../../src/components/ui/AnimatedPressable';
+import { hapticToggle } from '../../../src/utils/haptics';
 
 interface MenuItem {
   label: string;
@@ -24,61 +24,61 @@ const MENU_ITEMS: MenuItem[] = [
     label: 'Presupuestos',
     description: 'Límite mensual y por categoría',
     icon: 'wallet-outline',
-    route: '/(tabs)/budgets',
+    route: '/budgets',
   },
   {
     label: 'Retos financieros',
     description: 'Ponte a prueba y gana disciplina',
     icon: 'flag-outline',
-    route: '/(tabs)/challenges',
+    route: '/challenges',
   },
   {
     label: 'Cuentas',
     description: 'Gestiona tus cuentas bancarias',
     icon: 'card-outline',
-    route: '/(tabs)/accounts',
+    route: '/accounts',
   },
   {
     label: 'Metas',
     description: 'Objetivos de ahorro con progreso',
     icon: 'trophy-outline',
-    route: '/(tabs)/goals',
+    route: '/goals',
   },
   {
     label: 'Suscripciones',
     description: 'Servicios recurrentes y cobros',
     icon: 'repeat-outline',
-    route: '/(tabs)/subscriptions',
+    route: '/subscriptions',
   },
   {
     label: 'Deudas y préstamos',
     description: 'Quién te debe y a quién le debes',
     icon: 'people-outline',
-    route: '/(tabs)/debts',
+    route: '/debts',
   },
   {
     label: 'Categorías',
     description: 'Íconos y colores de tus gastos',
     icon: 'pricetags-outline',
-    route: '/(tabs)/categories',
+    route: '/categories',
   },
   {
     label: 'Asistente IA',
     description: 'Consulta financiera inteligente',
     icon: 'sparkles-outline',
-    route: '/(tabs)/assistant',
+    route: '/assistant',
   },
   {
     label: 'Tarjetas e Inversiones',
     description: 'Compara tarjetas, CDT, fondos y más',
     icon: 'layers-outline',
-    route: '/(tabs)/cards',
+    route: '/cards',
   },
   {
     label: 'Alertas',
     description: 'Notificaciones financieras personalizadas',
     icon: 'notifications-outline',
-    route: '/(tabs)/alerts',
+    route: '/alerts',
   },
 ];
 

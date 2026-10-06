@@ -2,7 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 import React from 'react';
 import { Alert } from 'react-native';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
-import DebtsScreen from '../../app/(tabs)/debts';
+import DebtsScreen from '../../app/(tabs)/(more)/debts';
 
 // Los recordatorios usan el sistema de notificaciones del teléfono
 jest.mock('../../src/services/debtReminders', () => ({

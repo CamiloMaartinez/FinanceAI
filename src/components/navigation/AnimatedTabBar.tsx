@@ -17,9 +17,9 @@ import { TAB_BAR_PILL_HEIGHT, TAB_BAR_GAP } from '../../constants/layout';
 import { useAccessibilityPreferences } from '../../hooks/useAccessibilityPreferences';
 import { hapticToggle } from '../../utils/haptics';
 
-// Las pantallas ocultas (href: null) se abren desde "Más": mientras una de
-// ellas está activa, se resalta esa pestaña para no dejar la barra sin estado.
-const FALLBACK_ROUTE = 'more';
+// Si alguna vez hay una pantalla oculta (href: null) activa, se resalta "Más"
+// para no dejar la barra sin estado. Los módulos viven en el Stack de (more).
+const FALLBACK_ROUTE = '(more)';
 
 /**
  * Barra flotante tipo píldora. Un indicador celeste se desliza con un

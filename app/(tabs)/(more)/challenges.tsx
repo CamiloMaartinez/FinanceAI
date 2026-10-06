@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, ActivityIndicator, Alert, RefreshControl } from 'react-native';
-import { Text } from '../../src/components/ui/Text';
+import { Text } from '../../../src/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import { useChallenges, type ChallengeProgress } from '../../src/hooks/useChallenges';
-import { ChallengeForm } from '../../src/components/ChallengeForm';
-import { getAllCategories } from '../../src/database/db';
-import { useColors, spacing, typography, radius, fonts } from '../../src/constants/theme';
-import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
-import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
-import { BackButton } from '../../src/components/ui/BackButton';
-import { CategoryBadge } from '../../src/components/icons/CategoryBadge';
-import { hapticSave } from '../../src/utils/haptics';
-import type { Category } from '../../src/models/types';
+import { useChallenges, type ChallengeProgress } from '../../../src/hooks/useChallenges';
+import { ChallengeForm } from '../../../src/components/ChallengeForm';
+import { getAllCategories } from '../../../src/database/db';
+import { useColors, spacing, typography, radius, fonts } from '../../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../../src/constants/layout';
+import { AnimatedPressable } from '../../../src/components/ui/AnimatedPressable';
+import { BackButton } from '../../../src/components/ui/BackButton';
+import { CategoryBadge } from '../../../src/components/icons/CategoryBadge';
+import { hapticSave } from '../../../src/utils/haptics';
+import type { Category } from '../../../src/models/types';
 
 const STATUS_CONFIG = {
   active:    { label: 'En curso',   tone: 'accent' as const },

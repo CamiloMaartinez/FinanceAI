@@ -2,7 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import CardsScreen from '../../app/(tabs)/cards';
+import CardsScreen from '../../app/(tabs)/(more)/cards';
 import * as db from '../../src/database/db';
 import { cardAmountLabel } from '../../src/components/CompactCardList';
 

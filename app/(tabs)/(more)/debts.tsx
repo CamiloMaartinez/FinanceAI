@@ -1,18 +1,18 @@
 import React, { useMemo, useState } from 'react';
 import { View, StyleSheet, ActivityIndicator, Alert, RefreshControl } from 'react-native';
-import { Text } from '../../src/components/ui/Text';
+import { Text } from '../../../src/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import { useDebts } from '../../src/hooks/useDebts';
-import { DebtForm, DebtPaymentForm } from '../../src/components/DebtForms';
-import { useColors, spacing, typography, radius, fonts } from '../../src/constants/theme';
-import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
-import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
-import { BackButton } from '../../src/components/ui/BackButton';
-import { hapticSave, hapticToggle } from '../../src/utils/haptics';
-import { formatCurrency } from '../../src/utils/currency';
-import type { Debt } from '../../src/models/types';
+import { useDebts } from '../../../src/hooks/useDebts';
+import { DebtForm, DebtPaymentForm } from '../../../src/components/DebtForms';
+import { useColors, spacing, typography, radius, fonts } from '../../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../../src/constants/layout';
+import { AnimatedPressable } from '../../../src/components/ui/AnimatedPressable';
+import { BackButton } from '../../../src/components/ui/BackButton';
+import { hapticSave, hapticToggle } from '../../../src/utils/haptics';
+import { formatCurrency } from '../../../src/utils/currency';
+import type { Debt } from '../../../src/models/types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

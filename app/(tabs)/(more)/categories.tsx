@@ -3,17 +3,17 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { useCategories } from '../../src/hooks/useCategories';
-import { CategoryForm } from '../../src/components/CategoryForm';
-import { CategoryBadge } from '../../src/components/icons/CategoryBadge';
-import { AssetRow } from '../../src/components/dashboard/AssetRow';
-import { ScreenHeader } from '../../src/components/ui/ScreenHeader';
-import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
-import { Text } from '../../src/components/ui/Text';
-import { useColors, fonts, radius, spacing, type ThemeColors } from '../../src/constants/theme';
-import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
-import { hapticSave } from '../../src/utils/haptics';
-import type { Category } from '../../src/models/types';
+import { useCategories } from '../../../src/hooks/useCategories';
+import { CategoryForm } from '../../../src/components/CategoryForm';
+import { CategoryBadge } from '../../../src/components/icons/CategoryBadge';
+import { AssetRow } from '../../../src/components/dashboard/AssetRow';
+import { ScreenHeader } from '../../../src/components/ui/ScreenHeader';
+import { AnimatedPressable } from '../../../src/components/ui/AnimatedPressable';
+import { Text } from '../../../src/components/ui/Text';
+import { useColors, fonts, radius, spacing, type ThemeColors } from '../../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../../src/constants/layout';
+import { hapticSave } from '../../../src/utils/haptics';
+import type { Category } from '../../../src/models/types';
 
 export default function CategoriesScreen() {
   const c = useColors();

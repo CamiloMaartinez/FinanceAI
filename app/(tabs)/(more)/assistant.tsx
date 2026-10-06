@@ -1,17 +1,17 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { View, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
-import { Text } from '../../src/components/ui/Text';
-import { TextInput } from '../../src/components/ui/TextInput';
+import { Text } from '../../../src/components/ui/Text';
+import { TextInput } from '../../../src/components/ui/TextInput';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { useFinancialAssistant } from '../../src/hooks/useFinancialAssistant';
-import { PurchaseEvaluatorModal } from '../../src/components/PurchaseEvaluatorModal';
-import { useColors, spacing, typography, fonts } from '../../src/constants/theme';
-import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
-import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
-import { BackButton } from '../../src/components/ui/BackButton';
-import { hapticSave, hapticToggle } from '../../src/utils/haptics';
+import { useFinancialAssistant } from '../../../src/hooks/useFinancialAssistant';
+import { PurchaseEvaluatorModal } from '../../../src/components/PurchaseEvaluatorModal';
+import { useColors, spacing, typography, fonts } from '../../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../../src/constants/layout';
+import { AnimatedPressable } from '../../../src/components/ui/AnimatedPressable';
+import { BackButton } from '../../../src/components/ui/BackButton';
+import { hapticSave, hapticToggle } from '../../../src/utils/haptics';
 
 const VERDICT_CONFIG = {
   si:            { label: 'Sí puedes comprarlo',  tone: 'income' as const,  icon: 'checkmark-circle' as const },

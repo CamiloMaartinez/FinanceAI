@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ActivityIndicator, RefreshControl, Alert } from 'react-native';
-import { Text } from '../../src/components/ui/Text';
+import { Text } from '../../../src/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
@@ -10,23 +10,23 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from 'react-native-reanimated';
-import { useBudgets } from '../../src/hooks/useBudgets';
-import { BudgetForm } from '../../src/components/BudgetForm';
-import type { BudgetSuggestion } from '../../src/utils/budgetSuggestion';
-import { getAllCategories } from '../../src/database/db';
-import { useColors, spacing, typography, radius, fonts } from '../../src/constants/theme';
-import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
-import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
-import { BackButton } from '../../src/components/ui/BackButton';
-import { CategoryBadge } from '../../src/components/icons/CategoryBadge';
-import { springDefault } from '../../src/constants/motion';
+import { useBudgets } from '../../../src/hooks/useBudgets';
+import { BudgetForm } from '../../../src/components/BudgetForm';
+import type { BudgetSuggestion } from '../../../src/utils/budgetSuggestion';
+import { getAllCategories } from '../../../src/database/db';
+import { useColors, spacing, typography, radius, fonts } from '../../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../../src/constants/layout';
+import { AnimatedPressable } from '../../../src/components/ui/AnimatedPressable';
+import { BackButton } from '../../../src/components/ui/BackButton';
+import { CategoryBadge } from '../../../src/components/icons/CategoryBadge';
+import { springDefault } from '../../../src/constants/motion';
 import {
   getBudgetProgressColor,
   getBudgetBarWidth,
   getBudgetRemaining,
-} from '../../src/utils/budgetCalculations';
-import { hapticSave, hapticToggle } from '../../src/utils/haptics';
-import type { Category } from '../../src/models/types';
+} from '../../../src/utils/budgetCalculations';
+import { hapticSave, hapticToggle } from '../../../src/utils/haptics';
+import type { Category } from '../../../src/models/types';
 
 const MONTH_NAMES = [
   'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',

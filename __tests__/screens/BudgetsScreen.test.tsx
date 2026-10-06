@@ -1,7 +1,7 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
-import BudgetsScreen from '../../app/(tabs)/budgets';
+import BudgetsScreen from '../../app/(tabs)/(more)/budgets';
 import { getDb, createAccount, getAllAccounts, createTransaction, getBudgetForMonth } from '../../src/database/db';
 
 // La IA responde desde el servidor: aquí se simula su propuesta
