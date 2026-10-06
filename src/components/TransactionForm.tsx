@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { useAnimatedStyle, useSharedValue, interpolateColor, withSpring } from 'react-native-reanimated';
-import { useColors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius, pastels } from '../constants/theme';
 import { springDefault } from '../constants/motion';
 import { ReceiptScannerButton } from './ReceiptScannerButton';
 import { suggestCategory } from '../services/ai';
@@ -28,6 +28,11 @@ import { splitAmount } from '../utils/splitExpense';
 import { parseShortcutAmount } from '../utils/shortcutParams';
 import { getExchangeRates, convertBetween } from '../services/exchangeRates';
 import { formatCurrency } from '../utils/currency';
+import { formatAmountForInput } from '../utils/amountInput';
+import { formatWithCurrency } from '../constants/currencies';
+import { AmountEntrySheet } from './AmountEntrySheet';
+import { AmountText } from './ui/AmountText';
+import { Chip } from './ui/Chip';
 import type { Account, Category, TransactionInput, TransactionType, TransactionWithCategory } from '../models/types';
 
 type FormType = 'expense' | 'income' | 'transfer';
@@ -105,10 +110,15 @@ export function TransactionForm({
   const [categoryFromAI, setCategoryFromAI] = useState(false);
   const [isSuggesting,   setIsSuggesting]   = useState(false);
 
-  const amountRing = useFocusRing(c);
+  // Pantalla de monto (teclado propio + deslizar para confirmar)
+  const [amountSheetOpen, setAmountSheetOpen] = useState(false);
   const notesRing = useFocusRing(c);
 
   const fromAccount = accounts.find((a) => a.id === accountId);
+  const amountValue = (() => {
+    const n = parseFloat(amount.replace(/\./g, '').replace(',', '.'));
+    return Number.isFinite(n) ? n : 0;
+  })();
   const transferTargets = accounts.filter((a) => a.id !== accountId);
   const toAccount = accounts.find((a) => a.id === toAccountId);
   // Entre monedas distintas: sale `amount` en la moneda de origen y llega
@@ -186,6 +196,13 @@ export function TransactionForm({
       setError('');
     }
   }, [visible, prefill]);
+
+  useEffect(() => {
+    if (!visible || editingTransaction || prefill?.amount) return;
+    // Pequeña espera: iOS no presenta un modal mientras el anterior aún está entrando
+    const t = setTimeout(() => setAmountSheetOpen(true), 350);
+    return () => clearTimeout(t);
+  }, [visible]);
 
   // Categorización automática: mientras el usuario escribe la nota de un
   // gasto NUEVO (no al editar), la IA sugiere una categoría tras una pausa
@@ -303,6 +320,7 @@ export function TransactionForm({
   };
 
   const handleClose = () => {
+    setAmountSheetOpen(false);
     setType('expense');
     setLegacyType(null);
     setAmount('');
@@ -431,20 +449,21 @@ export function TransactionForm({
           {/* Monto */}
           <View style={styles.field}>
             <Text style={styles.fieldLabel}>Monto</Text>
-            <Animated.View style={[styles.amountWrapper, amountRing.style]}>
-              <Text style={styles.amountPrefix}>$</Text>
-              <TextInput
-                style={styles.amountInput}
-                placeholder="0"
-                placeholderTextColor={c.textTertiary}
-                value={amount}
-                onChangeText={(text) => { setAmount(text); setError(''); }}
-                onFocus={amountRing.onFocus}
-                onBlur={amountRing.onBlur}
-                keyboardType="numeric"
-                autoFocus
-              />
-            </Animated.View>
+            <AnimatedPressable
+              style={styles.amountWrapper}
+              onPress={() => setAmountSheetOpen(true)}
+              onPressFeedback={hapticToggle}
+              pressScale={0.98}
+              accessibilityRole="button"
+              accessibilityLabel={amountValue > 0 ? `Monto: ${formatWithCurrency(amountValue, fromAccount?.currency ?? 'COP')}. Toca para cambiarlo` : 'Escribir el monto'}
+            >
+              {amountValue > 0 ? (
+                <AmountText value={amountValue} currency={fromAccount?.currency ?? 'COP'} size={30} />
+              ) : (
+                <Text style={styles.amountPlaceholder}>Toca para escribir el monto</Text>
+              )}
+              <Ionicons name="keypad-outline" size={20} color={c.textTertiary} />
+            </AnimatedPressable>
           </View>
 
           {/* Fecha */}
@@ -703,6 +722,44 @@ export function TransactionForm({
 
         </ScrollView>
       </KeyboardAvoidingView>
+      <AmountEntrySheet
+        visible={amountSheetOpen}
+        title={isEditing ? 'Editar monto' : type === 'income' ? 'Nuevo ingreso' : type === 'transfer' ? 'Transferencia' : 'Nuevo gasto'}
+        subtitle={fromAccount ? (type === 'transfer' && toAccount ? `${fromAccount.name} → ${toAccount.name}` : fromAccount.name) : undefined}
+        currency={fromAccount?.currency ?? 'COP'}
+        initialValue={amountValue}
+        available={type === 'income' ? null : fromAccount?.balance ?? null}
+        equivalence={(value) => {
+          if (!fromAccount) return null;
+          if (type === 'transfer' && toAccount && isCrossCurrency) {
+            return `Llegan ≈ ${formatWithCurrency(convertBetween(value, fromAccount.currency, toAccount.currency, rates), toAccount.currency)}`;
+          }
+          if (fromAccount.currency !== 'COP' && rates[fromAccount.currency]) {
+            return `≈ ${formatWithCurrency(convertBetween(value, fromAccount.currency, 'COP', rates), 'COP')}`;
+          }
+          return null;
+        }}
+        headerColor={type === 'income' ? pastels.mint : type === 'transfer' ? pastels.sky : pastels.pink}
+        onConfirm={(value) => {
+          setAmount(formatAmountForInput(value));
+          setError('');
+          setAmountSheetOpen(false);
+        }}
+        onClose={() => setAmountSheetOpen(false)}
+      >
+        {accounts.length > 1 && (
+          <View style={styles.sheetAccounts}>
+            {accounts.map((acc) => (
+              <Chip
+                key={acc.id}
+                label={acc.name}
+                selected={accountId === acc.id}
+                onPress={() => { setAccountId(acc.id); setError(''); }}
+              />
+            ))}
+          </View>
+        )}
+      </AmountEntrySheet>
     </Modal>
   );
 }
@@ -856,6 +913,8 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     fontSize: 11,
     color: c.textTertiary,
   },
+  sheetAccounts: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, justifyContent: 'center' },
+  amountPlaceholder: { flex: 1, fontSize: 16, color: c.textTertiary },
   amountWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -864,6 +923,9 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     borderWidth: 1.5,
     borderColor: c.border,
     paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    minHeight: 64,
+    gap: spacing.md,
   },
   amountPrefix: {
     fontSize: 28,

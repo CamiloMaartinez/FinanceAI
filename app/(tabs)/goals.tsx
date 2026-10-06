@@ -18,13 +18,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useGoals } from '../../src/hooks/useGoals';
 import { GoalCard } from '../../src/components/GoalCard';
 import { GoalForm } from '../../src/components/GoalForm';
-import { useColors, spacing, typography, radius } from '../../src/constants/theme';
+import { useColors, spacing, typography, radius, pastels } from '../../src/constants/theme';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
 import { Button } from '../../src/components/ui/Button';
 import { hapticSave, hapticSuccess } from '../../src/utils/haptics';
 import type { Goal, GoalAutoContribution } from '../../src/models/types';
 import { RECURRENCE_LABELS, type RecurrenceFrequency } from '../../src/utils/recurrence';
+import { AmountEntrySheet } from '../../src/components/AmountEntrySheet';
+import { Chip } from '../../src/components/ui/Chip';
+import { formatCurrency } from '../../src/utils/currency';
 
 export default function GoalsScreen() {
   const c = useColors();
@@ -33,7 +36,6 @@ export default function GoalsScreen() {
   const [formVisible, setFormVisible] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [contributeGoal, setContributeGoal] = useState<Goal | null>(null);
-  const [contributeAmount, setContributeAmount] = useState('');
   const [contributeRepeat, setContributeRepeat] = useState<RecurrenceFrequency | null>(null);
 
   const handleSaveGoal = async (
@@ -65,9 +67,8 @@ export default function GoalsScreen() {
     ]);
   };
 
-  const handleConfirmContribute = async () => {
+  const handleConfirmContribute = async (amount: number) => {
     if (!contributeGoal) return;
-    const amount = parseFloat(contributeAmount.replace(/\./g, '').replace(',', '.'));
     if (isNaN(amount) || amount <= 0) {
       Alert.alert('Monto inválido', 'Ingresa un monto válido');
       return;
@@ -96,7 +97,6 @@ export default function GoalsScreen() {
     }
 
     setContributeGoal(null);
-    setContributeAmount('');
     setContributeRepeat(null);
   };
 
@@ -204,68 +204,36 @@ export default function GoalsScreen() {
         onSave={handleSaveGoal}
       />
 
-      <Modal
+      <AmountEntrySheet
         visible={contributeGoal !== null}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setContributeGoal(null)}
+        title={contributeGoal ? `Aportar a ${contributeGoal.name}` : 'Aportar'}
+        subtitle={
+          contributeGoal
+            ? `Faltan ${formatCurrency(Math.max(contributeGoal.targetAmount - contributeGoal.currentAmount, 0))}`
+            : undefined
+        }
+        headerColor={pastels.mint}
+        confirmLabel="Desliza para aportar"
+        onConfirm={handleConfirmContribute}
+        onClose={() => { setContributeGoal(null); setContributeRepeat(null); }}
       >
-        <View style={styles.overlay}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.modalBox}
-          >
-            <Text style={styles.modalLabel}>ABONAR A META</Text>
-            <Text style={styles.modalTitle}>{contributeGoal?.name}</Text>
-            <View style={styles.inputRow}>
-              <Text style={styles.inputPrefix}>$</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="0"
-                placeholderTextColor={c.textTertiary}
-                value={contributeAmount}
-                onChangeText={setContributeAmount}
-                keyboardType="numeric"
-                autoFocus
-              />
-            </View>
-            <Text style={styles.repeatLabel}>Repetir automáticamente</Text>
-            <View style={styles.repeatRow}>
-              {([null, 'weekly', 'biweekly', 'monthly'] as const).map((freq) => (
-                <AnimatedPressable
-                  key={freq ?? 'none'}
-                  style={[styles.repeatChip, contributeRepeat === freq && styles.repeatChipActive]}
-                  onPress={() => setContributeRepeat(freq)}
-                >
-                  <Text style={[styles.repeatChipText, contributeRepeat === freq && styles.repeatChipTextActive]}>
-                    {freq ? RECURRENCE_LABELS[freq] : 'No'}
-                  </Text>
-                </AnimatedPressable>
-              ))}
-            </View>
-            {contributeRepeat && (
-              <Text style={styles.repeatHint}>
-                Se aportará este monto solo, al abrir la app, hasta completar la meta.
-              </Text>
-            )}
-            <View style={styles.modalButtons}>
-              <Button
-                label="Cancelar"
-                variant="secondary"
-                onPress={() => { setContributeGoal(null); setContributeAmount(''); setContributeRepeat(null); }}
-                haptic={null}
-                style={styles.flexBtn}
-              />
-              <Button
-                label="Abonar"
-                variant="primary"
-                onPress={handleConfirmContribute}
-                style={[styles.flexBtn, { backgroundColor: c.income }]}
-              />
-            </View>
-          </KeyboardAvoidingView>
+        <Text style={styles.repeatLabel}>Repetir automáticamente</Text>
+        <View style={styles.repeatRow}>
+          {([null, 'weekly', 'biweekly', 'monthly'] as const).map((freq) => (
+            <Chip
+              key={freq ?? 'none'}
+              label={freq ? RECURRENCE_LABELS[freq] : 'No'}
+              selected={contributeRepeat === freq}
+              onPress={() => setContributeRepeat(freq)}
+            />
+          ))}
         </View>
-      </Modal>
+        {contributeRepeat && (
+          <Text style={styles.repeatHint}>
+            Se aportará este monto solo, al abrir la app, hasta completar la meta.
+          </Text>
+        )}
+      </AmountEntrySheet>
     </SafeAreaView>
   );
 }

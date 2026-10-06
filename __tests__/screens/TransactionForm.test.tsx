@@ -23,7 +23,16 @@ async function openForm() {
     <TransactionForm visible accounts={accounts} categories={categories} onClose={() => {}} onSave={onSave as never} />
   );
 }
-const amountInput = () => screen.getAllByPlaceholderText('0')[0];
+// El monto se escribe en la pantalla de monto: teclado propio y deslizar para confirmar
+async function enterAmount(text: string) {
+  await fireEvent.press(screen.getByRole('button', { name: /Escribir el monto|Toca para cambiarlo/ }));
+  for (const ch of text.replace(/\./g, '')) {
+    await fireEvent.press(screen.getByRole('button', { name: ch === ',' ? 'Coma decimal' : ch }));
+  }
+  await fireEvent(screen.getByRole('button', { name: 'Desliza para confirmar' }), 'accessibilityAction', {
+    nativeEvent: { actionName: 'activate' },
+  });
+}
 
 beforeEach(async () => {
   await openForm();
@@ -37,13 +46,13 @@ describe('formulario de movimiento', () => {
   });
 
   it('un gasto exige categoría', async () => {
-    await fireEvent.changeText(amountInput(), '25.000');
+    await enterAmount('25.000');
     await fireEvent.press(screen.getByText('Guardar'));
     expect(screen.getByText('Selecciona una categoría')).toBeTruthy();
   });
 
   it('guarda un gasto con monto, categoría y nota', async () => {
-    await fireEvent.changeText(amountInput(), '25.000');
+    await enterAmount('25.000');
     await fireEvent.press(screen.getByText('Comida'));
     await fireEvent.changeText(screen.getByPlaceholderText('Ej: Almuerzo con amigos'), 'Almuerzo');
     await fireEvent.press(screen.getByText('Guardar'));
@@ -57,7 +66,7 @@ describe('formulario de movimiento', () => {
 
   it('un ingreso que se repite cada mes envía la frecuencia', async () => {
     await fireEvent.press(screen.getByText('Ingreso'));
-    await fireEvent.changeText(amountInput(), '3.000.000');
+    await enterAmount('3.000.000');
     await fireEvent.press(screen.getByText('Mensual'));
     await fireEvent.press(screen.getByText('Guardar'));
 
@@ -69,7 +78,7 @@ describe('formulario de movimiento', () => {
   it('transferencia a otra moneda calcula lo que llega con la tasa del día', async () => {
     await fireEvent.press(screen.getByText('Transferencia'));
     await fireEvent.press(screen.getByText('Dólares (USD)'));
-    await fireEvent.changeText(amountInput(), '1.000.000');
+    await enterAmount('1.000.000');
 
     // Tasa de respaldo sin internet: 1 USD = 4.000 COP → llegan 250 USD
     expect(screen.getByText('Recibes en Dólares')).toBeTruthy();
@@ -83,7 +92,7 @@ describe('formulario de movimiento', () => {
   it('el monto que llega se puede corregir a mano', async () => {
     await fireEvent.press(screen.getByText('Transferencia'));
     await fireEvent.press(screen.getByText('Dólares (USD)'));
-    await fireEvent.changeText(amountInput(), '1.000.000');
+    await enterAmount('1.000.000');
     await waitFor(() => expect(screen.getByDisplayValue('250')).toBeTruthy());
 
     await fireEvent.changeText(screen.getByDisplayValue('250'), '245,5');
@@ -93,7 +102,7 @@ describe('formulario de movimiento', () => {
   });
 
   it('dividir un gasto muestra cuánto le toca a cada uno y envía las personas', async () => {
-    await fireEvent.changeText(amountInput(), '90.000');
+    await enterAmount('90.000');
     await fireEvent.press(screen.getByText('Comida'));
     await fireEvent.press(screen.getByText('Dividir con otros'));
 

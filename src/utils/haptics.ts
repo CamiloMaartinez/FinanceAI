@@ -35,3 +35,12 @@ export function hapticDelete() {
     // no-op
   }
 }
+
+// Confirmaciones importantes (deslizar para confirmar): golpe fuerte
+export function hapticHeavy() {
+  try {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+  } catch {
+    // no-op
+  }
+}

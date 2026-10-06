@@ -1,25 +1,25 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet } from 'react-native';
 import { useColors, spacing } from '../constants/theme';
-import { AnimatedPressable } from './ui/AnimatedPressable';
-import { hapticToggle } from '../utils/haptics';
+import { Keypad, KEY_DELETE, PIN_KEYS } from './ui/Keypad';
 
 interface PinPadProps {
   onComplete: (pin: string) => void;
   error?: boolean;
 }
 
-const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del'];
-
 export function PinPad({ onComplete, error }: PinPadProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
   const [digits, setDigits] = useState<string[]>([]);
 
-  const handlePress = (digit: string) => {
+  const handleKey = (key: string) => {
+    if (key === KEY_DELETE) {
+      setDigits((prev) => prev.slice(0, -1));
+      return;
+    }
     if (digits.length >= 4) return;
-    const next = [...digits, digit];
+    const next = [...digits, key];
     setDigits(next);
     if (next.length === 4) {
       const pin = next.join('');
@@ -27,11 +27,14 @@ export function PinPad({ onComplete, error }: PinPadProps) {
     }
   };
 
-  const handleDelete = () => setDigits((prev) => prev.slice(0, -1));
-
   return (
     <View style={styles.container}>
-      <View style={styles.dotsRow}>
+      <View
+        style={styles.dotsRow}
+        accessible
+        accessibilityLabel={`${digits.length} de 4 dígitos`}
+        accessibilityLiveRegion="polite"
+      >
         {[0, 1, 2, 3].map((i) => (
           <View
             key={i}
@@ -44,23 +47,7 @@ export function PinPad({ onComplete, error }: PinPadProps) {
         ))}
       </View>
 
-      <View style={styles.grid}>
-        {KEYS.map((k, i) => {
-          if (k === '') return <View key={i} style={styles.key} />;
-          if (k === 'del') {
-            return (
-              <AnimatedPressable key={i} style={styles.key} onPress={handleDelete} onPressFeedback={hapticToggle} pressScale={0.92} hitSlop={8}>
-                <Ionicons name="backspace-outline" size={22} color={c.textSecondary} />
-              </AnimatedPressable>
-            );
-          }
-          return (
-            <AnimatedPressable key={i} style={styles.key} onPress={() => handlePress(k)} onPressFeedback={hapticToggle} pressScale={0.92}>
-              <Text style={styles.keyText}>{k}</Text>
-            </AnimatedPressable>
-          );
-        })}
-      </View>
+      <Keypad keys={PIN_KEYS} onKey={handleKey} style={styles.grid} />
     </View>
   );
 }
@@ -72,19 +59,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     width: 14, height: 14, borderRadius: 7,
     borderWidth: 1.5, borderColor: c.borderStrong,
   },
-  dotFilled: { backgroundColor: c.blue, borderColor: c.blue },
+  dotFilled: { backgroundColor: c.accent, borderColor: c.accent },
   dotError: { backgroundColor: c.expense, borderColor: c.expense },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    width: 260,
-    justifyContent: 'center',
-  },
-  key: {
-    width: 72,
-    height: 64,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  keyText: { fontSize: 26, fontWeight: '400', color: c.textPrimary },
+  grid: { width: 260 },
 });
