@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   TextInput,
   Modal,
@@ -9,400 +8,334 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { useAnimatedStyle, useSharedValue, interpolateColor, withSpring } from 'react-native-reanimated';
-import { useColors, spacing, radius } from '../constants/theme';
-import { springDefault } from '../constants/motion';
-import { SUPPORTED_CURRENCIES, getCurrencyInfo } from '../constants/currencies';
+import { useColors, fonts, radius, spacing, type ThemeColors } from '../constants/theme';
+import { SUPPORTED_CURRENCIES } from '../constants/currencies';
+import { ACCOUNT_COLOR_OPTIONS, suggestAccountIcon } from '../constants/accountStyles';
+import { ACCOUNT_ICONS, ICON_SET } from './icons/iconSet';
+import { CategoryBadge } from './icons/CategoryBadge';
 import { AnimatedPressable } from './ui/AnimatedPressable';
+import { Chip } from './ui/Chip';
+import { Text } from './ui/Text';
 import { hapticSave, hapticToggle } from '../utils/haptics';
+import { readableTextOn } from '../utils/color';
+import type { Account } from '../models/types';
+import type { AccountFormValues } from '../hooks/useAccounts';
 
 interface AccountFormProps {
   visible: boolean;
+  /** Cuenta a editar; sin ella el formulario crea una nueva. */
+  initial?: Account | null;
+  /** Si la cuenta ya tiene movimientos, la moneda no se puede cambiar. */
+  hasMovements?: boolean;
   onClose: () => void;
-  onSave: (
-    name: string,
-    type: string,
-    balance: number,
-    colorHex: string,
-    iconName: string,
-    currency: string
-  ) => void;
+  onSave: (values: AccountFormValues) => Promise<void> | void;
 }
 
-// Tipos de cuenta disponibles
 const ACCOUNT_TYPES = [
-  { value: 'digital',    label: 'Digital',    icon: 'phone-portrait-outline' },
-  { value: 'checking',   label: 'Corriente',  icon: 'business-outline'       },
-  { value: 'savings',    label: 'Ahorros',    icon: 'save-outline'           },
-  { value: 'cash',       label: 'Efectivo',   icon: 'cash-outline'           },
-  { value: 'investment', label: 'Inversión',  icon: 'trending-up-outline'    },
-  { value: 'credit',     label: 'Crédito',    icon: 'card-outline'           },
+  { value: 'digital',    label: 'Digital' },
+  { value: 'checking',   label: 'Corriente' },
+  { value: 'savings',    label: 'Ahorros' },
+  { value: 'cash',       label: 'Efectivo' },
+  { value: 'investment', label: 'Inversión' },
+  { value: 'credit',     label: 'Crédito' },
 ];
 
-// Colores disponibles para la cuenta
-const ACCOUNT_COLORS = [
-  '#E91E8C', // Rosa Nequi
-  '#FDB913', // Amarillo Bancolombia
-  '#007AFF', // Azul
-  '#34C759', // Verde
-  '#FF9500', // Naranja
-  '#5856D6', // Púrpura
-  '#FF3B30', // Rojo
-  '#30B0C7', // Teal
-  '#FF2D55', // Rosa
-  '#AC8E68', // Café
-];
-
-// Anillo de foco animado (§4/§15 apple-design): el borde interpola de
-// c.border a c.accent con un resorte crítico, sin desplazar el layout.
-function useFocusRing(c: ReturnType<typeof useColors>) {
-  const focus = useSharedValue(0);
-  const style = useAnimatedStyle(() => ({
-    borderColor: interpolateColor(focus.value, [0, 1], [c.border, c.accent]),
-  }));
-  return {
-    style,
-    onFocus: () => { focus.value = withSpring(1, springDefault); },
-    onBlur: () => { focus.value = withSpring(0, springDefault); },
-  };
+function parseAmount(text: string): number {
+  // Formato colombiano: punto de miles, coma decimal
+  return parseFloat(text.replace(/\./g, '').replace(',', '.'));
 }
 
-export function AccountForm({ visible, onClose, onSave }: AccountFormProps) {
+function formatAmountInput(n: number): string {
+  return n.toLocaleString('es-CO', { maximumFractionDigits: 2 });
+}
+
+export function AccountForm({ visible, initial, hasMovements = false, onClose, onSave }: AccountFormProps) {
   const c = useColors();
-  const styles = useMemo(() => createStyles(c), [c]);
-  const [name,       setName]       = useState('');
-  const [type,       setType]       = useState('digital');
-  const [balance,    setBalance]    = useState('');
-  const [colorHex,   setColorHex]   = useState('#007AFF');
-  const [currency,   setCurrency]   = useState('COP');
-  const [error,      setError]      = useState('');
+  const s = useMemo(() => createStyles(c), [c]);
+  const isEditing = !!initial;
 
-  const nameRing = useFocusRing(c);
-  const balanceRing = useFocusRing(c);
+  const [name, setName] = useState('');
+  const [type, setType] = useState('digital');
+  const [balance, setBalance] = useState('');
+  const [colorId, setColorId] = useState(ACCOUNT_COLOR_OPTIONS[1].id);
+  const [currency, setCurrency] = useState('COP');
+  const [iconName, setIconName] = useState<string>('billetera');
+  // Mientras el usuario no elija un ícono a mano, se sugiere según tipo y moneda
+  const [iconTouched, setIconTouched] = useState(false);
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = () => {
-    // Validaciones
+  useEffect(() => {
+    if (!visible) return;
+    if (initial) {
+      setName(initial.name);
+      setType(initial.type);
+      setBalance(formatAmountInput(initial.balance));
+      const match = ACCOUNT_COLOR_OPTIONS.find(
+        (o) => o.colorHex.toLowerCase() === initial.colorHex.toLowerCase() && (o.gradientTo ?? null) === (initial.gradientTo ?? null)
+      );
+      // Un color de antes que ya no está en la paleta se conserva tal cual
+      setColorId(match?.id ?? 'custom');
+      setCurrency(initial.currency);
+      setIconName(initial.iconName);
+      setIconTouched(true);
+    } else {
+      setName('');
+      setType('digital');
+      setBalance('');
+      setColorId(ACCOUNT_COLOR_OPTIONS[1].id);
+      setCurrency('COP');
+      setIconName(suggestAccountIcon('digital', 'COP'));
+      setIconTouched(false);
+    }
+    setError('');
+  }, [visible, initial]);
+
+  useEffect(() => {
+    if (!iconTouched) setIconName(suggestAccountIcon(type, currency));
+  }, [type, currency, iconTouched]);
+
+  const colorOption = ACCOUNT_COLOR_OPTIONS.find((o) => o.id === colorId);
+  const colorHex = colorOption?.colorHex ?? initial?.colorHex ?? ACCOUNT_COLOR_OPTIONS[1].colorHex;
+  const gradientTo = colorOption ? colorOption.gradientTo : initial?.gradientTo ?? null;
+
+  const handleSave = async () => {
     if (!name.trim()) {
       setError('El nombre es obligatorio');
       return;
     }
-    const balanceNum = parseFloat(balance.replace(/\./g, '').replace(',', '.'));
-    if (isNaN(balanceNum) || balanceNum < 0) {
+    const amount = parseAmount(balance || '0');
+    if (isNaN(amount) || (!isEditing && amount < 0)) {
       setError('Ingresa un saldo válido');
       return;
     }
-
-    onSave(name.trim(), type, balanceNum, colorHex, 'wallet-outline', currency);
-    handleClose();
+    setSaving(true);
+    try {
+      await onSave({ name: name.trim(), type, balance: amount, colorHex, gradientTo, iconName, currency });
+      hapticSave();
+      onClose();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo guardar');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleClose = () => {
-    setName('');
-    setType('digital');
-    setBalance('');
-    setColorHex('#007AFF');
-    setCurrency('COP');
-    setError('');
-    onClose();
-  };
+  const balanceChanged = isEditing && !isNaN(parseAmount(balance)) && parseAmount(balance) !== initial!.balance;
+  const currencyLocked = isEditing && hasMovements;
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={handleClose}
-    >
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        {/* Header del modal */}
-        <View style={styles.header}>
-          <AnimatedPressable onPress={handleClose}>
-            <Text style={styles.cancelBtn}>Cancelar</Text>
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+      <KeyboardAvoidingView style={s.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <View style={s.header}>
+          <AnimatedPressable onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel="Cancelar">
+            <Text style={s.cancel}>Cancelar</Text>
           </AnimatedPressable>
-          <Text style={styles.headerTitle}>Nueva cuenta</Text>
-          <AnimatedPressable onPress={handleSave} onPressFeedback={hapticSave}>
-            <Text style={styles.saveBtn}>Guardar</Text>
+          <Text style={s.headerTitle} accessibilityRole="header">{isEditing ? 'Editar cuenta' : 'Nueva cuenta'}</Text>
+          <AnimatedPressable
+            onPress={handleSave}
+            disabled={saving}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel="Guardar"
+          >
+            <Text style={s.save}>Guardar</Text>
           </AnimatedPressable>
         </View>
 
-        <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={s.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          {/* Vista previa de la tarjeta */}
+          <LinearGradient
+            colors={[colorHex, gradientTo ?? colorHex]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={s.preview}
+          >
+            <CategoryBadge iconName={iconName} colorHex="#FFFFFF" size={44} />
+            <Text style={[s.previewName, { color: readableTextOn(colorHex) }]} numberOfLines={1}>
+              {name.trim() || 'Nombre de la cuenta'}
+            </Text>
+          </LinearGradient>
 
-          {/* Error */}
-          {error ? (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{error}</Text>
+          {!!error && (
+            <View style={s.errorBox} accessibilityLiveRegion="polite">
+              <Text style={s.errorText}>{error}</Text>
             </View>
-          ) : null}
+          )}
 
-          {/* Nombre */}
-          <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Nombre de la cuenta</Text>
-            <Animated.View style={[styles.input, nameRing.style]}>
-              <TextInput
-                style={styles.inputText}
-                placeholder="Ej: Nequi, Bancolombia..."
-                placeholderTextColor={c.textTertiary}
-                value={name}
-                onChangeText={(text) => { setName(text); setError(''); }}
-                onFocus={nameRing.onFocus}
-                onBlur={nameRing.onBlur}
-                autoFocus
-              />
-            </Animated.View>
-          </View>
+          <Field label="Nombre de la cuenta" s={s}>
+            <TextInput
+              style={s.input}
+              placeholder="Ej: Nequi, Bancolombia…"
+              placeholderTextColor={c.textTertiary}
+              value={name}
+              onChangeText={(t) => { setName(t); setError(''); }}
+              autoFocus={!isEditing}
+              accessibilityLabel="Nombre de la cuenta"
+            />
+          </Field>
 
-          {/* Moneda */}
-          <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Moneda</Text>
-            <View style={styles.typeGrid}>
+          <Field label="Moneda" s={s}>
+            <View style={s.chips}>
               {SUPPORTED_CURRENCIES.map((cur) => (
-                <AnimatedPressable
+                <Chip
                   key={cur.code}
-                  pressScale={0.97}
-                  style={[
-                    styles.typeOption,
-                    currency === cur.code && styles.typeOptionSelected,
-                  ]}
-                  onPress={() => setCurrency(cur.code)}
-                  onPressFeedback={hapticToggle}
-                >
-                  <Text style={[
-                    styles.typeLabel,
-                    currency === cur.code && styles.typeLabelSelected,
-                  ]}>
-                    {cur.symbol} {cur.code}
-                  </Text>
-                </AnimatedPressable>
+                  label={`${cur.symbol} ${cur.code}`}
+                  accessibilityLabel={cur.name}
+                  selected={currency === cur.code}
+                  onPress={() => { if (!currencyLocked) setCurrency(cur.code); }}
+                  style={currencyLocked && currency !== cur.code ? s.disabled : undefined}
+                />
               ))}
             </View>
-            {currency !== 'COP' && (
-              <Text style={styles.currencyHint}>
-                Se sumará al saldo total del dashboard usando la tasa de cambio que configures en tu perfil.
+            {currencyLocked ? (
+              <Text style={s.hint}>
+                La moneda no se puede cambiar porque la cuenta ya tiene movimientos: sus montos quedarían en otra moneda.
+              </Text>
+            ) : currency !== 'COP' ? (
+              <Text style={s.hint}>Se sumará al saldo total en pesos con la tasa de cambio de tu perfil.</Text>
+            ) : null}
+          </Field>
+
+          <Field label={isEditing ? 'Saldo actual' : 'Saldo inicial'} s={s}>
+            <TextInput
+              style={s.input}
+              placeholder="0"
+              placeholderTextColor={c.textTertiary}
+              value={balance}
+              onChangeText={(t) => { setBalance(t); setError(''); }}
+              keyboardType="numeric"
+              accessibilityLabel={isEditing ? 'Saldo actual' : 'Saldo inicial'}
+            />
+            {balanceChanged && (
+              <Text style={s.hint}>
+                Se registrará un movimiento de “Ajuste de saldo” por la diferencia, para que el historial cuadre.
               </Text>
             )}
-          </View>
+          </Field>
 
-          {/* Saldo inicial */}
-          <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Saldo inicial</Text>
-            <Animated.View style={[styles.input, balanceRing.style]}>
-              <TextInput
-                style={styles.inputText}
-                placeholder="0"
-                placeholderTextColor={c.textTertiary}
-                value={balance}
-                onChangeText={(text) => { setBalance(text); setError(''); }}
-                onFocus={balanceRing.onFocus}
-                onBlur={balanceRing.onBlur}
-                keyboardType="numeric"
-              />
-            </Animated.View>
-          </View>
-
-          {/* Tipo de cuenta */}
-          <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Tipo de cuenta</Text>
-            <View style={styles.typeGrid}>
+          <Field label="Tipo de cuenta" s={s}>
+            <View style={s.chips}>
               {ACCOUNT_TYPES.map((t) => (
-                <AnimatedPressable
-                  key={t.value}
-                  pressScale={0.97}
-                  style={[
-                    styles.typeOption,
-                    type === t.value && styles.typeOptionSelected,
-                  ]}
-                  onPress={() => setType(t.value)}
-                  onPressFeedback={hapticToggle}
-                >
-                  <Ionicons
-                    name={t.icon as any}
-                    size={20}
-                    color={type === t.value ? c.accent : c.textSecondary}
-                  />
-                  <Text style={[
-                    styles.typeLabel,
-                    type === t.value && styles.typeLabelSelected,
-                  ]}>
-                    {t.label}
-                  </Text>
-                </AnimatedPressable>
+                <Chip key={t.value} label={t.label} selected={type === t.value} onPress={() => setType(t.value)} />
               ))}
             </View>
-          </View>
+          </Field>
 
-          {/* Color */}
-          <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Color</Text>
-            <View style={styles.colorGrid}>
-              {ACCOUNT_COLORS.map((hex) => (
-                <AnimatedPressable
-                  key={hex}
-                  pressScale={0.9}
-                  style={[
-                    styles.colorDot,
-                    { backgroundColor: hex },
-                    colorHex === hex && styles.colorDotSelected,
-                  ]}
-                  onPress={() => setColorHex(hex)}
-                  onPressFeedback={hapticToggle}
-                >
-                  {colorHex === hex && (
-                    <Ionicons name="checkmark" size={16} color="#fff" />
-                  )}
-                </AnimatedPressable>
-              ))}
+          <Field label="Ícono" s={s}>
+            <View style={s.iconRow} accessibilityRole="radiogroup">
+              {ACCOUNT_ICONS.map((icon) => {
+                const selected = iconName === icon;
+                return (
+                  <AnimatedPressable
+                    key={icon}
+                    onPress={() => { setIconName(icon); setIconTouched(true); }}
+                    onPressFeedback={hapticToggle}
+                    pressScale={0.9}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected }}
+                    accessibilityLabel={ICON_SET[icon].label}
+                    style={[s.iconCell, selected && s.iconCellSelected]}
+                  >
+                    <CategoryBadge iconName={icon} colorHex={colorHex} size={44} />
+                  </AnimatedPressable>
+                );
+              })}
             </View>
-          </View>
+          </Field>
 
-          {/* Preview de la tarjeta */}
-          <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Vista previa</Text>
-            <View style={[styles.preview, { borderLeftColor: colorHex }]}>
-              <Text style={styles.previewName}>
-                {name || 'Nombre de la cuenta'}
-              </Text>
-              <Text style={styles.previewBalance}>
-                {getCurrencyInfo(currency).symbol}{balance || '0'}
-              </Text>
+          <Field label="Color" s={s}>
+            <View style={s.colorGrid} accessibilityRole="radiogroup">
+              {ACCOUNT_COLOR_OPTIONS.map((o) => {
+                const selected = colorId === o.id;
+                return (
+                  <AnimatedPressable
+                    key={o.id}
+                    onPress={() => setColorId(o.id)}
+                    onPressFeedback={hapticToggle}
+                    pressScale={0.9}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected }}
+                    accessibilityLabel={o.label}
+                    style={[s.colorCell, selected && s.colorCellSelected]}
+                  >
+                    <LinearGradient
+                      colors={[o.colorHex, o.gradientTo ?? o.colorHex]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={s.colorSwatch}
+                    >
+                      {selected && <Ionicons name="checkmark" size={16} color={readableTextOn(o.colorHex)} />}
+                    </LinearGradient>
+                  </AnimatedPressable>
+                );
+              })}
             </View>
-          </View>
-
+          </Field>
         </ScrollView>
       </KeyboardAvoidingView>
     </Modal>
   );
 }
 
-const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
-  container: {
-    flex:            1,
-    backgroundColor: c.background,
-  },
-  header: {
-    flexDirection:  'row',
-    justifyContent: 'space-between',
-    alignItems:     'center',
-    padding:        spacing.lg,
-    borderBottomWidth: 0.5,
-    borderBottomColor: c.border,
-  },
-  headerTitle: {
-    fontSize:   17,
-    fontWeight: '600',
-    color:      c.textPrimary,
-  },
-  cancelBtn: {
-    fontSize: 16,
-    color:    c.textSecondary,
-  },
-  saveBtn: {
-    fontSize:   16,
-    fontWeight: '600',
-    color:      c.accent,
-  },
-  form: {
-    padding: spacing.lg,
-  },
-  errorBox: {
-    backgroundColor: c.expense + '26',
-    borderRadius:    radius.md,
-    padding:         spacing.md,
-    marginBottom:    spacing.md,
-  },
-  errorText: {
-    fontSize: 13,
-    color:    c.expense,
-  },
-  field: {
-    marginBottom: spacing.xl,
-  },
-  fieldLabel: {
-    fontSize:     13,
-    fontWeight:   '500',
-    color:        c.textSecondary,
-    marginBottom: spacing.sm,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  input: {
-    backgroundColor: c.surface,
-    borderRadius:    radius.md,
-    borderWidth:      1.5,
-    borderColor:      c.border,
-  },
-  inputText: {
-    padding:         spacing.lg,
-    fontSize:        16,
-    color:           c.textPrimary,
-  },
-  typeGrid: {
-    flexDirection: 'row',
-    flexWrap:      'wrap',
-    gap:           spacing.sm,
-  },
-  typeOption: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    gap:            spacing.sm,
-    backgroundColor: c.surface,
-    borderRadius:   radius.md,
-    padding:        spacing.md,
-    borderWidth:    1.5,
-    borderColor:    'transparent',
-  },
-  typeOptionSelected: {
-    borderColor:     c.accent,
-    backgroundColor: c.accent + '1A',
-  },
-  typeLabel: {
-    fontSize: 13,
-    color:    c.textSecondary,
-  },
-  typeLabelSelected: {
-    color:      c.accent,
-    fontWeight: '500',
-  },
-  currencyHint: {
-    fontSize: 11.5,
-    color: c.textTertiary,
-    marginTop: spacing.sm,
-    lineHeight: 16,
-  },
-  colorGrid: {
-    flexDirection: 'row',
-    flexWrap:      'wrap',
-    gap:           spacing.md,
-  },
-  colorDot: {
-    width:          36,
-    height:         36,
-    borderRadius:   18,
-    alignItems:     'center',
-    justifyContent: 'center',
-  },
-  colorDotSelected: {
-    borderWidth: 3,
-    borderColor: '#fff',
-  },
-  preview: {
-    backgroundColor: c.surface,
-    borderRadius:    radius.md,
-    padding:         spacing.lg,
-    borderLeftWidth: 4,
-    gap:             spacing.sm,
-  },
-  previewName: {
-    fontSize:   15,
-    fontWeight: '600',
-    color:      c.textPrimary,
-  },
-  previewBalance: {
-    fontSize:   22,
-    fontWeight: '700',
-    color:      c.textPrimary,
-  },
-});
+function Field({ label, children, s }: { label: string; children: React.ReactNode; s: ReturnType<typeof createStyles> }) {
+  return (
+    <View style={s.field}>
+      <Text style={s.fieldLabel}>{label}</Text>
+      {children}
+    </View>
+  );
+}
+
+function createStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.background },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: spacing.xl,
+      paddingVertical: spacing.lg,
+    },
+    headerTitle: { fontFamily: fonts.bold, fontSize: 17, color: c.textPrimary },
+    cancel: { fontFamily: fonts.medium, fontSize: 16, color: c.textSecondary },
+    save: { fontFamily: fonts.bold, fontSize: 16, color: c.accent },
+    form: { paddingHorizontal: spacing.xl, paddingBottom: 60 },
+    preview: {
+      borderRadius: radius.xl + 4,
+      padding: spacing.lg,
+      height: 120,
+      justifyContent: 'space-between',
+      marginBottom: spacing.lg,
+      ...c.shadow.md,
+    },
+    previewName: { fontFamily: fonts.bold, fontSize: 18 },
+    errorBox: { backgroundColor: c.expense + '1A', borderRadius: radius.md, padding: spacing.md, marginBottom: spacing.md },
+    errorText: { fontFamily: fonts.medium, fontSize: 13, color: c.expense },
+    field: { marginBottom: spacing.xl },
+    fieldLabel: { fontFamily: fonts.semibold, fontSize: 13, color: c.textSecondary, marginBottom: spacing.sm },
+    input: {
+      fontFamily: fonts.medium,
+      fontSize: 16,
+      color: c.textPrimary,
+      backgroundColor: c.surface,
+      borderRadius: radius.lg,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+    disabled: { opacity: 0.4 },
+    hint: { fontFamily: fonts.regular, fontSize: 12, color: c.textSecondary, marginTop: spacing.sm, lineHeight: 17 },
+    iconRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+    iconCell: { padding: 3, borderRadius: radius.pill, borderWidth: 2, borderColor: 'transparent' },
+    iconCellSelected: { borderColor: c.accent },
+    colorGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+    colorCell: { padding: 3, borderRadius: radius.pill, borderWidth: 2, borderColor: 'transparent' },
+    colorCellSelected: { borderColor: c.accent },
+    colorSwatch: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
+  });
+}

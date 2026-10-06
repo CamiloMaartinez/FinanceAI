@@ -23,3 +23,11 @@ export function luminance(hex: string): number {
 export function isPastel(hex: string): boolean {
   return luminance(hex) > 0.5;
 }
+
+/** Texto legible sobre un fondo: tinta morada en colores claros, blanco en oscuros. */
+export function readableTextOn(hex: string): string {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return '#FFFFFF';
+  const [r, g, b] = rgb;
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? '#2A1B6B' : '#FFFFFF';
+}

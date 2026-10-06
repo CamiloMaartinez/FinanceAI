@@ -74,17 +74,17 @@ export default function TransactionsScreen() {
   // Atajos de Siri / Apple Pay: financeai://transactions?monto=25000&nota=Starbucks&tipo=ingreso
   // abre el formulario de un movimiento nuevo con esos datos ya escritos.
   // Los botones del inicio abren un movimiento nuevo con ?nuevo=ingreso|gasto|transferencia
-  const shortcut = useLocalSearchParams<{ monto?: string; nota?: string; tipo?: string; nuevo?: string }>();
-  const [prefill, setPrefill] = useState<{ amount?: number; notes?: string; type?: 'expense' | 'income' | 'transfer' } | null>(null);
+  const shortcut = useLocalSearchParams<{ monto?: string; nota?: string; tipo?: string; nuevo?: string; cuenta?: string }>();
+  const [prefill, setPrefill] = useState<{ amount?: number; notes?: string; type?: 'expense' | 'income' | 'transfer'; accountId?: string } | null>(null);
 
   useEffect(() => {
     if (!shortcut.nuevo) return;
     const type = shortcut.nuevo === 'ingreso' ? 'income' : shortcut.nuevo === 'transferencia' ? 'transfer' : 'expense';
     setEditingTx(null);
-    setPrefill({ type });
+    setPrefill({ type, accountId: shortcut.cuenta || undefined });
     setFormVisible(true);
-    router.setParams({ nuevo: undefined });
-  }, [shortcut.nuevo]);
+    router.setParams({ nuevo: undefined, cuenta: undefined });
+  }, [shortcut.nuevo, shortcut.cuenta]);
 
   useEffect(() => {
     if (!shortcut.monto && !shortcut.nota) return;

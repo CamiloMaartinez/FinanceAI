@@ -1,227 +1,122 @@
-import React, { useState, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  Alert,
-  RefreshControl,
-} from 'react-native';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { View, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from 'expo-router';
 import { useAccounts } from '../../src/hooks/useAccounts';
 import { AccountCard } from '../../src/components/AccountCard';
 import { AccountForm } from '../../src/components/AccountForm';
-import { useColors, spacing, typography } from '../../src/constants/theme';
-import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
+import { ScreenHeader } from '../../src/components/ui/ScreenHeader';
+import { AmountText } from '../../src/components/ui/AmountText';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
+import { Button } from '../../src/components/ui/Button';
+import { Text } from '../../src/components/ui/Text';
+import { useColors, fonts, spacing, type ThemeColors } from '../../src/constants/theme';
+import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { hapticSave } from '../../src/utils/haptics';
-import { formatCurrency } from '../../src/utils/currency';
-import type { Account } from '../../src/models/types';
+import { openAccountDetail } from '../../src/utils/accountNavigation';
 
 export default function AccountsScreen() {
   const c = useColors();
-  const styles = useMemo(() => createStyles(c), [c]);
+  const s = useMemo(() => createStyles(c), [c]);
   const accounts = useAccounts();
   const [formVisible, setFormVisible] = useState(false);
 
-  const handleSave = async (
-    name: string, type: string, balance: number,
-    colorHex: string, iconName: string, currency: string
-  ) => {
-    await accounts.addAccount(name, type, balance, colorHex, iconName, currency);
-  };
-
-  const handleLongPress = (account: Account) => {
-    Alert.alert(
-      account.name,
-      '¿Qué deseas hacer con esta cuenta?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert(
-              'Confirmar',
-              `¿Eliminar "${account.name}"?`,
-              [
-                { text: 'Cancelar', style: 'cancel' },
-                { text: 'Eliminar', style: 'destructive', onPress: () => accounts.removeAccount(account.id) },
-              ]
-            );
-          },
-        },
-      ]
-    );
-  };
-
-  const handlePress = (account: Account) => {
-    Alert.alert(account.name, formatCurrency(account.balance));
-  };
+  // Al volver del detalle (editar, archivar) la lista se recarga
+  const isFirstFocus = useRef(true);
+  useFocusEffect(useCallback(() => {
+    if (isFirstFocus.current) {
+      isFirstFocus.current = false;
+      return;
+    }
+    accounts.refresh().catch(() => {});
+  }, [accounts.refresh]));
 
   if (accounts.isLoading && accounts.accounts.length === 0) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={s.loading}>
         <ActivityIndicator size="small" color={c.textTertiary} />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Animated.ScrollView entering={FadeIn.duration(350)}
-        contentContainerStyle={styles.content}
+    <SafeAreaView style={s.container} edges={['top']}>
+      <Animated.ScrollView
+        entering={FadeIn.duration(300)}
+        contentContainerStyle={s.content}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={accounts.isLoading}
-            onRefresh={accounts.refresh}
-            tintColor={c.textTertiary}
-          />
-        }
+        refreshControl={<RefreshControl refreshing={false} onRefresh={accounts.refresh} tintColor={c.textTertiary} />}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.label}>CUENTAS</Text>
-            <Text style={styles.totalBalance}>
-              {formatCurrency(accounts.totalBalance)}
-            </Text>
-          </View>
-          <AnimatedPressable
-            style={styles.addButton}
-            onPress={() => setFormVisible(true)}
-            onPressFeedback={hapticSave}
-          >
-            <Ionicons name="add" size={20} color={c.textPrimary} />
-          </AnimatedPressable>
-        </View>
-
-        <View style={styles.divider} />
-
-        {accounts.error && (
-          <Text style={styles.errorText}>⚠️ {accounts.error}</Text>
-        )}
-
-        {accounts.accounts.length === 0 ? (
-          <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>Sin cuentas</Text>
-            <Text style={styles.emptySubtitle}>
-              Agrega tu primera cuenta financiera
-            </Text>
+        <ScreenHeader
+          eyebrow="Más"
+          title="Cuentas"
+          back
+          right={
             <AnimatedPressable
-              style={styles.emptyButton}
+              style={s.addButton}
               onPress={() => setFormVisible(true)}
               onPressFeedback={hapticSave}
+              accessibilityRole="button"
+              accessibilityLabel="Nueva cuenta"
             >
-              <Text style={styles.emptyButtonText}>+ Nueva cuenta</Text>
+              <Ionicons name="add" size={22} color={c.onAccent} />
             </AnimatedPressable>
+          }
+        />
+
+        <Text style={s.totalLabel}>Total en pesos</Text>
+        <AmountText value={accounts.totalBalance} size={34} style={s.total} />
+
+        {!!accounts.error && <Text style={s.error}>{accounts.error}</Text>}
+
+        {accounts.accounts.length === 0 ? (
+          <View style={s.empty}>
+            <Text style={s.emptyTitle}>Sin cuentas</Text>
+            <Text style={s.emptyText}>Agrega tu primera cuenta: efectivo, banco, Nequi…</Text>
+            <Button label="Nueva cuenta" onPress={() => setFormVisible(true)} style={s.emptyButton} />
           </View>
         ) : (
           <>
             {accounts.accounts.map((account, i) => (
-              <Animated.View key={account.id} entering={FadeInDown.duration(300).delay(i * 60)}>
-                <AccountCard
-                  account={account}
-                  onPress={handlePress}
-                  onLongPress={handleLongPress}
-                />
-              </Animated.View>
+              <AccountCard
+                key={account.id}
+                account={account}
+                index={i}
+                onPress={(acc, origin) => openAccountDetail(acc.id, origin)}
+              />
             ))}
-            <Text style={styles.hint}>
-              Mantén presionada una cuenta para eliminarla
-            </Text>
+            <Text style={s.hint}>Toca una cuenta para ver sus movimientos, editarla o archivarla</Text>
           </>
         )}
       </Animated.ScrollView>
 
-      <AccountForm
-        visible={formVisible}
-        onClose={() => setFormVisible(false)}
-        onSave={handleSave}
-      />
+      <AccountForm visible={formVisible} onClose={() => setFormVisible(false)} onSave={accounts.addAccount} />
     </SafeAreaView>
   );
 }
 
-const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: c.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  container: { flex: 1, backgroundColor: c.background },
-  content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    paddingVertical: spacing.lg,
-  },
-  label: {
-    ...typography.label,
-    color: c.textTertiary,
-    marginBottom: spacing.xs,
-  },
-  totalBalance: {
-    fontSize: 28,
-    fontWeight: '200',
-    color: c.textPrimary,
-    letterSpacing: -1,
-  },
-  addButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 0.5,
-    borderColor: c.borderStrong,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  divider: {
-    height: 0.5,
-    backgroundColor: c.borderStrong,
-    marginBottom: spacing.xl,
-  },
-  errorText: { fontSize: 12, color: c.expense, marginBottom: spacing.md },
-  empty: {
-    paddingVertical: spacing.xxl * 2,
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '300',
-    color: c.textPrimary,
-  },
-  emptySubtitle: {
-    fontSize: 13,
-    fontWeight: '300',
-    color: c.textTertiary,
-    textAlign: 'center',
-  },
-  emptyButton: {
-    marginTop: spacing.lg,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xl,
-    borderWidth: 0.5,
-    borderColor: c.borderStrong,
-    borderRadius: 6,
-  },
-  emptyButtonText: {
-    fontSize: 13,
-    fontWeight: '300',
-    color: c.textPrimary,
-    letterSpacing: 0.3,
-  },
-  hint: {
-    fontSize: 11,
-    color: c.textTertiary,
-    textAlign: 'center',
-    marginTop: spacing.xl,
-    letterSpacing: 0.3,
-  },
-});
+function createStyles(c: ThemeColors) {
+  return StyleSheet.create({
+    loading: { flex: 1, backgroundColor: c.background, alignItems: 'center', justifyContent: 'center' },
+    container: { flex: 1, backgroundColor: c.background },
+    content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
+    addButton: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: c.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    totalLabel: { fontFamily: fonts.medium, fontSize: 13, color: c.textSecondary },
+    total: { marginBottom: spacing.xl },
+    error: { fontFamily: fonts.medium, fontSize: 13, color: c.expense, marginBottom: spacing.md },
+    empty: { paddingVertical: spacing.xxl * 2, alignItems: 'center', gap: spacing.sm },
+    emptyTitle: { fontFamily: fonts.bold, fontSize: 18, color: c.textPrimary },
+    emptyText: { fontFamily: fonts.regular, fontSize: 14, color: c.textSecondary, textAlign: 'center' },
+    emptyButton: { marginTop: spacing.lg, alignSelf: 'stretch' },
+    hint: { fontFamily: fonts.regular, fontSize: 12, color: c.textSecondary, textAlign: 'center', marginTop: spacing.md },
+  });
+}

@@ -45,7 +45,7 @@ interface TransactionFormProps {
   editingTransaction?: TransactionWithCategory | null;
   // Datos para precargar un movimiento NUEVO (por ejemplo, desde un atajo
   // de Siri que abre financeai://transactions?monto=...&nota=...)
-  prefill?: { amount?: number; notes?: string; type?: FormType } | null;
+  prefill?: { amount?: number; notes?: string; type?: FormType; accountId?: string } | null;
   onClose: () => void;
   // `recurrence` solo llega en movimientos nuevos de ingreso o gasto
   // splitWith: personas con quienes se divide un gasto nuevo (null = no se divide)
@@ -180,6 +180,7 @@ export function TransactionForm({
   useEffect(() => {
     if (visible && prefill && !editingTransaction) {
       if (prefill.type) setType(prefill.type);
+      if (prefill.accountId && accounts.some((a) => a.id === prefill.accountId)) setAccountId(prefill.accountId);
       if (prefill.amount) setAmount(String(Math.round(prefill.amount)));
       if (prefill.notes) setNotes(prefill.notes);
       setError('');

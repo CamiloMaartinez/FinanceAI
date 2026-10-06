@@ -5,6 +5,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react-nativ
 const mockNavigate = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ navigate: mockNavigate, push: mockNavigate }),
+  useFocusEffect: () => {},
+  router: { push: jest.fn(), navigate: jest.fn() },
 }));
 // Las gráficas dependen de medidas reales de pantalla; aquí basta con que existan
 jest.mock('react-native-gifted-charts', () => {

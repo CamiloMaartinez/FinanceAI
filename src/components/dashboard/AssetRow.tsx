@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useColors, spacing, fonts, tabularNums, type ThemeColors } from '../../constants/theme';
@@ -6,6 +6,8 @@ import { useAccessibilityPreferences } from '../../hooks/useAccessibilityPrefere
 import { hapticToggle } from '../../utils/haptics';
 import { AnimatedPressable } from '../ui/AnimatedPressable';
 import { Text } from '../ui/Text';
+import type { CardRect } from '../AccountCard';
+import { measureOrigin } from '../../utils/accountNavigation';
 
 interface AssetRowProps {
   /** El círculo pastel con el ícono (IconBadge). */
@@ -19,7 +21,8 @@ interface AssetRowProps {
   changeColor?: string;
   /** Posición en la lista, para la entrada escalonada. */
   index?: number;
-  onPress?: () => void;
+  /** Recibe dónde está la fila en pantalla (para animar lo que abre desde ahí). */
+  onPress?: (origin: CardRect | null) => void;
   accessibilityLabel?: string;
 }
 
@@ -34,6 +37,12 @@ export function AssetRow({
   const s = useMemo(() => createStyles(c), [c]);
   const { reduceMotion } = useAccessibilityPreferences();
   const label = accessibilityLabel ?? [title, detail, amount, change].filter(Boolean).join(', ');
+  const ref = useRef<View>(null);
+
+  const handlePress = () => {
+    if (!onPress) return;
+    measureOrigin(ref.current, onPress);
+  };
 
   const content = (
     <>
@@ -50,11 +59,11 @@ export function AssetRow({
   );
 
   return (
-    <Animated.View entering={reduceMotion ? undefined : FadeInDown.duration(320).delay(Math.min(index, 8) * 55)}>
+    <Animated.View ref={ref} collapsable={false} entering={reduceMotion ? undefined : FadeInDown.duration(320).delay(Math.min(index, 8) * 55)}>
       {onPress ? (
         <AnimatedPressable
           style={s.row}
-          onPress={onPress}
+          onPress={handlePress}
           onPressFeedback={hapticToggle}
           pressScale={0.98}
           accessibilityRole="button"

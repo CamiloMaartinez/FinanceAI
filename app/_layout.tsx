@@ -107,5 +107,10 @@ function RootLayoutInner() {
     return <LockScreen onUnlock={() => setIsUnlocked(true)} />;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      {/* El detalle se dibuja encima de la pantalla anterior y anima su propia expansión */}
+      <Stack.Screen name="account/[id]" options={{ presentation: 'transparentModal', animation: 'none' }} />
+    </Stack>
+  );
 }

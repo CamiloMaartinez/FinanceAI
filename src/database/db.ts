@@ -264,6 +264,13 @@ async function initDb(database: SQLite.SQLiteDatabase) {
     // La columna ya existe — no hay nada que hacer
   }
 
+  try {
+    // Cuentas con degradado: segundo color (null = color sólido)
+    await database.execAsync(`ALTER TABLE accounts ADD COLUMN gradientTo TEXT;`);
+  } catch {
+    // La columna ya existe — no hay nada que hacer
+  }
+
   await migrateDefaultCategoryStyle(database);
 }
 
@@ -556,32 +563,174 @@ export async function createAccount(
   balance: number,
   colorHex: string,
   iconName: string,
-  currency: string = 'COP'
-): Promise<void> {
+  currency: string = 'COP',
+  gradientTo: string | null = null
+): Promise<string> {
   const database = await getDb();
   const id = newId('acc');
   const now = new Date().toISOString();
 
   await database.runAsync(
-    `INSERT INTO accounts (id, name, type, balance, currency, colorHex, iconName, isActive, createdAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)`,
-    [id, name, type, balance, currency, colorHex, iconName, now]
+    `INSERT INTO accounts (id, name, type, balance, currency, colorHex, iconName, gradientTo, isActive, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+    [id, name, type, balance, currency, colorHex, iconName, gradientTo, now]
+  );
+  return id;
+}
+
+export interface AccountUpdate {
+  name: string;
+  type: string;
+  colorHex: string;
+  iconName: string;
+  gradientTo?: string | null;
+  /** Solo se acepta si la cuenta no tiene movimientos. */
+  currency?: string;
+}
+
+// Edita la cuenta sin tocar su saldo (para eso está setAccountBalance).
+// La moneda solo cambia si no hay movimientos: si los hay, los montos
+// guardados quedarían en una moneda distinta a la de la cuenta.
+export async function updateAccount(id: string, input: AccountUpdate): Promise<void> {
+  const database = await getDb();
+  const current = await database.getFirstAsync<{ currency: string }>(`SELECT currency FROM accounts WHERE id = ?`, [id]);
+  if (!current) throw new Error('La cuenta no existe');
+  const currency = input.currency ?? current.currency;
+  if (currency !== current.currency && (await countAccountTransactions(id)) > 0) {
+    throw new Error('No se puede cambiar la moneda de una cuenta que ya tiene movimientos');
+  }
+  await database.runAsync(
+    `UPDATE accounts SET name = ?, type = ?, colorHex = ?, iconName = ?, gradientTo = ?, currency = ?
+     WHERE id = ?`,
+    [input.name.trim(), input.type, input.colorHex, input.iconName, input.gradientTo ?? null, currency, id]
   );
 }
 
-export async function updateAccount(
-  id: string,
-  name: string,
-  type: string,
-  colorHex: string,
-  iconName: string
-): Promise<void> {
+/** Movimientos donde la cuenta es origen o destino. */
+export async function countAccountTransactions(id: string): Promise<number> {
   const database = await getDb();
-  await database.runAsync(
-    `UPDATE accounts SET name = ?, type = ?, colorHex = ?, iconName = ?
-     WHERE id = ?`,
-    [name, type, colorHex, iconName, id]
+  const row = await database.getFirstAsync<{ n: number }>(
+    `SELECT COUNT(*) as n FROM transactions WHERE accountId = ? OR toAccountId = ?`,
+    [id, id]
   );
+  return row?.n ?? 0;
+}
+
+export const BALANCE_ADJUSTMENT_NOTE = 'Ajuste de saldo';
+
+// Cambiar el saldo a mano no lo sobrescribe: registra un movimiento de
+// "Ajuste de saldo" por la diferencia, para que el historial y los
+// reportes cuadren con el saldo nuevo. Devuelve la diferencia aplicada.
+export async function setAccountBalance(id: string, newBalance: number, date: Date = new Date()): Promise<number> {
+  const database = await getDb();
+  const row = await database.getFirstAsync<{ balance: number }>(`SELECT balance FROM accounts WHERE id = ?`, [id]);
+  if (!row) throw new Error('La cuenta no existe');
+  const diff = Math.round((newBalance - row.balance) * 100) / 100;
+  if (diff === 0) return 0;
+  await createTransaction({
+    type: diff > 0 ? 'income' : 'expense',
+    amount: Math.abs(diff),
+    accountId: id,
+    categoryId: null,
+    notes: BALANCE_ADJUSTMENT_NOTE,
+    date: date.toISOString(),
+    toAccountId: null,
+    toAmount: null,
+  });
+  return diff;
+}
+
+/** La cuenta aunque esté archivada (para abrir su detalle). */
+export async function getAccountById(id: string): Promise<Account | null> {
+  const database = await getDb();
+  return database.getFirstAsync<Account>(`SELECT * FROM accounts WHERE id = ?`, [id]);
+}
+
+// Movimientos de una cuenta: los que salen de ella y las transferencias que llegan.
+export async function getAccountTransactions(id: string, limit = 100): Promise<TransactionWithCategory[]> {
+  const database = await getDb();
+  const rows = await database.getAllAsync<TransactionRow>(
+    `SELECT
+       t.*,
+       c.name     as categoryName,
+       c.iconName as categoryIcon,
+       c.colorHex as categoryColor,
+       a.name     as accountName,
+       a.colorHex as accountColor,
+       ta.name    as toAccountName,
+       ta.currency as toAccountCurrency
+     FROM transactions t
+     LEFT JOIN categories c ON c.id = t.categoryId
+     LEFT JOIN accounts a ON a.id = t.accountId
+     LEFT JOIN accounts ta ON ta.id = t.toAccountId
+     WHERE t.accountId = ? OR t.toAccountId = ?
+     ORDER BY t.date DESC
+     LIMIT ?`,
+    [id, id, limit]
+  );
+  return rows.map((r) => ({ ...r, tags: JSON.parse(r.tags || '[]') }));
+}
+
+// Entradas y salidas de la cuenta desde `sinceIso`, en su moneda. Las
+// transferencias cuentan como entrada o salida de ESTA cuenta.
+export async function getAccountFlowsSince(id: string, sinceIso: string): Promise<{ income: number; expense: number }> {
+  const database = await getDb();
+  const row = await database.getFirstAsync<{ income: number | null; expense: number | null }>(
+    `SELECT
+       SUM(CASE
+         WHEN accountId = ? AND type IN ('income', 'loan', 'debt_in') THEN amount
+         WHEN toAccountId = ? AND type = 'transfer' THEN COALESCE(toAmount, amount)
+         ELSE 0 END) as income,
+       SUM(CASE
+         WHEN accountId = ? AND type NOT IN ('income', 'loan', 'debt_in') THEN amount
+         ELSE 0 END) as expense
+     FROM transactions
+     WHERE (accountId = ? OR toAccountId = ?) AND date >= ?`,
+    [id, id, id, id, id, sinceIso]
+  );
+  return { income: row?.income ?? 0, expense: row?.expense ?? 0 };
+}
+
+// Saldo de la cuenta en los últimos `days` días (un punto cada `step`),
+// reconstruido hacia atrás desde el saldo actual.
+export async function getAccountBalanceSeries(
+  id: string,
+  days = 30,
+  step = 3,
+  now: Date = new Date()
+): Promise<{ label: string; value: number }[]> {
+  const account = await getAccountById(id);
+  if (!account) return [];
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const points: { label: string; value: number }[] = [];
+  for (let back = days; back > 0; back -= step) {
+    const cutoff = new Date(startOfDay.getTime() - back * DAY_MS);
+    const changes = await getAccountChangesSince(cutoff.toISOString());
+    points.push({ label: `${cutoff.getDate()} ${MONTH_ABBR[cutoff.getMonth()]}`, value: account.balance - (changes[id] ?? 0) });
+  }
+  points.push({ label: 'Hoy', value: account.balance });
+  return points;
+}
+
+/** Vuelve a mostrar una cuenta archivada. */
+export async function restoreAccount(id: string): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(`UPDATE accounts SET isActive = 1 WHERE id = ?`, [id]);
+}
+
+// Borrado definitivo, solo para cuentas sin movimientos (si tiene historial,
+// se archiva con deleteAccount para no dejar movimientos huérfanos).
+export async function deleteAccountPermanently(id: string): Promise<void> {
+  const database = await getDb();
+  if ((await countAccountTransactions(id)) > 0) {
+    throw new Error('Esta cuenta tiene movimientos. Archívala para ocultarla sin perder el historial.');
+  }
+  const rules = await database.getFirstAsync<{ n: number }>(
+    `SELECT COUNT(*) as n FROM recurring_transactions WHERE isActive = 1 AND accountId = ?`,
+    [id]
+  );
+  if ((rules?.n ?? 0) > 0) throw new Error('Esta cuenta tiene movimientos recurrentes activos. Elimínalos primero.');
+  await database.runAsync(`DELETE FROM accounts WHERE id = ?`, [id]);
 }
 
 export async function deleteAccount(id: string): Promise<void> {

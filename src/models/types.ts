@@ -14,6 +14,8 @@ export interface Account {
   balance: number;
   currency: string; // 'COP' | 'USD' | 'EUR'
   colorHex: string;
+  /** Segundo color del degradado de la tarjeta (null = color sólido). */
+  gradientTo?: string | null;
   iconName: string;
   isActive: boolean;
   createdAt: string; // ISO string: "2024-01-15T10:30:00.000Z"

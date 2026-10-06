@@ -1,7 +1,7 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { View, StyleSheet, RefreshControl, StatusBar, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useDashboard } from '../../src/hooks/useDashboard';
@@ -17,6 +17,7 @@ import { IconBadge } from '../../src/components/ui/IconBadge';
 import { CategoryBadge } from '../../src/components/icons/CategoryBadge';
 import { Avatar } from '../../src/components/ui/Avatar';
 import { useActiveProfile } from '../../src/hooks/useActiveProfile';
+import { openAccountDetail } from '../../src/utils/accountNavigation';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
 import { Text } from '../../src/components/ui/Text';
 import { useColors, spacing, radius, fonts, pastels, type ThemeColors } from '../../src/constants/theme';
@@ -56,6 +57,17 @@ export default function DashboardScreen() {
   const refreshAll = useCallback(async () => {
     await Promise.all([dashboard.refresh(), accountsState.refresh()]);
   }, [dashboard.refresh, accountsState.refresh]);
+
+  // Al volver a Inicio (después de registrar un movimiento o editar una cuenta)
+  // los datos se recargan sin tener que deslizar hacia abajo
+  const isFirstFocus = useRef(true);
+  useFocusEffect(useCallback(() => {
+    if (isFirstFocus.current) {
+      isFirstFocus.current = false;
+      return;
+    }
+    refreshAll().catch(() => {});
+  }, [refreshAll]));
 
   const openNew = (nuevo: 'ingreso' | 'gasto' | 'transferencia') =>
     router.navigate({ pathname: '/transactions', params: { nuevo } });
@@ -194,7 +206,7 @@ export default function DashboardScreen() {
                   amount={hideBalances ? HIDDEN : formatWithCurrency(account.balance, account.currency)}
                   change={hideBalances ? undefined : ch.text}
                   changeColor={ch.positive == null ? c.textSecondary : ch.positive ? c.income : c.expense}
-                  onPress={() => router.navigate('/accounts')}
+                  onPress={(origin) => openAccountDetail(account.id, origin)}
                 />
               );
             })
