@@ -27,6 +27,7 @@ export function AnimatedPressable({
   onPressFeedback,
   onPressIn,
   onPressOut,
+  accessibilityRole,
   children,
   ...rest
 }: AnimatedPressableProps) {
@@ -40,6 +41,8 @@ export function AnimatedPressable({
   return (
     <AnimatedPressableBase
       style={[style, !reduceMotion && animatedStyle]}
+      // Todo lo tocable se anuncia como botón salvo que se indique otro rol
+      accessibilityRole={accessibilityRole ?? (rest.onPress || rest.onLongPress ? 'button' : undefined)}
       onPressIn={(e) => {
         scale.value = withSpring(pressScale, springPress);
         onPressFeedback?.();

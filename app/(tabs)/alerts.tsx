@@ -92,7 +92,7 @@ export default function AlertsScreen() {
               {alerts.alerts.length} activa{alerts.alerts.length !== 1 ? 's' : ''}
             </Text>
           </View>
-          <AnimatedPressable
+          <AnimatedPressable accessibilityRole="button" accessibilityLabel="Nueva alerta"
             style={styles.addButton}
             onPress={() => setFormVisible(true)}
             onPressFeedback={hapticSave}

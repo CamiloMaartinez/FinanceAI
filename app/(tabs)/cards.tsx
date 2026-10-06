@@ -110,7 +110,7 @@ export default function CardsScreen() {
             </Text>
           </View>
           {segment === 'cards' && (
-            <AnimatedPressable style={styles.addButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
+            <AnimatedPressable accessibilityRole="button" accessibilityLabel="Nueva tarjeta" style={styles.addButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
               <Ionicons name="add" size={20} color={c.onAccent} />
             </AnimatedPressable>
           )}

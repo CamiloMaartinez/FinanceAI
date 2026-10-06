@@ -11,13 +11,14 @@ import { useColors, spacing, typography, radius, fonts } from '../../src/constan
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
 import { BackButton } from '../../src/components/ui/BackButton';
+import { CategoryBadge } from '../../src/components/icons/CategoryBadge';
 import { hapticSave } from '../../src/utils/haptics';
 import type { Category } from '../../src/models/types';
 
 const STATUS_CONFIG = {
-  active:    { label: 'En curso',   color: '#007AFF' },
-  completed: { label: 'Completado', color: '#34C759' },
-  failed:    { label: 'Fallido',    color: '#FF3B30' },
+  active:    { label: 'En curso',   tone: 'accent' as const },
+  completed: { label: 'Completado', tone: 'income' as const },
+  failed:    { label: 'Fallido',    tone: 'expense' as const },
 };
 
 function ChallengeCard({ challenge, category, onDelete }: {
@@ -27,7 +28,8 @@ function ChallengeCard({ challenge, category, onDelete }: {
 }) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
-  const status = STATUS_CONFIG[challenge.status];
+  const statusConfig = STATUS_CONFIG[challenge.status];
+  const status = { label: statusConfig.label, color: c[statusConfig.tone] };
   const progressPercent = challenge.status === 'active'
     ? Math.min(((challenge.daysTotal - challenge.daysLeft) / challenge.daysTotal) * 100, 100)
     : 100;
@@ -38,9 +40,7 @@ function ChallengeCard({ challenge, category, onDelete }: {
       onLongPress={onDelete}
     >
       <View style={styles.cardHeader}>
-        <View style={[styles.iconCircle, { backgroundColor: (category?.colorHex ?? c.textTertiary) + '20' }]}>
-          <Ionicons name={(category?.iconName as any) ?? 'flag-outline'} size={16} color={category?.colorHex ?? c.textTertiary} />
-        </View>
+        <CategoryBadge iconName={category?.iconName ?? 'flag-outline'} colorHex={category?.colorHex} size={36} />
         <View style={{ flex: 1 }}>
           <Text style={styles.cardTitle}>{challenge.title}</Text>
           <Text style={styles.cardDescription} numberOfLines={2}>{challenge.description}</Text>
@@ -111,7 +111,7 @@ export default function ChallengesScreen() {
               {challenges.challenges.filter((c) => c.status === 'active').length} activo{challenges.challenges.filter((c) => c.status === 'active').length !== 1 ? 's' : ''}
             </Text>
           </View>
-          <AnimatedPressable style={styles.addButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
+          <AnimatedPressable accessibilityRole="button" accessibilityLabel="Nuevo reto" style={styles.addButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
             <Ionicons name="add" size={20} color={c.onAccent} />
           </AnimatedPressable>
         </View>

@@ -141,7 +141,7 @@ export default function GoalsScreen() {
               {goals.goals.length} activa{goals.goals.length !== 1 ? 's' : ''}
             </Text>
           </View>
-          <AnimatedPressable style={styles.addButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
+          <AnimatedPressable accessibilityRole="button" accessibilityLabel="Nueva meta" style={styles.addButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
             <Ionicons name="add" size={20} color={c.onAccent} />
           </AnimatedPressable>
         </View>
@@ -262,8 +262,8 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     borderBottomWidth: 0.5, borderBottomColor: c.borderStrong,
     paddingBottom: spacing.sm,
   },
-  inputPrefix: { fontSize: 24, fontWeight: '200', color: c.textTertiary, marginRight: spacing.xs },
-  input: { flex: 1, fontSize: 24, fontWeight: '200', color: c.textPrimary },
+  inputPrefix: { fontSize: 24, fontWeight: '800', color: c.textTertiary, marginRight: spacing.xs },
+  input: { flex: 1, fontSize: 24, fontWeight: '800', color: c.textPrimary },
   modalButtons: { flexDirection: 'row', gap: spacing.md },
   flexBtn: { flex: 1 },
   autoRow: {

@@ -4,7 +4,7 @@ import { Text } from './ui/Text';
 import { TextInput } from './ui/TextInput';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { useAnimatedStyle, useSharedValue, interpolateColor, withSpring } from 'react-native-reanimated';
-import { useColors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius, SWATCHES } from '../constants/theme';
 import { springDefault } from '../constants/motion';
 import type { Goal } from '../models/types';
 import { AnimatedPressable } from './ui/AnimatedPressable';
@@ -36,8 +36,7 @@ const GOAL_ICONS = [
 ];
 
 const GOAL_COLORS = [
-  '#007AFF', '#34C759', '#FF9500', '#5856D6',
-  '#FF3B30', '#30B0C7', '#FF2D55', '#AC8E68',
+  ...SWATCHES,
 ];
 
 const PRIORITIES = [
@@ -78,7 +77,7 @@ export function GoalForm({ visible, editingGoal, onClose, onSave }: GoalFormProp
   const [targetAmount, setTargetAmount] = useState('');
   const [targetDate,   setTargetDate]   = useState(getQuickDate(6));
   const [priority,     setPriority]     = useState('medium');
-  const [colorHex,     setColorHex]     = useState('#007AFF');
+  const [colorHex,     setColorHex]     = useState(SWATCHES[2]);
   const [iconName,     setIconName]     = useState('star-outline');
   const [error,        setError]        = useState('');
 
@@ -118,7 +117,7 @@ export function GoalForm({ visible, editingGoal, onClose, onSave }: GoalFormProp
     setTargetAmount('');
     setTargetDate(getQuickDate(6));
     setPriority('medium');
-    setColorHex('#007AFF');
+    setColorHex(SWATCHES[2]);
     setIconName('star-outline');
     setError('');
     onClose();
@@ -237,7 +236,7 @@ export function GoalForm({ visible, editingGoal, onClose, onSave }: GoalFormProp
             <Text style={styles.fieldLabel}>Ícono</Text>
             <View style={styles.iconGrid}>
               {GOAL_ICONS.map((icon) => (
-                <AnimatedPressable
+                <AnimatedPressable accessibilityRole="radio" accessibilityLabel={icon.label} accessibilityState={{ selected: iconName === icon.value }}
                   key={icon.value}
                   pressScale={0.94}
                   style={[
@@ -265,7 +264,7 @@ export function GoalForm({ visible, editingGoal, onClose, onSave }: GoalFormProp
             <Text style={styles.fieldLabel}>Color</Text>
             <View style={styles.colorGrid}>
               {GOAL_COLORS.map((hex) => (
-                <AnimatedPressable
+                <AnimatedPressable accessibilityRole="radio" accessibilityLabel={`Color ${GOAL_COLORS.indexOf(hex) + 1}`} accessibilityState={{ selected: colorHex === hex }}
                   key={hex}
                   pressScale={0.9}
                   style={[
@@ -276,7 +275,7 @@ export function GoalForm({ visible, editingGoal, onClose, onSave }: GoalFormProp
                   onPress={() => setColorHex(hex)}
                   onPressFeedback={hapticToggle}
                 >
-                  {colorHex === hex && <Ionicons name="checkmark" size={16} color="#fff" />}
+                  {colorHex === hex && <Ionicons name="checkmark" size={16} color={c.onPrimary} />}
                 </AnimatedPressable>
               ))}
             </View>
@@ -385,5 +384,5 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  colorDotSelected: { borderWidth: 3, borderColor: '#fff' },
+  colorDotSelected: { borderWidth: 3, borderColor: c.surface },
 });

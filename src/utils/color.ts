@@ -1,4 +1,5 @@
 // Utilidades de color para decidir cómo pintar un ícono sobre su fondo.
+import { ink } from '../constants/theme';
 
 /** "#RRGGBB" → [r, g, b] de 0 a 255. Devuelve null si el formato no es válido. */
 export function hexToRgb(hex: string): [number, number, number] | null {
@@ -29,5 +30,5 @@ export function readableTextOn(hex: string): string {
   const rgb = hexToRgb(hex);
   if (!rgb) return '#FFFFFF';
   const [r, g, b] = rgb;
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? '#2A1B6B' : '#FFFFFF';
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? ink : '#FFFFFF';
 }

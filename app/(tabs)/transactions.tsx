@@ -171,12 +171,13 @@ export default function TransactionsScreen() {
           </View>
           <View style={styles.headerActions}>
           <AnimatedPressable
-            style={styles.addButton}
+            style={styles.secondaryButton}
             onPress={() => setRecurringVisible(true)}
             onPressFeedback={hapticToggle}
+            accessibilityRole="button"
             accessibilityLabel="Movimientos recurrentes"
           >
-            <Ionicons name="repeat" size={18} color={c.onAccent} />
+            <Ionicons name="repeat" size={18} color={c.textPrimary} />
           </AnimatedPressable>
           <AnimatedPressable
             style={[
@@ -191,8 +192,10 @@ export default function TransactionsScreen() {
               setFormVisible(true);
             }}
             onPressFeedback={hapticSave}
+            accessibilityRole="button"
+            accessibilityLabel="Nuevo movimiento"
           >
-            <Ionicons name="add" size={20} color={c.textPrimary} />
+            <Ionicons name="add" size={22} color={c.onAccent} />
           </AnimatedPressable>
           </View>
         </View>
@@ -212,7 +215,7 @@ export default function TransactionsScreen() {
               returnKeyType="search"
             />
             {searchQuery.length > 0 && (
-              <AnimatedPressable onPress={() => setSearchQuery('')} hitSlop={8}>
+              <AnimatedPressable accessibilityRole="button" accessibilityLabel="Borrar la búsqueda" onPress={() => setSearchQuery('')} hitSlop={8}>
                 <Ionicons name="close-circle" size={16} color={c.textTertiary} />
               </AnimatedPressable>
             )}
@@ -334,6 +337,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   addButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' },
   addButtonDisabled: { opacity: 0.3 },
   headerActions: { flexDirection: 'row', gap: spacing.sm },
+  secondaryButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center', ...c.shadow.sm },
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -381,7 +385,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 3,
   },
-  filterBadgeText: { fontSize: 10, fontWeight: '700', color: '#fff' },
+  filterBadgeText: { fontSize: 10, fontWeight: '700', color: c.onAccent },
   clearSearchButton: {
     marginTop: spacing.md,
     paddingVertical: spacing.sm,

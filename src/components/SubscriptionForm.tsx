@@ -4,7 +4,7 @@ import { Text } from './ui/Text';
 import { TextInput } from './ui/TextInput';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { useAnimatedStyle, useSharedValue, interpolateColor, withSpring } from 'react-native-reanimated';
-import { useColors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius, SWATCHES } from '../constants/theme';
 import { springDefault } from '../constants/motion';
 import type { Subscription } from '../models/types';
 import { AnimatedPressable } from './ui/AnimatedPressable';
@@ -66,7 +66,7 @@ export function SubscriptionForm({ visible, editingSubscription, onClose, onSave
   const [name,       setName]       = useState('');
   const [amount,     setAmount]     = useState('');
   const [frequency,  setFrequency]  = useState('monthly');
-  const [colorHex,   setColorHex]   = useState('#BF5AF2');
+  const [colorHex,   setColorHex]   = useState(SWATCHES[2]);
   const [iconName,   setIconName]   = useState('repeat-outline');
   const [daysAhead,  setDaysAhead]  = useState('15');
   const [error,      setError]      = useState('');
@@ -125,7 +125,7 @@ export function SubscriptionForm({ visible, editingSubscription, onClose, onSave
     setName('');
     setAmount('');
     setFrequency('monthly');
-    setColorHex('#BF5AF2');
+    setColorHex(SWATCHES[2]);
     setIconName('repeat-outline');
     setDaysAhead('15');
     setError('');

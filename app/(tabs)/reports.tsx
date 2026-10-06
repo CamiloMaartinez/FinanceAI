@@ -64,7 +64,7 @@ export default function ReportsScreen() {
             <Text style={styles.label}>REPORTES</Text>
             <Text style={styles.monthName}>{monthName}</Text>
           </View>
-          <AnimatedPressable style={styles.exportButton} onPress={handleExport} onPressFeedback={hapticSave}>
+          <AnimatedPressable accessibilityRole="button" accessibilityLabel="Exportar el reporte en PDF" style={styles.exportButton} onPress={handleExport} onPressFeedback={hapticSave}>
             <Ionicons name="share-outline" size={16} color={c.textSecondary} />
           </AnimatedPressable>
         </View>

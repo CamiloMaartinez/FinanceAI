@@ -619,7 +619,7 @@ export function TransactionForm({
                       onSubmitEditing={addSplitPerson}
                       returnKeyType="done"
                     />
-                    <AnimatedPressable style={styles.splitAddButton} onPress={addSplitPerson} onPressFeedback={hapticToggle}>
+                    <AnimatedPressable accessibilityRole="button" accessibilityLabel="Agregar persona" style={styles.splitAddButton} onPress={addSplitPerson} onPressFeedback={hapticToggle}>
                       <Ionicons name="add" size={20} color={c.accent} />
                     </AnimatedPressable>
                   </View>

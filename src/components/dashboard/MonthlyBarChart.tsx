@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { Text } from '../ui/Text';
 import { BarChart } from 'react-native-gifted-charts';
-import { useColors, spacing, typography } from '../../constants/theme';
+import { useColors, spacing, fonts } from '../../constants/theme';
 import { formatCurrencyCompact } from '../../utils/currency';
 import type { MonthlyChartPoint } from '../../models/types';
 
@@ -24,13 +24,13 @@ export function MonthlyBarChart({ data }: MonthlyBarChartProps) {
       spacing: 2,
       labelWidth: 30,
       labelTextStyle: { color: c.textTertiary, fontSize: 9, letterSpacing: 0.5 },
-      frontColor: c.income,
-      barBorderRadius: 2,
+      frontColor: c.lime,
+      barBorderRadius: 6,
     },
     {
       value: point.expense,
-      frontColor: c.expense,
-      barBorderRadius: 2,
+      frontColor: c.magenta,
+      barBorderRadius: 6,
     },
   ]);
 
@@ -43,26 +43,26 @@ export function MonthlyBarChart({ data }: MonthlyBarChartProps) {
       flexDirection: 'row', justifyContent: 'space-between',
       alignItems: 'center', marginBottom: spacing.lg,
     },
-    title: { ...typography.label, color: c.textTertiary },
+    title: { fontFamily: fonts.bold, fontSize: 18, color: c.textPrimary },
     legend: { flexDirection: 'row', gap: spacing.md },
     legendItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-    legendDot: { width: 6, height: 6, borderRadius: 3 },
-    legendText: { fontSize: 9, color: c.textTertiary, letterSpacing: 0.5 },
-    divider: { height: 0.5, backgroundColor: c.borderStrong, marginTop: spacing.xl },
+    legendDot: { width: 8, height: 8, borderRadius: 4 },
+    legendText: { fontFamily: fonts.medium, fontSize: 12, color: c.textSecondary },
+    divider: { height: spacing.sm },
   });
 
   return (
     <View style={s.container}>
       <View style={s.header}>
-        <Text style={s.title}>EVOLUCIÓN MENSUAL</Text>
+        <Text style={s.title} accessibilityRole="header">Ingresos y gastos</Text>
         <View style={s.legend}>
           <View style={s.legendItem}>
-            <View style={[s.legendDot, { backgroundColor: c.income }]} />
-            <Text style={s.legendText}>Ing</Text>
+            <View style={[s.legendDot, { backgroundColor: c.lime }]} />
+            <Text style={s.legendText}>Ingresos</Text>
           </View>
           <View style={s.legendItem}>
-            <View style={[s.legendDot, { backgroundColor: c.expense }]} />
-            <Text style={s.legendText}>Gas</Text>
+            <View style={[s.legendDot, { backgroundColor: c.magenta }]} />
+            <Text style={s.legendText}>Gastos</Text>
           </View>
         </View>
       </View>

@@ -80,7 +80,7 @@ export default function ProfileScreen() {
       gap: spacing.sm, marginBottom: 4,
     },
     userName: {
-      fontSize: 26, fontWeight: '200',
+      fontSize: 26, fontWeight: '800',
       color: c.textPrimary, letterSpacing: -0.5,
     },
     daysText: {
@@ -97,7 +97,7 @@ export default function ProfileScreen() {
     scoreLeft: {
       flexDirection: 'row', alignItems: 'baseline', gap: 4,
     },
-    scoreNumber: { fontSize: 42, fontWeight: '200', letterSpacing: -2 },
+    scoreNumber: { fontSize: 42, fontWeight: '800', letterSpacing: -2 },
     scoreMax: { fontSize: 14, fontWeight: '300', color: c.textTertiary },
     scoreRight: { flex: 1, gap: spacing.sm },
     scoreTrack: {
@@ -139,7 +139,7 @@ export default function ProfileScreen() {
       width: 20, height: 20, borderRadius: 10,
       backgroundColor: c.income, alignItems: 'center', justifyContent: 'center',
     },
-    achievementBadgeText: { fontSize: 10, color: '#000', fontWeight: '600' },
+    achievementBadgeText: { fontSize: 10, color: c.background, fontWeight: '600' },
     settingRow: {
       flexDirection: 'row', justifyContent: 'space-between',
       alignItems: 'center', paddingVertical: spacing.md,
@@ -383,7 +383,7 @@ export default function ProfileScreen() {
             value={profile?.faceIdEnabled ?? true}
             onValueChange={(v) => { hapticToggle(); toggleFaceId(v); }}
             trackColor={{ false: c.surfaceTertiary, true: c.income }}
-            thumbColor="#fff"
+            thumbColor={c.onPrimary}
           />
         </View>
         <View style={s.settingDivider} />
@@ -406,7 +406,7 @@ export default function ProfileScreen() {
             value={mode === 'light'}
             onValueChange={() => { hapticToggle(); toggleTheme(); }}
             trackColor={{ false: c.surfaceTertiary, true: c.income }}
-            thumbColor="#fff"
+            thumbColor={c.onPrimary}
           />
         </View>
         <View style={s.settingDivider} />

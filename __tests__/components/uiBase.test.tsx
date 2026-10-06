@@ -104,7 +104,8 @@ describe('Text con Outfit', () => {
   });
 
   it('fontForWeight cubre números y nombres', () => {
-    expect(fontForWeight('200')).toBe(fonts.light);
+    // Los pesos finos del estilo anterior se ven en Regular
+    expect(fontForWeight('200')).toBe(fonts.regular);
     expect(fontForWeight(500)).toBe(fonts.medium);
     expect(fontForWeight('bold')).toBe(fonts.bold);
     expect(fontForWeight('900')).toBe(fonts.extrabold);

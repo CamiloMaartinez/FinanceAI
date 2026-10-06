@@ -279,14 +279,14 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   },
   totalPrefix: {
     fontSize: 24,
-    fontWeight: '200',
+    fontWeight: '800',
     color: c.textTertiary,
     marginRight: spacing.xs,
   },
   totalInput: {
     flex: 1,
     fontSize: 24,
-    fontWeight: '200',
+    fontWeight: '800',
     color: c.textPrimary,
     paddingVertical: spacing.lg,
   },

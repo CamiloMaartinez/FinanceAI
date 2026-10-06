@@ -143,7 +143,7 @@ export default function BudgetsScreen() {
             <Text style={styles.count}>Capitalizado en {monthLabel}</Text>
           </View>
           {budgets.budget && (
-            <AnimatedPressable style={styles.editButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticToggle}>
+            <AnimatedPressable accessibilityRole="button" accessibilityLabel="Editar presupuesto" style={styles.editButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticToggle}>
               <Ionicons name="pencil-outline" size={16} color={c.textPrimary} />
             </AnimatedPressable>
           )}

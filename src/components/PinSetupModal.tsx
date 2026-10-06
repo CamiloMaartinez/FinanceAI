@@ -76,7 +76,7 @@ export function PinSetupModal({ visible, onClose }: PinSetupModalProps) {
       <View style={styles.content}>
         <View style={styles.headerRow}>
           <Text style={styles.title}>PIN de respaldo</Text>
-          <AnimatedPressable onPress={onClose} hitSlop={8}>
+          <AnimatedPressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={onClose} hitSlop={8}>
             <Ionicons name="close" size={22} color={c.textTertiary} />
           </AnimatedPressable>
         </View>

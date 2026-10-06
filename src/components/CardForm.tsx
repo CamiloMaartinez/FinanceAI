@@ -3,7 +3,7 @@ import { View, StyleSheet, Modal, ScrollView, KeyboardAvoidingView, Platform } f
 import { Text } from './ui/Text';
 import { TextInput } from './ui/TextInput';
 import Animated, { useAnimatedStyle, useSharedValue, interpolateColor, withSpring } from 'react-native-reanimated';
-import { useColors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius, SWATCHES } from '../constants/theme';
 import { springDefault } from '../constants/motion';
 import { AnimatedPressable } from './ui/AnimatedPressable';
 import { hapticSave, hapticToggle } from '../utils/haptics';
@@ -33,8 +33,7 @@ export const CARD_NETWORKS = [
 ];
 
 const CARD_COLORS = [
-  '#1C1C2E', '#007AFF', '#34C759', '#FF9500',
-  '#5856D6', '#FF3B30', '#30B0C7', '#FF2D55',
+  ...SWATCHES,
 ];
 
 const COMMON_BENEFITS = [
@@ -66,7 +65,7 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
   const [interestRate,  setInterestRate]  = useState('');
   const [benefits,      setBenefits]      = useState<string[]>([]);
   const [customBenefit, setCustomBenefit] = useState('');
-  const [colorHex,      setColorHex]      = useState('#1C1C2E');
+  const [colorHex,      setColorHex]      = useState(SWATCHES[0]);
   const [network,       setNetwork]       = useState<string | null>(null);
   const [last4,         setLast4]         = useState('');
   const [creditLimit,   setCreditLimit]   = useState('');
@@ -117,7 +116,7 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
   const handleClose = () => {
     setName(''); setBank(''); setAnnualFee(''); setCashback('');
     setInterestRate(''); setBenefits([]); setCustomBenefit('');
-    setColorHex('#1C1C2E'); setError('');
+    setColorHex(SWATCHES[0]); setError('');
     setNetwork(null); setLast4(''); setCreditLimit('');
     onClose();
   };
@@ -424,12 +423,12 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addBtnText: { color: '#fff', fontSize: 24, fontWeight: '300' },
+  addBtnText: { color: c.onAccent, fontSize: 24, fontWeight: '800' },
   colorGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   colorDot: {
     width: 36,
     height: 36,
     borderRadius: 18,
   },
-  colorDotSelected: { borderWidth: 3, borderColor: '#fff' },
+  colorDotSelected: { borderWidth: 3, borderColor: c.surface },
 });

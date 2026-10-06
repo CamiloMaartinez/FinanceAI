@@ -14,9 +14,9 @@ import { BackButton } from '../../src/components/ui/BackButton';
 import { hapticSave, hapticToggle } from '../../src/utils/haptics';
 
 const VERDICT_CONFIG = {
-  si:            { label: 'Sí puedes comprarlo',  color: '#34C759', icon: 'checkmark-circle' as const },
-  con_cuidado:   { label: 'Con cuidado',           color: '#FF9500', icon: 'alert-circle' as const },
-  mejor_espera:  { label: 'Mejor espera',          color: '#FF3B30', icon: 'close-circle' as const },
+  si:            { label: 'Sí puedes comprarlo',  tone: 'income' as const,  icon: 'checkmark-circle' as const },
+  con_cuidado:   { label: 'Con cuidado',           tone: 'orange' as const,  icon: 'alert-circle' as const },
+  mejor_espera:  { label: 'Mejor espera',          tone: 'expense' as const, icon: 'close-circle' as const },
 };
 
 const SUGGESTED_QUESTIONS = [
@@ -101,13 +101,13 @@ export default function AssistantScreen() {
                 </View>
               )}
               {msg.verdict && (
-                <View style={[styles.verdictBadge, { backgroundColor: VERDICT_CONFIG[msg.verdict].color + '20' }]}>
+                <View style={[styles.verdictBadge, { backgroundColor: c[VERDICT_CONFIG[msg.verdict].tone] + '22' }]}>
                   <Ionicons
                     name={VERDICT_CONFIG[msg.verdict].icon}
                     size={14}
-                    color={VERDICT_CONFIG[msg.verdict].color}
+                    color={c[VERDICT_CONFIG[msg.verdict].tone]}
                   />
-                  <Text style={[styles.verdictBadgeText, { color: VERDICT_CONFIG[msg.verdict].color }]}>
+                  <Text style={[styles.verdictBadgeText, { color: c[VERDICT_CONFIG[msg.verdict].tone] }]}>
                     {VERDICT_CONFIG[msg.verdict].label}
                   </Text>
                 </View>
@@ -165,7 +165,7 @@ export default function AssistantScreen() {
               editable={!isLoading}
               multiline
             />
-            <AnimatedPressable
+            <AnimatedPressable accessibilityRole="button" accessibilityLabel="Enviar pregunta"
               style={[
                 styles.sendButton,
                 (!input.trim() || isLoading) && styles.sendButtonDisabled,

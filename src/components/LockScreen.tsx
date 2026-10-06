@@ -104,10 +104,10 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
         disabled={isAuthenticating}
       >
         {isAuthenticating ? (
-          <ActivityIndicator size="small" color="#fff" />
+          <ActivityIndicator size="small" color={c.onAccent} />
         ) : (
           <>
-            <Ionicons name="scan-outline" size={20} color="#fff" />
+            <Ionicons name="scan-outline" size={20} color={c.onAccent} />
             <Text style={styles.unlockText}>Desbloquear</Text>
           </>
         )}
@@ -161,7 +161,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    backgroundColor: c.blue,
+    backgroundColor: c.accent,
     borderRadius: radius.lg,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,

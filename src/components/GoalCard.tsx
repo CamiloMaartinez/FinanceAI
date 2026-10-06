@@ -12,6 +12,7 @@ import { springDefault } from '../constants/motion';
 import { formatCurrency, formatCurrencyCompact } from '../utils/currency';
 import { AnimatedPressable } from './ui/AnimatedPressable';
 import { hapticSave } from '../utils/haptics';
+import { readableTextOn } from '../utils/color';
 import {
   getGoalProgress,
   getGoalProgressPercentage,
@@ -110,8 +111,8 @@ export function GoalCard({ goal, onContribute, onEdit, onLongPress }: GoalCardPr
         onPress={() => onContribute(goal)}
         onPressFeedback={hapticSave}
       >
-        <Ionicons name="add" size={16} color="#fff" />
-        <Text style={styles.contributeBtnText}>Abonar</Text>
+        <Ionicons name="add" size={16} color={readableTextOn(goal.colorHex)} />
+        <Text style={[styles.contributeBtnText, { color: readableTextOn(goal.colorHex) }]}>Abonar</Text>
       </AnimatedPressable>
     </AnimatedPressable>
   );
@@ -203,7 +204,6 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   contributeBtnText: {
-    color: '#fff',
     fontWeight: '600',
     fontSize: 13,
   },

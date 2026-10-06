@@ -203,7 +203,7 @@ function createStyles(c: ThemeColors) {
     skipText: { fontFamily: fonts.semibold, fontSize: 15, color: 'rgba(255,255,255,0.8)' },
     floatArea: { height: 320 },
     content: { flex: 1, justifyContent: 'center', paddingHorizontal: spacing.xxl },
-    title: { fontFamily: fonts.extrabold, fontSize: 40, lineHeight: 46, letterSpacing: -1, color: '#FFFFFF', marginBottom: spacing.md },
+    title: { fontFamily: fonts.extrabold, fontSize: 40, lineHeight: 46, letterSpacing: -1, color: c.onPrimary, marginBottom: spacing.md },
     description: { fontFamily: fonts.regular, fontSize: 16, lineHeight: 24, color: 'rgba(255,255,255,0.82)' },
     footer: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xl, gap: spacing.xl },
     dots: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.sm },

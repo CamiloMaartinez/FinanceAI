@@ -10,7 +10,7 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-import { fonts, radius, spacing } from '../constants/theme';
+import { fonts, radius, spacing, ink, pastels } from '../constants/theme';
 import { springPress } from '../constants/motion';
 import { ACCOUNT_TYPE_LABELS, balanceHint } from '../constants/accounts';
 import { currencyIcon } from '../constants/accountStyles';
@@ -68,7 +68,7 @@ export function AccountCard({
   const balance = useCountUp(account.balance, 600, account.balance);
 
   const text = readableTextOn(account.colorHex);
-  const textSoft = text === '#FFFFFF' ? 'rgba(255,255,255,0.78)' : 'rgba(42,27,107,0.72)';
+  const textSoft = text === ink ? 'rgba(42,27,107,0.72)' : 'rgba(255,255,255,0.78)';
   const typeLabel = ACCOUNT_TYPE_LABELS[account.type] ?? account.type;
   const hint = balanceHint(account.type);
 
@@ -154,7 +154,7 @@ export function AccountCard({
 
           <View style={styles.topRow}>
             <IconBadge color="rgba(255,255,255,0.62)" size={42}>
-              <AppIcon name={account.iconName} size={24} color="#2A1B6B" accent="#FFFFFF" />
+              <AppIcon name={account.iconName} size={24} color={ink} accent={pastels.lavender} />
             </IconBadge>
             <View style={[styles.currencyPill, { borderColor: textSoft }]}>
               <AppIcon name={currencyIcon(account.currency)} size={16} color={text} strokeWidth={2.2} />
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     overflow: 'hidden',
     justifyContent: 'space-between',
-    shadowColor: '#2A1B6B',
+    shadowColor: ink,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.16,
     shadowRadius: 18,

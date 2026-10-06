@@ -3,6 +3,8 @@ import { View, StyleSheet } from 'react-native';
 import { Text } from './ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { AnimatedPressable } from './ui/AnimatedPressable';
+// Componente de clase (no puede usar useColors): usa la paleta oscura, que es la portada de la app
+import { darkColors as colors } from '../constants/theme';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -46,7 +48,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       return (
         <View style={styles.container}>
           <View style={styles.iconCircle}>
-            <Ionicons name="warning-outline" size={32} color="#FF3B30" />
+            <Ionicons name="warning-outline" size={32} color={colors.expense} />
           </View>
           <Text style={styles.title}>Algo salió mal</Text>
           <Text style={styles.subtitle}>
@@ -71,7 +73,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 32,
@@ -89,7 +91,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: colors.textPrimary,
   },
   subtitle: {
     fontSize: 14,
@@ -98,19 +100,19 @@ const styles = StyleSheet.create({
   },
   debugText: {
     fontSize: 12,
-    color: '#FF3B30',
+    color: colors.expense,
     textAlign: 'center',
     marginTop: 8,
   },
   button: {
     marginTop: 20,
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.accent,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 28,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: colors.onAccent,
     fontWeight: '600',
     fontSize: 15,
   },

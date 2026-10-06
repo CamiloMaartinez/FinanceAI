@@ -78,8 +78,8 @@ export function SwipeToDelete({ children, onDelete }: SwipeToDeleteProps) {
     <View style={styles.wrapper} onLayout={onRowLayout}>
       <View style={[StyleSheet.absoluteFill, styles.deleteBg, { backgroundColor: c.expense }]}>
         <AnimatedPressable style={styles.deleteBtn} onPress={handleDelete} hitSlop={8} onPressFeedback={undefined}>
-          <Ionicons name="trash-outline" size={18} color="#fff" />
-          <Text style={styles.deleteText}>Eliminar</Text>
+          <Ionicons name="trash-outline" size={18} color={c.background} />
+          <Text style={[styles.deleteText, { color: c.background }]}>Eliminar</Text>
         </AnimatedPressable>
       </View>
       <GestureDetector gesture={pan}>
@@ -99,6 +99,6 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   deleteBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  deleteText: { color: '#fff', fontWeight: '600', fontSize: 13 },
+  deleteText: { fontWeight: '600', fontSize: 13 },
   foreground: {},
 });

@@ -22,7 +22,6 @@ const NAMED_WEIGHTS: Record<string, number> = {
 /** Familia de Outfit equivalente a un `fontWeight` (los estilos viejos usan pesos). */
 export function fontForWeight(weight: string | number | undefined): string {
   const w = weight == null ? 400 : NAMED_WEIGHTS[weight] ?? (Number(weight) || 400);
-  if (w <= 300) return fonts.light;
   if (w <= 400) return fonts.regular;
   if (w <= 500) return fonts.medium;
   if (w <= 600) return fonts.semibold;
@@ -49,6 +48,17 @@ export const PASTEL_LIST: string[] = Object.values(pastels);
 
 /** Color de los íconos y del texto que va sobre un pastel. */
 export const ink = '#2A1B6B';
+/** Texto de advertencia sobre un pastel (mismo en ambos temas, AA sobre rosa). */
+export const inkDanger = '#8E2A94';
+
+/**
+ * Colores para elegir en metas, suscripciones y tarjetas: tonos medios y
+ * profundos que se leen con texto blanco y como barra de progreso.
+ */
+export const SWATCHES = [
+  '#2E1A78', '#4B2BA8', '#6B3FC9', '#3D5AD6', '#2E3192', '#1B2A4A',
+  '#1F7F95', '#1F5A3D', '#467010', '#B25E00', '#A53AAD', '#6E1F3A',
+];
 
 // ─── Paleta clara ───────────────────────────────────────────
 // Los textos secundarios son el morado del texto con opacidad, calibrada
@@ -75,8 +85,8 @@ export const lightColors = {
   onAccent:          '#FFFFFF',
   blue:              '#3D5AD6',
   purple:            '#6B3FC9',
-  orange:            '#B25E00',
-  teal:              '#1F7F95',
+  orange:            '#9A5000',
+  teal:              '#19697C',
   peach:             '#F8C98F', // botón principal del onboarding y destacados
   onPeach:           '#2A1B6B',
   pink:              '#FBDDE6', // encabezado rosa pastel (pantalla de monto)

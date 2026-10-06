@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Text } from './ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useColors, spacing, radius } from '../constants/theme';
+import { useColors, spacing, radius, pastels } from '../constants/theme';
 import { formatCurrency } from '../utils/currency';
 import { AnimatedPressable } from './ui/AnimatedPressable';
 import { hapticToggle } from '../utils/haptics';
@@ -80,7 +80,7 @@ export function CardItem({ card, onToggleFavorite, onLongPress, onPress }: CardI
             <Ionicons
               name={card.isFavorite ? 'star' : 'star-outline'}
               size={19}
-              color={card.isFavorite ? '#FFD60A' : 'rgba(255,255,255,0.8)'}
+              color={card.isFavorite ? pastels.yellow : 'rgba(255,255,255,0.8)'}
             />
           </AnimatedPressable>
         </View>

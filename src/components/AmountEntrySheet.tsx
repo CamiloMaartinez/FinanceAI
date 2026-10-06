@@ -3,7 +3,7 @@ import { Modal, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { useColors, fonts, radius, spacing, ink, pastels, tabularNums, type ThemeColors } from '../constants/theme';
+import { useColors, fonts, radius, spacing, ink, inkDanger, pastels, tabularNums, type ThemeColors } from '../constants/theme';
 import { getCurrencyInfo, formatWithCurrency } from '../constants/currencies';
 import { useAccessibilityPreferences } from '../hooks/useAccessibilityPreferences';
 import { applyAmountKey, amountFromRaw, displayParts, rawFromAmount } from '../utils/amountInput';
@@ -154,7 +154,7 @@ function createStyles(c: ThemeColors) {
     equiv: { fontFamily: fonts.semibold, fontSize: 15, color: 'rgba(42,27,107,0.72)', marginTop: 2, ...tabularNums },
     availableRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: spacing.md },
     available: { fontFamily: fonts.medium, fontSize: 14, color: 'rgba(42,27,107,0.72)', ...tabularNums },
-    availableOver: { color: '#8E2A94' },
+    availableOver: { color: inkDanger },
     extras: { flexGrow: 0, maxHeight: 140 },
     extrasContent: { paddingHorizontal: spacing.xl, paddingTop: spacing.md },
     bottom: { flex: 1, justifyContent: 'flex-end', paddingHorizontal: spacing.lg, paddingBottom: spacing.md },

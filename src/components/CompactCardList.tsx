@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
-import { useColors, fonts, radius, spacing, tabularNums, type ThemeColors } from '../constants/theme';
+import { useColors, fonts, radius, spacing, tabularNums, ink, type ThemeColors } from '../constants/theme';
 import { useAccessibilityPreferences } from '../hooks/useAccessibilityPreferences';
 import { hapticToggle } from '../utils/haptics';
 import { readableTextOn } from '../utils/color';
@@ -123,7 +123,7 @@ function CompactCard({ card, s, onPress, onLongPress, a11yHint, covered }: {
   covered: boolean;
 }) {
   const text = readableTextOn(card.colorHex);
-  const soft = text === '#FFFFFF' ? 'rgba(255,255,255,0.75)' : 'rgba(42,27,107,0.7)';
+  const soft = text === ink ? 'rgba(42,27,107,0.7)' : 'rgba(255,255,255,0.75)';
   const network = card.network ? NETWORK_LABELS[card.network] ?? card.network.toUpperCase() : null;
   const amount = cardAmountLabel(card);
 

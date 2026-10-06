@@ -280,7 +280,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     marginTop: spacing.md, paddingVertical: spacing.md, paddingHorizontal: spacing.xl,
     borderRadius: radius.md, backgroundColor: c.accent,
   },
-  pickButtonText: { fontSize: 15, fontWeight: '600', color: '#FFFFFF' },
+  pickButtonText: { fontSize: 15, fontWeight: '600', color: c.onAccent },
   fileRow: {
     flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
     backgroundColor: c.surface, borderRadius: radius.md, padding: spacing.md, marginBottom: spacing.lg,

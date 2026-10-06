@@ -261,13 +261,13 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   },
   thresholdPrefix: {
     fontSize: 28,
-    fontWeight: '200',
+    fontWeight: '800',
     color: c.textTertiary,
   },
   thresholdInput: {
     flex: 1,
     fontSize: 36,
-    fontWeight: '200',
+    fontWeight: '800',
     color: c.textPrimary,
     letterSpacing: -1,
   },

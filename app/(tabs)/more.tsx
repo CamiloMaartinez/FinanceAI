@@ -5,7 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useColors, spacing, typography } from '../../src/constants/theme';
+import { useColors, spacing, radius, fonts, PASTEL_LIST } from '../../src/constants/theme';
+import { ScreenHeader } from '../../src/components/ui/ScreenHeader';
+import { IconBadge } from '../../src/components/ui/IconBadge';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
 import { hapticToggle } from '../../src/utils/haptics';
@@ -89,13 +91,9 @@ export default function MoreScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <Text style={styles.label}>MÁS</Text>
-          <Text style={styles.title}>Módulos</Text>
-        </View>
+        <ScreenHeader eyebrow="Más" title="Módulos" />
 
-        <View style={styles.divider} />
-
+        <View style={styles.card}>
         {MENU_ITEMS.map((item, index) => (
           <Animated.View key={item.route} entering={FadeInDown.duration(300).delay(index * 60)}>
             <AnimatedPressable
@@ -106,10 +104,10 @@ export default function MoreScreen() {
               onPress={() => router.push(item.route as any)}
               onPressFeedback={hapticToggle}
               pressScale={0.99}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.label}. ${item.description}`}
             >
-              <View style={styles.menuIcon}>
-                <Ionicons name={item.icon} size={18} color={c.textSecondary} />
-              </View>
+              <IconBadge icon={item.icon} color={PASTEL_LIST[index % PASTEL_LIST.length]} size={40} />
               <View style={styles.menuInfo}>
                 <Text style={styles.menuLabel}>{item.label}</Text>
                 <Text style={styles.menuDesc}>{item.description}</Text>
@@ -118,6 +116,7 @@ export default function MoreScreen() {
             </AnimatedPressable>
           </Animated.View>
         ))}
+        </View>
       </Animated.ScrollView>
     </SafeAreaView>
   );
@@ -126,26 +125,18 @@ export default function MoreScreen() {
 const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   container: { flex: 1, backgroundColor: c.background },
   content: { paddingHorizontal: spacing.xl, paddingBottom: TAB_BAR_HEIGHT + spacing.xl },
-  header: { paddingVertical: spacing.lg },
-  label: { ...typography.label, color: c.textTertiary, marginBottom: spacing.xs },
-  title: { fontSize: 26, fontWeight: '200', color: c.textPrimary, letterSpacing: -0.5 },
-  divider: { height: 0.5, backgroundColor: c.borderStrong, marginBottom: spacing.xl },
+  card: { backgroundColor: c.surface, borderRadius: radius.xl, paddingHorizontal: spacing.lg, ...c.shadow.sm },
   menuRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.lg,
+    paddingVertical: spacing.md,
     gap: spacing.md,
   },
   menuRowBorder: {
-    borderBottomWidth: 0.5,
-    borderBottomColor: c.border,
-  },
-  menuIcon: {
-    width: 36, height: 36, borderRadius: 18,
-    borderWidth: 0.5, borderColor: c.borderStrong,
-    alignItems: 'center', justifyContent: 'center',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: c.borderStrong,
   },
   menuInfo: { flex: 1 },
-  menuLabel: { fontSize: 15, fontWeight: '300', color: c.textPrimary, marginBottom: 2 },
-  menuDesc: { fontSize: 12, fontWeight: '300', color: c.textTertiary },
+  menuLabel: { fontFamily: fonts.semibold, fontSize: 15, color: c.textPrimary, marginBottom: 2 },
+  menuDesc: { fontFamily: fonts.regular, fontSize: 12, color: c.textSecondary },
 });

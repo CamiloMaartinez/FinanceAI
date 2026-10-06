@@ -3,7 +3,7 @@ import { View, StyleSheet, Modal, ScrollView, KeyboardAvoidingView, Platform } f
 import { TextInput } from './ui/TextInput';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useColors, fonts, radius, spacing, type ThemeColors } from '../constants/theme';
+import { useColors, fonts, radius, spacing, pastels, type ThemeColors } from '../constants/theme';
 import { SUPPORTED_CURRENCIES } from '../constants/currencies';
 import { ACCOUNT_COLOR_OPTIONS, suggestAccountIcon } from '../constants/accountStyles';
 import { ACCOUNT_ICONS, ICON_SET } from './icons/iconSet';
@@ -146,7 +146,7 @@ export function AccountForm({ visible, initial, hasMovements = false, onClose, o
             end={{ x: 1, y: 1 }}
             style={s.preview}
           >
-            <CategoryBadge iconName={iconName} colorHex="#FFFFFF" size={44} />
+            <CategoryBadge iconName={iconName} colorHex={pastels.lavender} size={44} />
             <Text style={[s.previewName, { color: readableTextOn(colorHex) }]} numberOfLines={1}>
               {name.trim() || 'Nombre de la cuenta'}
             </Text>

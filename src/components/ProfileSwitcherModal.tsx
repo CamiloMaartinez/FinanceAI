@@ -96,7 +96,7 @@ export function ProfileSwitcherModal({ visible, onClose }: ProfileSwitcherModalP
       <View style={styles.content}>
         <View style={styles.headerRow}>
           <Text style={styles.title}>{step === 'list' ? 'Perfiles' : 'Nuevo perfil'}</Text>
-          <AnimatedPressable onPress={onClose} hitSlop={8} onPressFeedback={hapticToggle}>
+          <AnimatedPressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={onClose} hitSlop={8} onPressFeedback={hapticToggle}>
             <Ionicons name="close" size={22} color={c.textTertiary} />
           </AnimatedPressable>
         </View>

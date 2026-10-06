@@ -120,8 +120,8 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
   },
-  pricePrefix: { fontSize: 20, fontWeight: '200', color: c.textTertiary, marginRight: 4 },
-  priceInput: { flex: 1, fontSize: 20, fontWeight: '200', color: c.textPrimary, paddingVertical: spacing.md },
+  pricePrefix: { fontSize: 20, fontWeight: '800', color: c.textTertiary, marginRight: 4 },
+  priceInput: { flex: 1, fontSize: 20, fontWeight: '800', color: c.textPrimary, paddingVertical: spacing.md },
   buttonsRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
   flexBtn: { flex: 1 },
 });

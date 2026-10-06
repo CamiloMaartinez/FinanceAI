@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { TextInput } from './ui/TextInput';
-import { useColors, fonts, radius, spacing, PASTEL_LIST, type ThemeColors } from '../constants/theme';
+import { useColors, fonts, radius, spacing, pastels, PASTEL_LIST, type ThemeColors } from '../constants/theme';
 import { CATEGORY_ICONS, type AppIconName } from './icons/iconSet';
 import { CategoryBadge } from './icons/CategoryBadge';
 import { AnimatedPressable } from './ui/AnimatedPressable';
@@ -150,14 +150,14 @@ export function CategoryForm({ visible, initial, onClose, onSave, onDelete }: Ca
 }
 
 const PASTEL_NAMES: Record<string, string> = {
-  '#F8C98F': 'durazno',
-  '#D9DAFB': 'lavanda',
-  '#CDEFD9': 'menta',
-  '#FBDDE6': 'rosa',
-  '#CDEEF7': 'celeste',
-  '#FBEFB8': 'amarillo',
-  '#E8D5F7': 'lila',
-  '#F9C9C0': 'coral',
+  [pastels.peach]: 'durazno',
+  [pastels.lavender]: 'lavanda',
+  [pastels.mint]: 'menta',
+  [pastels.pink]: 'rosa',
+  [pastels.sky]: 'celeste',
+  [pastels.yellow]: 'amarillo',
+  [pastels.lilac]: 'lila',
+  [pastels.coral]: 'coral',
 };
 
 function createStyles(c: ThemeColors) {
