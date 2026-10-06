@@ -203,6 +203,12 @@ export interface Card {
   colorHex: string;
   isFavorite: boolean;
   createdAt: string;
+  /** 'visa' | 'mastercard' | 'amex' | 'otra' */
+  network?: string | null;
+  /** Últimos 4 dígitos, para reconocerla sin mostrar el número completo. */
+  last4?: string | null;
+  /** Cupo total de la tarjeta. */
+  creditLimit?: number | null;
 }
 
 // ─── Alertas ───────────────────────────────────────────────

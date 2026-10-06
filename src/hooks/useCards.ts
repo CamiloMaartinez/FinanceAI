@@ -6,6 +6,7 @@ import {
   deleteCard,
 } from '../database/db';
 import type { Card } from '../models/types';
+import type { CardExtra } from '../database/db';
 
 interface UseCardsResult {
   cards: Card[];
@@ -19,7 +20,8 @@ interface UseCardsResult {
     cashbackPercent: number,
     interestRate: number,
     benefits: string[],
-    colorHex: string
+    colorHex: string,
+    extra?: CardExtra
   ) => Promise<void>;
   toggleFavorite: (id: string, isFavorite: boolean) => Promise<void>;
   removeCard: (id: string) => Promise<void>;
@@ -54,9 +56,10 @@ export function useCards(): UseCardsResult {
     cashbackPercent: number,
     interestRate: number,
     benefits: string[],
-    colorHex: string
+    colorHex: string,
+    extra?: CardExtra
   ) => {
-    await createCard(name, bank, annualFee, cashbackPercent, interestRate, benefits, colorHex);
+    await createCard(name, bank, annualFee, cashbackPercent, interestRate, benefits, colorHex, extra);
     await load();
   }, [load]);
 

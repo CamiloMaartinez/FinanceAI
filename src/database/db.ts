@@ -271,6 +271,15 @@ async function initDb(database: SQLite.SQLiteDatabase) {
     // La columna ya existe — no hay nada que hacer
   }
 
+  // Tarjetas: red (visa, mastercard…), últimos 4 dígitos y cupo, para la vista compacta
+  for (const column of ['network TEXT', 'last4 TEXT', 'creditLimit REAL']) {
+    try {
+      await database.execAsync(`ALTER TABLE cards ADD COLUMN ${column};`);
+    } catch {
+      // La columna ya existe — no hay nada que hacer
+    }
+  }
+
   await migrateDefaultCategoryStyle(database);
 }
 
@@ -1477,6 +1486,13 @@ export async function getTransactionsByCategory(
 
 // ─── Queries de Tarjetas ───────────────────────────────────
 
+/** Datos opcionales de una tarjeta propia (los del comparador no los necesitan). */
+export interface CardExtra {
+  network?: string | null;
+  last4?: string | null;
+  creditLimit?: number | null;
+}
+
 export async function getAllCards(): Promise<Card[]> {
   const database = await getDb();
   const rows = await database.getAllAsync<CardRow>(
@@ -1495,7 +1511,8 @@ export async function createCard(
   cashbackPercent: number,
   interestRate: number,
   benefits: string[],
-  colorHex: string
+  colorHex: string,
+  extra: CardExtra = {}
 ): Promise<void> {
   const database = await getDb();
   const id  = newId('card');
@@ -1503,9 +1520,10 @@ export async function createCard(
 
   await database.runAsync(
     `INSERT INTO cards
-       (id, name, bank, annualFee, cashbackPercent, interestRate, benefits, colorHex, isFavorite, createdAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
-    [id, name, bank, annualFee, cashbackPercent, interestRate, JSON.stringify(benefits), colorHex, now]
+       (id, name, bank, annualFee, cashbackPercent, interestRate, benefits, colorHex, network, last4, creditLimit, isFavorite, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
+    [id, name, bank, annualFee, cashbackPercent, interestRate, JSON.stringify(benefits), colorHex,
+     extra.network ?? null, extra.last4 ?? null, extra.creditLimit ?? null, now]
   );
 }
 

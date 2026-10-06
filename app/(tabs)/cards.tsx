@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -12,6 +13,8 @@ import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useCards } from '../../src/hooks/useCards';
 import { CardItem } from '../../src/components/CardItem';
+import { CompactCardList } from '../../src/components/CompactCardList';
+import { Chip } from '../../src/components/ui/Chip';
 import { CardForm } from '../../src/components/CardForm';
 import { InvestmentCard } from '../../src/components/InvestmentCard';
 import { INVESTMENT_OPTIONS } from '../../src/data/investmentOptions';
@@ -20,8 +23,12 @@ import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
 import { hapticSave, hapticToggle } from '../../src/utils/haptics';
 import type { Card } from '../../src/models/types';
+import type { CardExtra } from '../../src/database/db';
 
 type Segment = 'cards' | 'investments';
+type ViewMode = 'compact' | 'full';
+
+const VIEW_MODE_KEY = 'cards-view-mode';
 
 export default function CardsScreen() {
   const c = useColors();
@@ -29,13 +36,37 @@ export default function CardsScreen() {
   const data = useCards();
   const [formVisible, setFormVisible] = useState(false);
   const [segment, setSegment] = useState<Segment>('cards');
+  // Vista compacta por defecto; la elección se recuerda entre aperturas
+  const [viewMode, setViewMode] = useState<ViewMode>('compact');
+
+  useEffect(() => {
+    AsyncStorage.getItem(VIEW_MODE_KEY)
+      .then((v) => { if (v === 'full' || v === 'compact') setViewMode(v); })
+      .catch(() => {});
+  }, []);
+
+  const changeViewMode = (mode: ViewMode) => {
+    setViewMode(mode);
+    AsyncStorage.setItem(VIEW_MODE_KEY, mode).catch(() => {});
+  };
+
+  const renderCards = (cards: Card[]) =>
+    viewMode === 'compact' ? (
+      <CompactCardList cards={cards} onToggleFavorite={handleToggleFavorite} onLongPress={handleLongPress} />
+    ) : (
+      cards.map((card, i) => (
+        <Animated.View key={card.id} entering={FadeInDown.duration(300).delay(i * 60)}>
+          <CardItem card={card} onToggleFavorite={handleToggleFavorite} onLongPress={handleLongPress} />
+        </Animated.View>
+      ))
+    );
 
   const handleSave = async (
     name: string, bank: string, annualFee: number,
     cashbackPercent: number, interestRate: number,
-    benefits: string[], colorHex: string
+    benefits: string[], colorHex: string, extra: CardExtra
   ) => {
-    await data.addCard(name, bank, annualFee, cashbackPercent, interestRate, benefits, colorHex);
+    await data.addCard(name, bank, annualFee, cashbackPercent, interestRate, benefits, colorHex, extra);
   };
 
   const handleToggleFavorite = async (card: Card) => {
@@ -144,18 +175,15 @@ export default function CardsScreen() {
           </View>
         ) : (
           <>
+            <View style={styles.viewToggle} accessibilityRole="radiogroup" accessibilityLabel="Vista de las tarjetas">
+              <Chip label="Compacta" selected={viewMode === 'compact'} onPress={() => changeViewMode('compact')} />
+              <Chip label="Completa" selected={viewMode === 'full'} onPress={() => changeViewMode('full')} />
+            </View>
+
             {favorites.length > 0 && (
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>FAVORITAS</Text>
-                {favorites.map((card, i) => (
-                  <Animated.View key={card.id} entering={FadeInDown.duration(300).delay(i * 60)}>
-                    <CardItem
-                      card={card}
-                      onToggleFavorite={handleToggleFavorite}
-                      onLongPress={handleLongPress}
-                    />
-                  </Animated.View>
-                ))}
+                {renderCards(favorites)}
               </View>
             )}
 
@@ -164,20 +192,14 @@ export default function CardsScreen() {
                 {favorites.length > 0 && (
                   <Text style={styles.sectionLabel}>TODAS</Text>
                 )}
-                {nonFavorites.map((card, i) => (
-                  <Animated.View key={card.id} entering={FadeInDown.duration(300).delay(i * 60)}>
-                    <CardItem
-                      card={card}
-                      onToggleFavorite={handleToggleFavorite}
-                      onLongPress={handleLongPress}
-                    />
-                  </Animated.View>
-                ))}
+                {renderCards(nonFavorites)}
               </View>
             )}
 
             <Text style={styles.hint}>
-              Toca ⭐ para marcar favorita · Mantén presionada para eliminar
+              {viewMode === 'compact'
+                ? 'Toca una tarjeta para verla completa · Mantén presionada para eliminar'
+                : 'Toca ⭐ para marcar favorita · Mantén presionada para eliminar'}
             </Text>
           </>
         )}
@@ -193,6 +215,7 @@ export default function CardsScreen() {
 }
 
 const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
+  viewToggle: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
   loadingContainer: {
     flex: 1,
     backgroundColor: c.background,

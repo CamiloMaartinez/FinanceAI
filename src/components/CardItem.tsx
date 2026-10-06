@@ -16,6 +16,8 @@ interface CardItemProps {
   card: Card;
   onToggleFavorite: (card: Card) => void;
   onLongPress: (card: Card) => void;
+  /** En la vista compacta, tocar la tarjeta completa la vuelve a encoger. */
+  onPress?: () => void;
 }
 
 // Aclara/oscurece un color hex un porcentaje dado. La cara de la tarjeta usa
@@ -30,7 +32,7 @@ function shade(hex: string, percent: number): string {
   return `#${(0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1)}`;
 }
 
-export function CardItem({ card, onToggleFavorite, onLongPress }: CardItemProps) {
+export function CardItem({ card, onToggleFavorite, onLongPress, onPress }: CardItemProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
   const gradient = useMemo(
@@ -42,7 +44,12 @@ export function CardItem({ card, onToggleFavorite, onLongPress }: CardItemProps)
     <AnimatedPressable
       style={styles.card}
       onLongPress={() => onLongPress(card)}
+      onPress={onPress}
+      onPressFeedback={onPress ? hapticToggle : undefined}
       pressScale={0.98}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={onPress ? `${card.name}, ${card.bank}` : undefined}
+      accessibilityHint={onPress ? 'Vuelve a la vista compacta' : undefined}
     >
       <View style={styles.cardInner}>
       {/* Cara de la tarjeta: degradado + chip + contactless, como una
@@ -82,7 +89,9 @@ export function CardItem({ card, onToggleFavorite, onLongPress }: CardItemProps)
         </View>
         <View style={styles.faceBottom}>
           <Text style={styles.cardName} numberOfLines={1}>{card.name}</Text>
-          <Text style={styles.bankName} numberOfLines={1}>{card.bank}</Text>
+          <Text style={styles.bankName} numberOfLines={1}>
+            {card.bank}{card.last4 ? `  ·  •••• ${card.last4}` : ''}
+          </Text>
         </View>
       </LinearGradient>
 

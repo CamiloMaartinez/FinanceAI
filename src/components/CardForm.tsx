@@ -14,6 +14,8 @@ import { useColors, spacing, radius } from '../constants/theme';
 import { springDefault } from '../constants/motion';
 import { AnimatedPressable } from './ui/AnimatedPressable';
 import { hapticSave, hapticToggle } from '../utils/haptics';
+import { Chip } from './ui/Chip';
+import type { CardExtra } from '../database/db';
 
 interface CardFormProps {
   visible: boolean;
@@ -25,9 +27,17 @@ interface CardFormProps {
     cashbackPercent: number,
     interestRate: number,
     benefits: string[],
-    colorHex: string
+    colorHex: string,
+    extra: CardExtra
   ) => void;
 }
+
+export const CARD_NETWORKS = [
+  { value: 'visa', label: 'Visa' },
+  { value: 'mastercard', label: 'Mastercard' },
+  { value: 'amex', label: 'Amex' },
+  { value: 'otra', label: 'Otra' },
+];
 
 const CARD_COLORS = [
   '#1C1C2E', '#007AFF', '#34C759', '#FF9500',
@@ -64,6 +74,9 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
   const [benefits,      setBenefits]      = useState<string[]>([]);
   const [customBenefit, setCustomBenefit] = useState('');
   const [colorHex,      setColorHex]      = useState('#1C1C2E');
+  const [network,       setNetwork]       = useState<string | null>(null);
+  const [last4,         setLast4]         = useState('');
+  const [creditLimit,   setCreditLimit]   = useState('');
   const [error,         setError]         = useState('');
 
   const nameRing = useFocusRing(c);
@@ -97,7 +110,14 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
 
     if (rateNum <= 0) { setError('Ingresa la tasa de interés EA (%)'); return; }
 
-    onSave(name.trim(), bank.trim(), feeNum, cashbackNum, rateNum, benefits, colorHex);
+    if (last4 && !/^\d{4}$/.test(last4)) { setError('Los últimos dígitos deben ser 4 números'); return; }
+    const limitNum = parseFloat(creditLimit.replace(/\./g, '').replace(',', '.'));
+
+    onSave(name.trim(), bank.trim(), feeNum, cashbackNum, rateNum, benefits, colorHex, {
+      network,
+      last4: last4 || null,
+      creditLimit: Number.isFinite(limitNum) && limitNum > 0 ? limitNum : null,
+    });
     handleClose();
   };
 
@@ -105,6 +125,7 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
     setName(''); setBank(''); setAnnualFee(''); setCashback('');
     setInterestRate(''); setBenefits([]); setCustomBenefit('');
     setColorHex('#1C1C2E'); setError('');
+    setNetwork(null); setLast4(''); setCreditLimit('');
     onClose();
   };
 
@@ -166,6 +187,52 @@ export function CardForm({ visible, onClose, onSave }: CardFormProps) {
                 onBlur={bankRing.onBlur}
               />
             </Animated.View>
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.fieldLabel}>Red (opcional)</Text>
+            <View style={styles.networkRow}>
+              {CARD_NETWORKS.map((n) => (
+                <Chip
+                  key={n.value}
+                  label={n.label}
+                  selected={network === n.value}
+                  onPress={() => setNetwork(network === n.value ? null : n.value)}
+                />
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.row3}>
+            <View style={styles.col3}>
+              <Text style={styles.fieldLabel}>Últimos 4</Text>
+              <View style={styles.input}>
+                <TextInput
+                  style={styles.inputText}
+                  placeholder="1234"
+                  placeholderTextColor={c.textTertiary}
+                  value={last4}
+                  onChangeText={(t) => { setLast4(t.replace(/\D/g, '').slice(0, 4)); setError(''); }}
+                  keyboardType="number-pad"
+                  maxLength={4}
+                  accessibilityLabel="Últimos 4 dígitos"
+                />
+              </View>
+            </View>
+            <View style={[styles.col3, { flex: 2 }]}>
+              <Text style={styles.fieldLabel}>Cupo total ($, opcional)</Text>
+              <View style={styles.input}>
+                <TextInput
+                  style={styles.inputText}
+                  placeholder="0"
+                  placeholderTextColor={c.textTertiary}
+                  value={creditLimit}
+                  onChangeText={setCreditLimit}
+                  keyboardType="numeric"
+                  accessibilityLabel="Cupo total"
+                />
+              </View>
+            </View>
           </View>
 
           <View style={styles.row3}>
@@ -324,6 +391,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     fontSize: 15,
     color: c.textPrimary,
   },
+  networkRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   row3: {
     flexDirection: 'row',
     gap: spacing.sm,
