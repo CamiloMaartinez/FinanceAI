@@ -1,4 +1,4 @@
-import { ReduceMotion, type WithSpringConfig } from 'react-native-reanimated';
+import { Easing, ReduceMotion, type WithSpringConfig, type WithTimingConfig } from 'react-native-reanimated';
 
 // Presets de resorte (apple-design §4): pensados en "damping ratio" +
 // "response" (segundos), no en duración fija — el tiempo de asentamiento
@@ -52,3 +52,40 @@ export function rubberband(overshoot: number, dimension: number, constant = 0.55
   'worklet';
   return (overshoot * dimension * constant) / (dimension + constant * Math.abs(overshoot));
 }
+
+// Rebote visible para celebrar algo terminado (la moneda del
+// pull-to-refresh al cargar). Solo para momentos puntuales.
+export const springCelebrate: WithSpringConfig = {
+  duration: 450,
+  dampingRatio: 0.55,
+  reduceMotion: ReduceMotion.System,
+};
+
+// Número que cuenta hasta su valor (saldo de Inicio): rápido al principio y
+// se asienta al final, para que el valor exacto se lea pronto.
+export const timingCountUp: WithTimingConfig = {
+  duration: 900,
+  easing: Easing.out(Easing.cubic),
+  reduceMotion: ReduceMotion.System,
+};
+
+// Una vuelta completa a velocidad constante (para repetir mientras carga).
+export const timingSpin: WithTimingConfig = {
+  duration: 900,
+  easing: Easing.linear,
+  reduceMotion: ReduceMotion.System,
+};
+
+// Fundido corto: aparecer/desaparecer sin movimiento, y el equivalente
+// sobrio cuando "reducir movimiento" está activo.
+export const timingFadeQuick: WithTimingConfig = {
+  duration: 150,
+  easing: Easing.out(Easing.quad),
+  reduceMotion: ReduceMotion.System,
+};
+
+/** Pull-to-refresh de Inicio: cuánto jalar para recargar y cuánto espacio queda mientras carga. */
+export const PULL_REFRESH = {
+  threshold: 80,
+  hold: 64,
+} as const;

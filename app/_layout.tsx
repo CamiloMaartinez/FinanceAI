@@ -25,6 +25,7 @@ import { setDatabaseFileName, processDueRecurring, processDueGoalContributions }
 import { scheduleBackupReminder } from '../src/services/backup';
 import { refreshSubscriptionBilling } from '../src/services/subscriptionBilling';
 import { refreshExchangeRates } from '../src/services/exchangeRates';
+import { loadHapticsSetting } from '../src/utils/haptics';
 
 LogBox.ignoreLogs(['A props object containing a "key" prop']);
 
@@ -65,6 +66,8 @@ function RootLayoutInner() {
       const activeProfile = await getActiveProfile();
       setDatabaseFileName(activeProfile.dbFileName);
       setActiveProfileId(activeProfile.id);
+      // Antes de cualquier toque: la preferencia "Vibraciones" de Perfil
+      await loadHapticsSetting();
 
       await seedIfEmpty();
       // Antes de las alertas, para que los recurrentes generados cuenten

@@ -11,7 +11,7 @@ import { useColors, spacing, typography, radius } from '../../src/constants/them
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
 import { Button } from '../../src/components/ui/Button';
-import { hapticToggle } from '../../src/utils/haptics';
+import { hapticToggle, isHapticsEnabled, setHapticsEnabled } from '../../src/utils/haptics';
 import { ExchangeRatesModal } from '../../src/components/ExchangeRatesModal';
 import { PinSetupModal } from '../../src/components/PinSetupModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -52,6 +52,7 @@ export default function ProfileScreen() {
   const [importStatementVisible, setImportStatementVisible] = useState(false);
   const [lastBackup, setLastBackup] = useState<Date | null>(null);
   const [avatarVisible, setAvatarVisible] = useState(false);
+  const [hapticsOn, setHapticsOn] = useState(isHapticsEnabled);
   const active = useActiveProfile();
 
   useEffect(() => {
@@ -407,6 +408,25 @@ export default function ProfileScreen() {
             onValueChange={() => { hapticToggle(); toggleTheme(); }}
             trackColor={{ false: c.surfaceTertiary, true: c.income }}
             thumbColor={c.onPrimary}
+          />
+        </View>
+        <View style={s.settingDivider} />
+        <View style={s.settingRow}>
+          <View>
+            <Text style={s.settingLabel}>Vibraciones</Text>
+            <Text style={s.settingDesc}>Respuesta táctil al tocar y confirmar</Text>
+          </View>
+          <Switch
+            value={hapticsOn}
+            onValueChange={(v) => {
+              setHapticsOn(v);
+              setHapticsEnabled(v);
+              // Al encenderlas, una vibración confirma que funcionan
+              if (v) hapticToggle();
+            }}
+            trackColor={{ false: c.surfaceTertiary, true: c.income }}
+            thumbColor={c.onPrimary}
+            accessibilityLabel="Vibraciones"
           />
         </View>
         <View style={s.settingDivider} />
