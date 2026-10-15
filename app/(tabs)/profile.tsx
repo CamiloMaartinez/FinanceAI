@@ -303,7 +303,7 @@ export default function ProfileScreen() {
           <Text style={s.daysText}>
             {stats?.daysUsing === 0
               ? 'Primer día'
-              : `${stats?.daysUsing} días usando FinanceAI`}
+              : `${stats?.daysUsing} días usando Smart Finance`}
           </Text>
         </View>
 

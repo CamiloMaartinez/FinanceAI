@@ -29,7 +29,7 @@ export async function exportTransactionsCsv(): Promise<number> {
   await Sharing.shareAsync(file.uri, {
     mimeType: 'text/csv',
     UTI: 'public.comma-separated-values-text',
-    dialogTitle: 'Exportar movimientos de FinanceAI',
+    dialogTitle: 'Exportar movimientos de Smart Finance',
   });
 
   return transactions.length;

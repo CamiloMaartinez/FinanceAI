@@ -111,7 +111,7 @@ function calculateAchievements(stats: ProfileStats): Achievement[] {
     {
       id: 'week_user',
       title: 'Una semana',
-      description: 'Llevas más de 7 días usando FinanceAI',
+      description: 'Llevas más de 7 días usando Smart Finance',
       icon: 'calendar-outline',
       unlocked: stats.daysUsing >= 7,
     },

@@ -86,7 +86,7 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
         <Ionicons name="lock-closed" size={36} color={c.blue} />
       </View>
 
-      <Text style={styles.title}>FinanceAI</Text>
+      <Text style={styles.title}>Smart Finance</Text>
       <Text style={styles.subtitle}>
         Tu información financiera está protegida
       </Text>

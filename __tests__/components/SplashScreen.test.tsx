@@ -57,8 +57,8 @@ describe('SplashScreen', () => {
     }
   });
 
-  it('se anuncia una sola vez como "Cargando FinanceAI"', async () => {
+  it('se anuncia una sola vez como "Cargando Smart Finance"', async () => {
     await render(<SplashScreen progress={0} ready={false} fontsReady={false} onFinish={() => {}} />);
-    expect(screen.getByTestId('splash').props.accessibilityLabel).toBe('Cargando FinanceAI');
+    expect(screen.getByTestId('splash').props.accessibilityLabel).toBe('Cargando Smart Finance');
   });
 });

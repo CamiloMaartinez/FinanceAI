@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "FinanceAI",
+    "name": "Smart Finance",
     "slug": "FinanceAI",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,25 +11,25 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1B1240"
+      "backgroundColor": "#2E1A78"
     },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.camilomartinez.financeai",
       "buildNumber": "1",
       "infoPlist": {
-        "NSCameraUsageDescription": "FinanceAI necesita acceso a la cámara para capturar fotos de tus recibos y extraer el monto automáticamente.",
-        "NSPhotoLibraryUsageDescription": "FinanceAI necesita acceso a tus fotos para seleccionar recibos guardados previamente.",
-        "NSFaceIDUsageDescription": "FinanceAI usa Face ID para proteger el acceso a tu información financiera personal.",
-        "NSMicrophoneUsageDescription": "FinanceAI necesita acceso al micrófono para funciones de la cámara.",
-        "NSUserNotificationsUsageDescription": "FinanceAI envía notificaciones antes del cobro de tus suscripciones.",
+        "NSCameraUsageDescription": "Smart Finance necesita acceso a la cámara para capturar fotos de tus recibos y extraer el monto automáticamente.",
+        "NSPhotoLibraryUsageDescription": "Smart Finance necesita acceso a tus fotos para seleccionar recibos guardados previamente.",
+        "NSFaceIDUsageDescription": "Smart Finance usa Face ID para proteger el acceso a tu información financiera personal.",
+        "NSMicrophoneUsageDescription": "Smart Finance necesita acceso al micrófono para funciones de la cámara.",
+        "NSUserNotificationsUsageDescription": "Smart Finance envía notificaciones antes del cobro de tus suscripciones.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#000000"
+        "backgroundColor": "#121625"
       },
       "package": "com.camilomartinez.financeai",
       "versionCode": 3,
@@ -55,27 +55,27 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "FinanceAI necesita acceso a la cámara para capturar fotos de tus recibos."
+          "cameraPermission": "Smart Finance necesita acceso a la cámara para capturar fotos de tus recibos."
         }
       ],
       [
         "expo-local-authentication",
         {
-          "faceIDPermission": "FinanceAI usa Face ID para proteger el acceso a tu información financiera personal."
+          "faceIDPermission": "Smart Finance usa Face ID para proteger el acceso a tu información financiera personal."
         }
       ],
       [
         "expo-notifications",
         {
           "icon": "./assets/icon.png",
-          "color": "#007AFF"
+          "color": "#6B3FC9"
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "FinanceAI necesita acceso a tus fotos para seleccionar recibos guardados previamente.",
-          "cameraPermission": "FinanceAI necesita acceso a la cámara para capturar fotos de tus recibos."
+          "photosPermission": "Smart Finance necesita acceso a tus fotos para seleccionar recibos guardados previamente.",
+          "cameraPermission": "Smart Finance necesita acceso a la cámara para capturar fotos de tus recibos."
         }
       ],
       "expo-secure-store",

@@ -73,7 +73,7 @@ export async function exportBackup(): Promise<void> {
 
   await Sharing.shareAsync(file.uri, {
     mimeType: 'application/json',
-    dialogTitle: 'Guardar respaldo de FinanceAI',
+    dialogTitle: 'Guardar respaldo de Smart Finance',
   });
 
   // iOS no avisa si el usuario canceló la hoja de compartir, así que
@@ -113,7 +113,7 @@ export async function scheduleBackupReminder(): Promise<void> {
   await Notifications.scheduleNotificationAsync({
     identifier: BACKUP_REMINDER_ID,
     content: {
-      title: 'Haz un respaldo de FinanceAI',
+      title: 'Haz un respaldo de Smart Finance',
       body: 'Tus datos solo viven en este iPhone. Ve a Perfil → Exportar respaldo.',
     },
     trigger: {
@@ -138,7 +138,7 @@ export async function pickBackupFile(): Promise<{ uri: string; data: BackupData 
   const data = JSON.parse(text) as BackupData;
 
   if (!data || typeof data.version !== 'number' || !data.tables) {
-    throw new Error('El archivo no parece ser un respaldo válido de FinanceAI');
+    throw new Error('El archivo no parece ser un respaldo válido de Smart Finance');
   }
 
   return { uri: result.assets[0].uri, data };

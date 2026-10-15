@@ -15,7 +15,7 @@ import Animated, {
 import { useColors, fonts, tabularNums } from '../constants/theme';
 import { SPLASH, timingCurtainOut, timingFadeReduced, timingSplash } from '../constants/motion';
 import { formatSplashCount, splashTarget } from '../utils/bootProgress';
-import { BrandMark } from './ui/BrandMark';
+import { LogoWordmark } from './brand/LogoMark';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 const noFontPadding = Platform.OS === 'android' ? { includeFontPadding: false } : null;
@@ -33,7 +33,7 @@ interface SplashScreenProps {
 
 /**
  * Pantalla de carga de marca (I2), al estilo del BrandLoader de Pixtta:
- * símbolo, barra lavanda y contador 000→100 que avanzan con los pasos reales
+ * logotipo Smart Finance, barra lavanda y contador 000→100 que avanzan con los pasos reales
  * del arranque. Al terminar, el contenido se desvanece y la pantalla sube
  * como una cortina dejando ver la app, que ya está montada debajo.
  * No alarga el arranque: si todo ya está listo, la barra completa de una.
@@ -114,7 +114,7 @@ export function SplashScreen({ progress, ready, fontsReady, onFinish }: SplashSc
       pointerEvents={leaving ? 'none' : 'auto'}
       accessible
       accessibilityRole="progressbar"
-      accessibilityLabel="Cargando FinanceAI"
+      accessibilityLabel="Cargando Smart Finance"
       style={[StyleSheet.absoluteFill, { backgroundColor: c.primary }, overlayStyle]}
     >
       <Animated.View
@@ -129,14 +129,14 @@ export function SplashScreen({ progress, ready, fontsReady, onFinish }: SplashSc
         <Text style={[styles.eyebrow, font(fonts.semibold), { color: c.lavender }]}>Tus finanzas, claras</Text>
 
         <View style={styles.center}>
-          <BrandMark size={64} color={c.onPrimary} mutedColor={c.lavender} />
+          <LogoWordmark size={64} tagline fontsReady={fontsReady} />
           <View style={[styles.track, { backgroundColor: c.lavender + '26' }]}>
             <Animated.View style={[styles.fill, { backgroundColor: c.lavender }, barStyle]} />
           </View>
         </View>
 
         <View style={styles.bottom}>
-          <Text style={[styles.eyebrow, font(fonts.semibold), { color: c.lavender }]}>FinanceAI</Text>
+          <Text style={[styles.eyebrow, font(fonts.semibold), { color: c.lavender }]}>Cargando</Text>
           <AnimatedTextInput
             testID="splash-contador"
             editable={false}

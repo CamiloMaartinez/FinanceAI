@@ -57,7 +57,7 @@ export default function AssistantScreen() {
           <BackButton />
           <View style={{ flex: 1 }}>
             <Text style={styles.label}>ASISTENTE</Text>
-            <Text style={styles.title}>FinanceAI</Text>
+            <Text style={styles.title}>Smart Finance</Text>
           </View>
           <AnimatedPressable
             style={styles.evaluatorButton}

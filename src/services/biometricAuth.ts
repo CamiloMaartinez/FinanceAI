@@ -9,7 +9,7 @@ export async function isBiometricAvailable(): Promise<boolean> {
 export async function authenticateWithBiometrics(): Promise<boolean> {
   try {
     const result = await LocalAuthentication.authenticateAsync({
-      promptMessage: 'Desbloquea FinanceAI',
+      promptMessage: 'Desbloquea Smart Finance',
       cancelLabel: 'Cancelar',
       fallbackLabel: 'Usar código del dispositivo',
       disableDeviceFallback: false,

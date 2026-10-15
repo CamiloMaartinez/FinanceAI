@@ -31,7 +31,7 @@ interface OnboardingProps {
 const SLIDES = [
   {
     title: 'Tu dinero, bajo control',
-    description: 'Bienvenido a FinanceAI: tus finanzas claras y una IA de tu lado. Te mostramos lo esencial en menos de un minuto.',
+    description: 'Bienvenido a Smart Finance: tus finanzas claras y una IA de tu lado. Te mostramos lo esencial en menos de un minuto.',
   },
   {
     title: 'Organiza tus finanzas',

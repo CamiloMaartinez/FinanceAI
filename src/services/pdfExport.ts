@@ -97,7 +97,7 @@ function buildReportHtml(params: ExportReportParams): string {
         </style>
       </head>
       <body>
-        <h1>Reporte Financiero — FinanceAI</h1>
+        <h1>Reporte Financiero — Smart Finance</h1>
         <div class="subtitle">${monthName}</div>
 
         <div class="summary">
@@ -131,7 +131,7 @@ function buildReportHtml(params: ExportReportParams): string {
         </table>
 
         <div class="footer">
-          Generado por FinanceAI el ${new Date().toLocaleDateString('es-CO')}
+          Generado por Smart Finance el ${new Date().toLocaleDateString('es-CO')}
         </div>
       </body>
     </html>

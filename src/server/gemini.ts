@@ -93,7 +93,7 @@ export function buildSystemContext(context: FinancialContext): string {
       ).join('\n')
     : 'Sin metas activas';
 
-  return `Eres un asistente financiero personal dentro de la app FinanceAI. Respondes en español, de forma breve, clara y práctica (máximo 5-6 oraciones completas, nunca cortes una idea a la mitad). No uses formato Markdown (nada de asteriscos, negritas o símbolos especiales), responde en texto plano. Nunca das asesoría financiera profesional formal — si te preguntan sobre inversiones específicas, aclaras que no eres asesor certificado. IMPORTANTE: los montos en pesos colombianos te los doy como números enteros simples (sin puntos ni comas); cuando los menciones en tu respuesta, usa el formato con puntos como separador de miles, por ejemplo 3480000 se escribe como $3.480.000.
+  return `Eres un asistente financiero personal dentro de la app Smart Finance. Respondes en español, de forma breve, clara y práctica (máximo 5-6 oraciones completas, nunca cortes una idea a la mitad). No uses formato Markdown (nada de asteriscos, negritas o símbolos especiales), responde en texto plano. Nunca das asesoría financiera profesional formal — si te preguntan sobre inversiones específicas, aclaras que no eres asesor certificado. IMPORTANTE: los montos en pesos colombianos te los doy como números enteros simples (sin puntos ni comas); cuando los menciones en tu respuesta, usa el formato con puntos como separador de miles, por ejemplo 3480000 se escribe como $3.480.000.
 
 Datos financieros actuales del usuario:
 - Saldo total: ${Math.round(context.totalBalance)} pesos
@@ -269,7 +269,7 @@ export async function generateWeeklySummaryServer(context: WeeklySummaryContext)
     ? `La semana pasada gastó $${Math.round(context.previousWeekSpent).toLocaleString('es-CO')} (para comparar si quieres).`
     : 'No hay datos de la semana anterior para comparar.';
 
-  const prompt = `Eres el asistente financiero de la app FinanceAI. Genera un resumen breve y cercano (máximo 4-5 oraciones, texto plano sin markdown) de la semana financiera del usuario, del ${context.weekStartLabel} al ${context.weekEndLabel}.
+  const prompt = `Eres el asistente financiero de la app Smart Finance. Genera un resumen breve y cercano (máximo 4-5 oraciones, texto plano sin markdown) de la semana financiera del usuario, del ${context.weekStartLabel} al ${context.weekEndLabel}.
 
 Datos de la semana:
 - Gastó en total: $${Math.round(context.totalSpent).toLocaleString('es-CO')}
@@ -309,7 +309,7 @@ export async function generateMonthPredictionServer(context: MonthPredictionCont
     ? `Su presupuesto para este mes es ${fmt(context.budgetLimit)}.`
     : 'No tiene un presupuesto definido para este mes.';
 
-  const prompt = `Eres el asistente financiero de la app FinanceAI. Vas ${context.dayOfMonth} de ${context.daysInMonth} días del mes. El usuario lleva gastados ${fmt(context.spentSoFar)} hasta hoy. Si sigue gastando al mismo ritmo, terminaría el mes en aproximadamente ${fmt(context.projectedTotal)}.
+  const prompt = `Eres el asistente financiero de la app Smart Finance. Vas ${context.dayOfMonth} de ${context.daysInMonth} días del mes. El usuario lleva gastados ${fmt(context.spentSoFar)} hasta hoy. Si sigue gastando al mismo ritmo, terminaría el mes en aproximadamente ${fmt(context.projectedTotal)}.
 
 ${historicalText}
 ${budgetText}

@@ -105,7 +105,7 @@ export default function GoalsScreen() {
   const shareAchievement = async (goalName: string, targetAmount: number) => {
     try {
       await Share.share({
-        message: `🎉 ¡Acabo de completar mi meta "${goalName}" de $${Math.round(targetAmount).toLocaleString('es-CO')} en FinanceAI! 💰`,
+        message: `🎉 ¡Acabo de completar mi meta "${goalName}" de $${Math.round(targetAmount).toLocaleString('es-CO')} en Smart Finance! 💰`,
       });
     } catch {
       // El usuario canceló el share o hubo un error del sistema — no hacemos nada

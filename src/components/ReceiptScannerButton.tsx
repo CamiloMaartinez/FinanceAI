@@ -23,7 +23,7 @@ export function ReceiptScannerButton({ onScanned }: ReceiptScannerButtonProps) {
     if (status !== 'granted') {
       Alert.alert(
         'Permiso necesario',
-        'FinanceAI necesita acceso a tu cámara para escanear recibos. Actívalo en Ajustes.'
+        'Smart Finance necesita acceso a tu cámara para escanear recibos. Actívalo en Ajustes.'
       );
       return;
     }
