@@ -34,6 +34,7 @@ import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
 import { Text } from '../../src/components/ui/Text';
 import { useColors, spacing, radius, fonts, pastels, type ThemeColors } from '../../src/constants/theme';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
+import { staggerEntering } from '../../src/constants/motion';
 import { ACCOUNT_TYPE_LABELS } from '../../src/constants/accounts';
 import { formatWithCurrency } from '../../src/constants/currencies';
 import { useTheme } from '../../src/context/ThemeContext';
@@ -219,16 +220,23 @@ export default function DashboardScreen() {
                 {hideBalances ? HIDDEN : `${net >= 0 ? '+' : '−'}${formatCurrency(Math.abs(net))}`} este mes
               </Text>
 
+              {/* B6: entran uno tras otro con un pequeño rebote (solo al montar Inicio) */}
               <View style={s.actions}>
-                <CircleAction icon="arrow-down" label="Ingreso" labelColor={c.heroText} onPress={() => openNew('ingreso')} />
-                <CircleAction icon="arrow-up" label="Gasto" labelColor={c.heroText} onPress={() => openNew('gasto')} />
-                <CircleAction
-                  icon="swap-horizontal"
-                  label="Transferir"
-                  labelColor={c.heroText}
-                  disabled={accounts.length < 2}
-                  onPress={() => openNew('transferencia')}
-                />
+                <Animated.View entering={staggerEntering(0, 'pop')}>
+                  <CircleAction icon="arrow-down" label="Ingreso" labelColor={c.heroText} onPress={() => openNew('ingreso')} />
+                </Animated.View>
+                <Animated.View entering={staggerEntering(1, 'pop')}>
+                  <CircleAction icon="arrow-up" label="Gasto" labelColor={c.heroText} onPress={() => openNew('gasto')} />
+                </Animated.View>
+                <Animated.View entering={staggerEntering(2, 'pop')}>
+                  <CircleAction
+                    icon="swap-horizontal"
+                    label="Transferir"
+                    labelColor={c.heroText}
+                    disabled={accounts.length < 2}
+                    onPress={() => openNew('transferencia')}
+                  />
+                </Animated.View>
               </View>
 
               <NetWorthChart

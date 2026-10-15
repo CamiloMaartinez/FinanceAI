@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from '../../../src/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useColors, spacing, radius, fonts, PASTEL_LIST } from '../../../src/constants/theme';
@@ -11,6 +11,7 @@ import { IconBadge } from '../../../src/components/ui/IconBadge';
 import { TAB_BAR_HEIGHT } from '../../../src/constants/layout';
 import { AnimatedPressable } from '../../../src/components/ui/AnimatedPressable';
 import { hapticToggle } from '../../../src/utils/haptics';
+import { staggerEntering } from '../../../src/constants/motion';
 
 interface MenuItem {
   label: string;
@@ -95,7 +96,7 @@ export default function MoreScreen() {
 
         <View style={styles.card}>
         {MENU_ITEMS.map((item, index) => (
-          <Animated.View key={item.route} entering={FadeInDown.duration(300).delay(index * 60)}>
+          <Animated.View key={item.route} entering={staggerEntering(index)}>
             <AnimatedPressable
               style={[
                 styles.menuRow,

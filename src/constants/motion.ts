@@ -1,4 +1,4 @@
-import { Easing, ReduceMotion, type WithSpringConfig, type WithTimingConfig } from 'react-native-reanimated';
+import { Easing, FadeInDown, ReduceMotion, type WithSpringConfig, type WithTimingConfig } from 'react-native-reanimated';
 
 // Presets de resorte (apple-design §4): pensados en "damping ratio" +
 // "response" (segundos), no en duración fija — el tiempo de asentamiento
@@ -145,6 +145,30 @@ export const timingFadeReduced: WithTimingConfig = {
 
 /** Separación entre elementos de una cascada (A6, B6). */
 export const STAGGER_MS = 40;
+/** Solo los primeros escalonan; los demás entran junto con el último. */
+export const STAGGER_MAX = 8;
+
+/** Retraso de un elemento de la cascada: nunca espera más que el 8.º. */
+export function staggerDelay(index: number): number {
+  return Math.min(Math.max(index, 0), STAGGER_MAX - 1) * STAGGER_MS;
+}
+
+/**
+ * Entrada en cascada para el `entering` de una lista: cada elemento sube un
+ * poco y aparece, 40 ms después del anterior. `pop` usa el resorte con
+ * rebote (botones de Inicio); `fade` una curva sin rebote (filas).
+ * Con "reducir movimiento" el sistema la apaga.
+ */
+export function staggerEntering(index: number, variant: 'fade' | 'pop' = 'fade') {
+  const base = FadeInDown.delay(staggerDelay(index)).reduceMotion(ReduceMotion.System);
+  if (variant === 'pop') {
+    return base.springify(springCelebrate.duration).dampingRatio(springCelebrate.dampingRatio ?? 0.55);
+  }
+  return base
+    .duration(320)
+    .easing(easeOutBrand)
+    .withInitialValues({ opacity: 0, transform: [{ translateY: 12 }] });
+}
 
 /** Splash (I2): duración de cada parte de la salida y tope total. */
 export const SPLASH = {
