@@ -10,7 +10,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useColors, radius } from '../../constants/theme';
-import { projectMomentum, rubberband, springSheet } from '../../constants/motion';
+import { projectMomentum, rubberband, springSheet, timingExit } from '../../constants/motion';
 import { GlassView } from './GlassView';
 import { SheetHandle } from './BottomSheetCard';
 
@@ -37,11 +37,17 @@ export function Sheet({ visible, onClose, children }: SheetProps) {
   const backdropOpacity = useSharedValue(0);
   const sheetHeight = useSharedValue(OFFSCREEN);
 
-  const close = () => {
-    translateY.value = withSpring(sheetHeight.value + insets.bottom + 40, springSheet, (finished) => {
+  // J3: la salida acelera y dura menos que la entrada, para no estorbar.
+  // Arranca desde donde esté la hoja (también a mitad de un arrastre).
+  const animateOut = () => {
+    translateY.value = withTiming(sheetHeight.value + insets.bottom + 40, timingExit, (finished) => {
       if (finished) runOnJS(setMounted)(false);
     });
-    backdropOpacity.value = withTiming(0, { duration: 220 });
+    backdropOpacity.value = withTiming(0, timingExit);
+  };
+
+  const close = () => {
+    animateOut();
     onClose();
   };
 
@@ -55,10 +61,7 @@ export function Sheet({ visible, onClose, children }: SheetProps) {
         translateY.value = withSpring(0, springSheet);
       }
     } else if (mounted) {
-      translateY.value = withSpring(sheetHeight.value + insets.bottom + 40, springSheet, (finished) => {
-        if (finished) runOnJS(setMounted)(false);
-      });
-      backdropOpacity.value = withTiming(0, { duration: 220 });
+      animateOut();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
