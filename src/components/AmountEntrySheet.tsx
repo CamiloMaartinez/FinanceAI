@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Modal, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Modal, ScrollView, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated';
+import Animated, { FadeIn, ZoomIn, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, fonts, radius, spacing, ink, inkDanger, pastels, tabularNums, type ThemeColors } from '../constants/theme';
 import { getCurrencyInfo, formatWithCurrency } from '../constants/currencies';
@@ -13,6 +13,8 @@ import { Keypad, KEY_DELETE } from './ui/Keypad';
 import { SwipeToConfirm } from './ui/SwipeToConfirm';
 import { Text } from './ui/Text';
 import { splitAmount } from './ui/AmountText';
+import { RollingDigits } from './ui/RollingDigits';
+import { timingFit } from '../constants/motion';
 
 interface AmountEntrySheetProps {
   visible: boolean;
@@ -61,6 +63,24 @@ export function AmountEntrySheet({
   const spokenParts = splitAmount(value, currency);
   const spoken = value > 0 ? `${spokenParts.symbol}${spokenParts.integer}${spokenParts.fraction}` : 'cero';
 
+  // G1: si el monto no cabe, se encoge suave (escala, no fontSize)
+  const fit = useSharedValue(1);
+  const available_ = useRef(0);
+  const natural = useRef(0);
+  const refit = () => {
+    if (!available_.current || !natural.current) return;
+    fit.value = withTiming(Math.min(1, available_.current / natural.current), timingFit);
+  };
+  const onWrapLayout = (e: LayoutChangeEvent) => {
+    available_.current = e.nativeEvent.layout.width;
+    refit();
+  };
+  const onAmountLayout = (e: LayoutChangeEvent) => {
+    natural.current = e.nativeEvent.layout.width;
+    refit();
+  };
+  const fitStyle = useAnimatedStyle(() => ({ transform: [{ scale: fit.value }] }));
+
   return (
     <Modal visible={visible} animationType={reduceMotion ? 'fade' : 'slide'} presentationStyle="fullScreen" onRequestClose={onClose}>
       <View style={[s.root, { backgroundColor: c.background }]}>
@@ -85,11 +105,18 @@ export function AmountEntrySheet({
             </View>
 
             <View style={s.amountWrap} accessible accessibilityLabel={`Monto: ${spoken}`} accessibilityLiveRegion="polite">
-              <Text style={s.amount} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
-                <Text style={s.symbol}>{symbol}</Text>
-                {integer}
-                <Text style={s.fraction}>{fraction || (decimals > 0 ? ',00' : '')}</Text>
-              </Text>
+              <View style={s.amountFit} onLayout={onWrapLayout}>
+                <Animated.View style={[s.amountRow, fitStyle]} onLayout={onAmountLayout}>
+                  <Text style={[s.amount, s.symbol]}>{symbol}</Text>
+                  {/* Cada dígito tecleado entra desde abajo; los anteriores no se mueven */}
+                  <RollingDigits text={integer} anchor="left" style={s.amount} accessibilityLabel={spoken} testID="monto-cifras" />
+                  <RollingDigits
+                    text={fraction || (decimals > 0 ? ',00' : '')}
+                    anchor="left"
+                    style={[s.amount, s.fraction]}
+                  />
+                </Animated.View>
+              </View>
               {!!equiv && (
                 <Animated.Text entering={reduceMotion ? undefined : FadeIn.duration(200)} style={s.equiv}>
                   {equiv}
@@ -148,6 +175,8 @@ function createStyles(c: ThemeColors) {
     title: { fontFamily: fonts.bold, fontSize: 18, color: ink },
     subtitle: { fontFamily: fonts.medium, fontSize: 13, color: 'rgba(42,27,107,0.72)', marginTop: 2 },
     amountWrap: { alignItems: 'center', marginTop: spacing.xl },
+    amountFit: { alignSelf: 'stretch', alignItems: 'center' },
+    amountRow: { flexDirection: 'row', alignItems: 'baseline' },
     amount: { fontFamily: fonts.extrabold, fontSize: 60, lineHeight: 70, color: ink, letterSpacing: -1.5, ...tabularNums },
     symbol: { fontFamily: fonts.bold, fontSize: 32, color: 'rgba(42,27,107,0.55)' },
     fraction: { color: 'rgba(42,27,107,0.4)' },

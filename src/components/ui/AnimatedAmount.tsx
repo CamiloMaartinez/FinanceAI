@@ -4,6 +4,7 @@ import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-na
 import { useColors, fonts, tabularNums } from '../../constants/theme';
 import { timingCountUp } from '../../constants/motion';
 import { splitAmount } from './AmountText';
+import { RollingDigits } from './RollingDigits';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
@@ -39,6 +40,11 @@ interface AnimatedAmountProps {
   mutedColor?: string;
   /** Cuenta desde 0 al montar (Inicio) o empieza ya en el valor (tarjetas). */
   animateOnMount?: boolean;
+  /**
+   * `count` (B1): el número cuenta hasta el valor.
+   * `roll` (B2): odómetro; solo ruedan los dígitos que cambian.
+   */
+  variant?: 'count' | 'roll';
   style?: StyleProp<ViewStyle>;
   testID?: string;
   /** Acciones para el lector de pantalla (p. ej. "Actualizar" en Inicio). */
@@ -61,6 +67,7 @@ export function AnimatedAmount({
   color,
   mutedColor,
   animateOnMount = true,
+  variant = 'count',
   style,
   testID,
   accessibilityActions,
@@ -114,6 +121,15 @@ export function AnimatedAmount({
       <RNText style={[{ fontFamily: fonts.semibold, fontSize: Math.round(fontSize * 0.6), color: muted }, noFontPadding]}>
         {parts.sign}{parts.symbol}
       </RNText>
+      {variant === 'roll' ? (
+        <RollingDigits
+          text={parts.integer}
+          style={[digitStyle, tabularNums]}
+          animateOnMount={animateOnMount}
+          accessibilityLabel={full}
+          testID={testID ? `${testID}-cifras` : undefined}
+        />
+      ) : (
       <View>
         {/* Reserva el ancho y la altura; el número visible va encima */}
         <RNText style={[digitStyle, tabularNums, styles.sizer]} importantForAccessibility="no">
@@ -132,6 +148,7 @@ export function AnimatedAmount({
           style={[digitStyle, tabularNums, styles.input]}
         />
       </View>
+      )}
       {parts.fraction !== '' && (
         <RNText style={[digitStyle, tabularNums, { color: muted }]}>{parts.fraction}</RNText>
       )}

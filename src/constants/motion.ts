@@ -240,3 +240,19 @@ export const timingShake: WithTimingConfig = {
   easing: Easing.inOut(Easing.quad),
   reduceMotion: ReduceMotion.System,
 };
+
+// ─── Odómetro (B2) y monto al escribir (G1) ──────────────────
+
+/** Cada dígito que rueda: el viejo sale y el nuevo entra. */
+export const timingRoll: WithTimingConfig = {
+  duration: 300,
+  easing: easeOutBrand,
+  reduceMotion: ReduceMotion.System,
+};
+
+/** El monto se encoge o crece para caber en el ancho disponible. */
+export const timingFit: WithTimingConfig = {
+  duration: 220,
+  easing: Easing.out(Easing.cubic),
+  reduceMotion: ReduceMotion.System,
+};
