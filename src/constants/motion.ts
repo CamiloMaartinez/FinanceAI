@@ -154,3 +154,37 @@ export const SPLASH = {
   curtainDelayMs: 100,
   maxTotalMs: 1600,
 } as const;
+
+// ─── Personaje (Moni) ────────────────────────────────────────
+
+/** Ritmos del personaje: todo lo que se repite mientras está en pantalla. */
+export const MASCOT = {
+  /** Media respiración (inhala o exhala). */
+  breathMs: 1500,
+  /** Durmiendo respira más lento. */
+  sleepBreathMs: 2600,
+  /** Entre parpadeos, al azar dentro de este rango. */
+  blinkMinMs: 2500,
+  blinkMaxMs: 5000,
+  /** Cuánto se queda feliz después de tocarlo. */
+  tapFaceMs: 900,
+} as const;
+
+/** Parpadeo: cierra rápido y abre un poco más lento. */
+export const timingBlinkClose: WithTimingConfig = {
+  duration: 70,
+  easing: Easing.in(Easing.quad),
+  reduceMotion: ReduceMotion.System,
+};
+export const timingBlinkOpen: WithTimingConfig = {
+  duration: 130,
+  easing: Easing.out(Easing.quad),
+  reduceMotion: ReduceMotion.System,
+};
+
+/** Salto al tocarlo: sube rápido y cae con un rebote. */
+export const timingHop: WithTimingConfig = {
+  duration: 160,
+  easing: Easing.out(Easing.quad),
+  reduceMotion: ReduceMotion.System,
+};

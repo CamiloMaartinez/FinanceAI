@@ -1,24 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { StatusBar, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, {
-  Easing,
-  FadeIn,
-  FadeInDown,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withRepeat,
-  withSequence,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
-import { useColors, fonts, radius, spacing, pastels, type ThemeColors } from '../constants/theme';
+import Animated, { FadeIn, FadeInDown, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { useColors, fonts, radius, spacing, type ThemeColors } from '../constants/theme';
 import { springMomentum } from '../constants/motion';
 import { markOnboardingSeen } from '../services/onboarding';
 import { useAccessibilityPreferences } from '../hooks/useAccessibilityPreferences';
-import { CategoryBadge } from './icons/CategoryBadge';
+import { Mascot, type MascotPose } from './mascot/Mascot';
 import { AnimatedPressable } from './ui/AnimatedPressable';
 import { Text } from './ui/Text';
 import { hapticToggle, hapticSave } from '../utils/haptics';
@@ -28,34 +17,28 @@ interface OnboardingProps {
   onFinish: () => void;
 }
 
-const SLIDES = [
+// Cada diapositiva tiene su pose de Moni; al pasar de una a otra cambia de pose
+const SLIDES: { title: string; description: string; pose: MascotPose }[] = [
   {
+    pose: 'colgado',
     title: 'Tu dinero, bajo control',
     description: 'Bienvenido a Smart Finance: tus finanzas claras y una IA de tu lado. Te mostramos lo esencial en menos de un minuto.',
   },
   {
+    pose: 'senalando',
     title: 'Organiza tus finanzas',
     description: 'Registra cuentas y movimientos, y define un presupuesto mensual con alertas cuando te acerques al límite.',
   },
   {
+    pose: 'corriendo',
     title: 'Alcanza tus metas',
     description: 'Crea metas de ahorro, controla tus suscripciones y compara tarjetas e inversiones, todo en un solo lugar.',
   },
   {
+    pose: 'celebrando',
     title: 'Un asistente con IA',
     description: 'Pregúntale por tus finanzas, evalúa si puedes comprar algo y recibe un resumen cada lunes.',
   },
-];
-
-// Monedas e íconos que flotan en la parte de arriba: posición relativa al
-// ancho de pantalla, tamaño, ícono y color. Cada uno con su propio ritmo.
-const FLOATERS = [
-  { icon: 'peso',        color: pastels.peach,    x: 0.08, y: 40,  size: 64, duration: 3600, delay: 0 },
-  { icon: 'dolar',       color: pastels.mint,     x: 0.68, y: 20,  size: 72, duration: 4200, delay: 400 },
-  { icon: 'euro',        color: pastels.sky,      x: 0.42, y: 120, size: 56, duration: 3900, delay: 900 },
-  { icon: 'ahorro',      color: pastels.pink,     x: 0.1,  y: 190, size: 60, duration: 4600, delay: 300 },
-  { icon: 'inversiones', color: pastels.yellow,   x: 0.72, y: 170, size: 58, duration: 4000, delay: 700 },
-  { icon: 'cripto',      color: pastels.lavender, x: 0.44, y: 250, size: 48, duration: 3400, delay: 1200 },
 ];
 
 export function Onboarding({ profileId, onFinish }: OnboardingProps) {
@@ -90,10 +73,9 @@ export function Onboarding({ profileId, onFinish }: OnboardingProps) {
         )}
       </View>
 
-      <View style={s.floatArea} accessible={false} importantForAccessibility="no-hide-descendants">
-        {FLOATERS.map((f, i) => (
-          <Floater key={f.icon} {...f} index={i} still={reduceMotion} />
-        ))}
+      {/* El título ya explica la diapositiva: Moni es decorativa, pero se puede tocar */}
+      <View style={s.floatArea}>
+        <Mascot pose={slide.pose} size={260} tone="light" interactive decorative />
       </View>
 
       <Animated.View key={index} entering={reduceMotion ? FadeIn.duration(150) : FadeInDown.duration(380)} style={s.content}>
@@ -130,46 +112,6 @@ export function Onboarding({ profileId, onFinish }: OnboardingProps) {
   );
 }
 
-function Floater({ icon, color, x, y, size, duration, delay, index, still }: {
-  icon: string; color: string; x: number; y: number; size: number; duration: number; delay: number; index: number; still: boolean;
-}) {
-  const { width } = useWindowDimensions();
-  const float = useSharedValue(0);
-  const appear = useSharedValue(still ? 1 : 0);
-
-  useEffect(() => {
-    if (still) return;
-    appear.value = withDelay(index * 90, withSpring(1, springMomentum));
-    // Sube y baja despacio, cada uno desfasado; rota un poco al mismo ritmo
-    float.value = withDelay(
-      delay,
-      withRepeat(
-        withSequence(
-          withTiming(1, { duration, easing: Easing.inOut(Easing.sin) }),
-          withTiming(-1, { duration, easing: Easing.inOut(Easing.sin) })
-        ),
-        -1,
-        true
-      )
-    );
-  }, [still, appear, float, delay, duration, index]);
-
-  const style = useAnimatedStyle(() => ({
-    opacity: appear.value,
-    transform: [
-      { translateY: float.value * 12 },
-      { rotate: `${float.value * 8}deg` },
-      { scale: 0.6 + appear.value * 0.4 },
-    ],
-  }));
-
-  return (
-    <Animated.View style={[{ position: 'absolute', left: x * width, top: y }, style]}>
-      <CategoryBadge iconName={icon} colorHex={color} size={size} />
-    </Animated.View>
-  );
-}
-
 function PageDot({ active, label, onPress, s, c }: {
   active: boolean; label: string; onPress: () => void; s: ReturnType<typeof createStyles>; c: ThemeColors;
 }) {
@@ -201,7 +143,7 @@ function createStyles(c: ThemeColors) {
     topBar: { height: 52, alignItems: 'flex-end', justifyContent: 'center', paddingHorizontal: spacing.lg },
     skip: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md },
     skipText: { fontFamily: fonts.semibold, fontSize: 15, color: 'rgba(255,255,255,0.8)' },
-    floatArea: { height: 320 },
+    floatArea: { height: 320, alignItems: 'center', justifyContent: 'center' },
     content: { flex: 1, justifyContent: 'center', paddingHorizontal: spacing.xxl },
     title: { fontFamily: fonts.extrabold, fontSize: 40, lineHeight: 46, letterSpacing: -1, color: c.onPrimary, marginBottom: spacing.md },
     description: { fontFamily: fonts.regular, fontSize: 16, lineHeight: 24, color: 'rgba(255,255,255,0.82)' },

@@ -13,6 +13,7 @@ import { BackButton } from '../../../src/components/ui/BackButton';
 import { hapticSave, hapticToggle } from '../../../src/utils/haptics';
 import { formatCurrency } from '../../../src/utils/currency';
 import type { Debt } from '../../../src/models/types';
+import { Mascot } from '../../../src/components/mascot/Mascot';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -149,7 +150,7 @@ export default function DebtsScreen() {
 
         {data.debts.length === 0 ? (
           <View style={styles.empty}>
-            <Ionicons name="people-outline" size={40} color={c.textTertiary} />
+            <Mascot pose="descansando" size={140} decorative />
             <Text style={styles.emptyTitle}>Sin deudas registradas</Text>
             <Text style={styles.emptySubtitle}>
               Anota lo que prestas y lo que te prestan, con abonos y fecha límite

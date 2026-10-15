@@ -19,6 +19,7 @@ import {
 import { filterTransactions } from '../../src/utils/transactionFilters';
 import { parseShortcutAmount } from '../../src/utils/shortcutParams';
 import { hapticSave, hapticToggle } from '../../src/utils/haptics';
+import { Mascot } from '../../src/components/mascot/Mascot';
 import { useColors, spacing, typography, fonts } from '../../src/constants/theme';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
@@ -244,6 +245,8 @@ export default function TransactionsScreen() {
 
         {grouped.length === 0 ? (
           <View style={styles.empty}>
+            {/* Buscando sin éxito investiga; sin datos todavía, descansa */}
+            <Mascot pose={hasActiveSearch ? 'investigando' : 'descansando'} size={130} decorative />
             <Text style={styles.emptyTitle}>
               {hasActiveSearch ? 'Sin resultados' : 'Sin movimientos'}
             </Text>

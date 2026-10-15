@@ -7,6 +7,7 @@ import { authenticateWithBiometrics } from '../services/biometricAuth';
 import { hasPinSet, verifyPin } from '../services/pinAuth';
 import { PinPad } from './PinPad';
 import { hapticDelete, hapticSuccess, hapticSave, hapticToggle } from '../utils/haptics';
+import { Mascot } from './mascot/Mascot';
 import { AnimatedPressable } from './ui/AnimatedPressable';
 
 interface LockScreenProps {
@@ -59,9 +60,8 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
   if (mode === 'pin') {
     return (
       <View style={styles.container}>
-        <View style={styles.iconCircle}>
-          <Ionicons name="keypad" size={32} color={c.blue} />
-        </View>
+        {/* Si el PIN falla, Moni revisa con la lupa */}
+        <Mascot pose={pinError ? 'investigando' : 'protegiendo'} size={120} decorative />
         <Text style={styles.title}>Ingresa tu PIN</Text>
         <Text style={styles.subtitle}>Tu PIN de respaldo de 4 dígitos</Text>
 
@@ -82,9 +82,7 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.iconCircle}>
-        <Ionicons name="lock-closed" size={36} color={c.blue} />
-      </View>
+      <Mascot pose="protegiendo" size={170} interactive />
 
       <Text style={styles.title}>Smart Finance</Text>
       <Text style={styles.subtitle}>

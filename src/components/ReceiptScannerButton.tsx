@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { View, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import { Text } from './ui/Text';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, spacing, radius } from '../constants/theme';
 import { scanReceipt } from '../services/receiptScanner';
 import { AnimatedPressable } from './ui/AnimatedPressable';
+import { Mascot } from './mascot/Mascot';
 
 interface ReceiptScannerButtonProps {
   // photoUri: la foto tomada (temporal), para guardarla con el movimiento
@@ -70,8 +71,8 @@ export function ReceiptScannerButton({ onScanned }: ReceiptScannerButtonProps) {
     >
       {isScanning ? (
         <>
-          <ActivityIndicator size="small" color={c.accent} />
-          <Text style={styles.text}>Analizando recibo...</Text>
+          <Mascot pose="investigando" size={44} decorative />
+          <Text style={styles.text}>Moni está leyendo tu recibo…</Text>
         </>
       ) : (
         <>

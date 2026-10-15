@@ -26,6 +26,7 @@ import {
   getBudgetRemaining,
 } from '../../../src/utils/budgetCalculations';
 import { hapticSave, hapticToggle } from '../../../src/utils/haptics';
+import { Mascot } from '../../../src/components/mascot/Mascot';
 import type { Category } from '../../../src/models/types';
 
 const MONTH_NAMES = [
@@ -180,11 +181,15 @@ export default function BudgetsScreen() {
                 </Text>
               </Text>
               <ProgressBar percent={budgets.totalPercent} color={totalColor} height={10} />
-              <Text style={[styles.totalRemainingText, isOverBudget && { color: c.expense }]}>
-                {isOverBudget
-                  ? `Te pasaste por $${Math.round(budgets.totalSpent - budgets.totalLimit).toLocaleString('es-CO')}`
-                  : `Te quedan $${Math.round(totalRemaining).toLocaleString('es-CO')} disponibles`}
-              </Text>
+              <View style={styles.totalFooter}>
+                <Text style={[styles.totalRemainingText, isOverBudget && { color: c.expense }]}>
+                  {isOverBudget
+                    ? `Te pasaste por $${Math.round(budgets.totalSpent - budgets.totalLimit).toLocaleString('es-CO')}`
+                    : `Te quedan $${Math.round(totalRemaining).toLocaleString('es-CO')} disponibles`}
+                </Text>
+                {/* Dentro del límite, Moni lo aprueba */}
+                {!isOverBudget && <Mascot pose="aprobando" size={64} decorative />}
+              </View>
             </View>
 
             {/* Categorías con límite */}
@@ -271,7 +276,8 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   totalPercent: { fontSize: 18, fontWeight: '700' },
   totalAmounts: { fontSize: 22, fontWeight: '600', color: c.textPrimary },
   totalAmountsLimit: { fontSize: 14, fontWeight: '400', color: c.textTertiary },
-  totalRemainingText: { fontSize: 12, color: c.textSecondary, marginTop: 2 },
+  totalRemainingText: { flex: 1, fontSize: 12, color: c.textSecondary, marginTop: 2 },
+  totalFooter: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2, marginBottom: -8 },
   progressTrack: {
     backgroundColor: c.surfaceSecondary,
     overflow: 'hidden',

@@ -19,6 +19,8 @@ import { RECURRENCE_LABELS, type RecurrenceFrequency } from '../../../src/utils/
 import { AmountEntrySheet } from '../../../src/components/AmountEntrySheet';
 import { Chip } from '../../../src/components/ui/Chip';
 import { formatCurrency } from '../../../src/utils/currency';
+import { Mascot } from '../../../src/components/mascot/Mascot';
+import { CelebrationSheet } from '../../../src/components/mascot/CelebrationSheet';
 
 export default function GoalsScreen() {
   const c = useColors();
@@ -28,6 +30,8 @@ export default function GoalsScreen() {
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [contributeGoal, setContributeGoal] = useState<Goal | null>(null);
   const [contributeRepeat, setContributeRepeat] = useState<RecurrenceFrequency | null>(null);
+  // Meta que se acaba de completar: abre la hoja con Moni celebrando
+  const [completed, setCompleted] = useState<{ name: string; target: number } | null>(null);
 
   const handleSaveGoal = async (
     name: string, targetAmount: number, targetDate: string,
@@ -73,16 +77,8 @@ export default function GoalsScreen() {
 
     if (!wasCompleted && willComplete) {
       hapticSuccess(); // 🎉 la meta se acaba de completar con este aporte
-      setTimeout(() => {
-        Alert.alert(
-          '¡Meta completada! 🎉',
-          `Lograste ahorrar $${Math.round(goalTarget).toLocaleString('es-CO')} para "${goalName}"`,
-          [
-            { text: 'Ahora no', style: 'cancel' },
-            { text: 'Compartir', onPress: () => shareAchievement(goalName, goalTarget) },
-          ]
-        );
-      }, 400);
+      // Espera a que se cierre la hoja del monto antes de abrir la del logro
+      setTimeout(() => setCompleted({ name: goalName, target: goalTarget }), 400);
     } else {
       hapticSave();
     }
@@ -150,6 +146,7 @@ export default function GoalsScreen() {
 
         {goals.goals.length === 0 ? (
           <View style={styles.empty}>
+            <Mascot pose="descansando" size={140} decorative />
             <Text style={styles.emptyTitle}>Sin metas activas</Text>
             <Text style={styles.emptySubtitle}>Define tu primer objetivo financiero</Text>
             <AnimatedPressable style={styles.emptyButton} onPress={() => setFormVisible(true)} onPressFeedback={hapticSave}>
@@ -194,6 +191,15 @@ export default function GoalsScreen() {
         editingGoal={editingGoal}
         onClose={handleCloseForm}
         onSave={handleSaveGoal}
+      />
+
+      <CelebrationSheet
+        visible={completed != null}
+        title="¡Meta completada!"
+        message={completed ? `Lograste ahorrar $${Math.round(completed.target).toLocaleString('es-CO')} para "${completed.name}"` : ''}
+        actionLabel="Compartir"
+        onAction={() => completed && shareAchievement(completed.name, completed.target)}
+        onClose={() => setCompleted(null)}
       />
 
       <AmountEntrySheet

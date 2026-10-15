@@ -8,6 +8,8 @@ import { seedIfEmpty } from '../../src/database/seed';
 jest.mock('expo-router', () => ({ router: { back: jest.fn(), canGoBack: () => true, navigate: jest.fn() } }));
 
 describe('editor de categorías', () => {
+  // Siembra la base y monta la pantalla entera: ~2,5 s sola, más cuando
+  // corre en paralelo con el resto de la suite
   it('crea una categoría nueva desde la pantalla', async () => {
     await seedIfEmpty();
     jest.spyOn(Alert, 'alert').mockImplementation(() => {});
@@ -21,5 +23,5 @@ describe('editor de categorías', () => {
 
     await waitFor(() => expect(screen.getByText('Gimnasio')).toBeTruthy());
     expect(screen.getByText('Creada por ti')).toBeTruthy();
-  });
+  }, 15_000);
 });
