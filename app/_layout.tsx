@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
-import { LogBox, View, ActivityIndicator } from 'react-native';
+import { LogBox, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   useFonts,
@@ -26,6 +26,8 @@ import { scheduleBackupReminder } from '../src/services/backup';
 import { refreshSubscriptionBilling } from '../src/services/subscriptionBilling';
 import { refreshExchangeRates } from '../src/services/exchangeRates';
 import { loadHapticsSetting } from '../src/utils/haptics';
+import { SplashScreen } from '../src/components/SplashScreen';
+import { bootProgress, type BootStep } from '../src/utils/bootProgress';
 
 LogBox.ignoreLogs(['A props object containing a "key" prop']);
 
@@ -48,6 +50,12 @@ function RootLayoutInner() {
   const [needsBiometric, setNeedsBiometric] = useState(false);
   const [onboardingSeen, setOnboardingSeen] = useState(false);
   const [activeProfileId, setActiveProfileId] = useState('default');
+  // Pasos reales del arranque: mueven la barra del splash
+  const [doneSteps,  setDoneSteps]  = useState<BootStep[]>([]);
+  const [splashDone, setSplashDone] = useState(false);
+  const markStep = useCallback((step: BootStep) => {
+    setDoneSteps((prev) => (prev.includes(step) ? prev : [...prev, step]));
+  }, []);
   // Si la fuente falla, la app sigue con la del sistema en vez de quedarse cargando
   const [fontsLoaded, fontError] = useFonts({
     Outfit_300Light,
@@ -60,6 +68,10 @@ function RootLayoutInner() {
   const fontsReady = fontsLoaded || fontError != null;
 
   useEffect(() => {
+    if (fontsReady) markStep('fuentes');
+  }, [fontsReady, markStep]);
+
+  useEffect(() => {
     const init = async () => {
       // Debe ser lo PRIMERO: define qué archivo de base de datos se abre
       // antes de que cualquier otra parte de la app intente usarlo.
@@ -68,14 +80,19 @@ function RootLayoutInner() {
       setActiveProfileId(activeProfile.id);
       // Antes de cualquier toque: la preferencia "Vibraciones" de Perfil
       await loadHapticsSetting();
+      markStep('perfil');
 
       await seedIfEmpty();
+      markStep('baseDeDatos');
       // Antes de las alertas, para que los recurrentes generados cuenten
       // en los presupuestos. Si falla, la app arranca igual.
       await processDueRecurring().catch(() => 0);
       await processDueGoalContributions().catch(() => 0);
+      markStep('recurrentes');
       await refreshSubscriptionBilling().catch(() => 0);
+      markStep('suscripciones');
       await evaluateAlerts();
+      markStep('alertas');
       // No bloquea el arranque: si falla, simplemente no hay recordatorio
       scheduleBackupReminder().catch(() => {});
       // Tampoco bloquea: sin internet se usan las últimas tasas guardadas
@@ -91,29 +108,37 @@ function RootLayoutInner() {
       setIsReady(true);
     };
     init();
-  }, []);
+  }, [markStep]);
 
-  // La pantalla de carga hace de splash hasta que estén la base de datos y la fuente
-  if (!isReady || !fontsReady) {
+  const appReady = isReady && fontsReady;
+
+  const renderApp = () => {
+    if (!onboardingSeen) {
+      return <Onboarding profileId={activeProfileId} onFinish={() => setOnboardingSeen(true)} />;
+    }
+    if (needsBiometric && !isUnlocked) {
+      return <LockScreen onUnlock={() => setIsUnlocked(true)} />;
+    }
     return (
-      <View style={{ flex: 1, backgroundColor: c.background, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" color={c.blue} />
-      </View>
+      <Stack screenOptions={{ headerShown: false }}>
+        {/* El detalle se dibuja encima de la pantalla anterior y anima su propia expansión */}
+        <Stack.Screen name="account/[id]" options={{ presentation: 'transparentModal', animation: 'none' }} />
+      </Stack>
     );
-  }
+  };
 
-  if (!onboardingSeen) {
-    return <Onboarding profileId={activeProfileId} onFinish={() => setOnboardingSeen(true)} />;
-  }
-
-  if (needsBiometric && !isUnlocked) {
-    return <LockScreen onUnlock={() => setIsUnlocked(true)} />;
-  }
-
+  // La app se monta debajo apenas está lista; el splash sube y la deja ver
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      {/* El detalle se dibuja encima de la pantalla anterior y anima su propia expansión */}
-      <Stack.Screen name="account/[id]" options={{ presentation: 'transparentModal', animation: 'none' }} />
-    </Stack>
+    <View style={{ flex: 1, backgroundColor: c.background }}>
+      {appReady && renderApp()}
+      {!splashDone && (
+        <SplashScreen
+          progress={bootProgress(doneSteps)}
+          ready={appReady}
+          fontsReady={fontsReady}
+          onFinish={() => setSplashDone(true)}
+        />
+      )}
+    </View>
   );
 }

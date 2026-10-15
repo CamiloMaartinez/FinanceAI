@@ -81,6 +81,7 @@ export const lightColors = {
   expense:           '#A53AAD', // magenta oscurecido para texto (AA)
   lime:              '#8DBF3F', // lima decorativo (barras, puntos), no para texto
   magenta:           '#C95BD0', // magenta decorativo
+  lavender:          '#D9DAFB', // lavanda decorativa (barra del splash, bloques de revelado)
   accent:            '#2E1A78',
   onAccent:          '#FFFFFF',
   blue:              '#3D5AD6',
@@ -124,6 +125,7 @@ export const darkColors: typeof lightColors = {
   expense:           '#E58AEB',
   lime:              '#A9D65F',
   magenta:           '#E58AEB',
+  lavender:          '#B9BCF6',
   accent:            '#B9BCF6', // lavanda: sobre índigo, el morado no se vería
   onAccent:          '#1B1240',
   blue:              '#8FA5FF',

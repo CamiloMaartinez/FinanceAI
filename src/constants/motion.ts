@@ -89,3 +89,68 @@ export const PULL_REFRESH = {
   threshold: 80,
   hold: 64,
 } as const;
+
+// ─── Inspiradas en Pixtta ────────────────────────────────────
+
+// Curva de marca: arranca rápido y se asienta largo (entradas, revelados).
+export const easeOutBrand = Easing.bezier(0.23, 1, 0.32, 1);
+// Curva de cortina: lenta en los extremos y rápida al medio (paneles que tapan la pantalla).
+export const easeInOutCurtain = Easing.bezier(0.77, 0, 0.175, 1);
+
+/** Cortina de marca (J1): los paneles suben y tapan la pantalla. */
+export const timingCurtainIn: WithTimingConfig = {
+  duration: 450,
+  easing: easeInOutCurtain,
+  reduceMotion: ReduceMotion.System,
+};
+
+/** Cortina de marca (J1) y splash: los paneles siguen subiendo para mostrar lo de abajo. */
+export const timingCurtainOut: WithTimingConfig = {
+  duration: 500,
+  easing: easeInOutCurtain,
+  reduceMotion: ReduceMotion.System,
+};
+
+/** Revelado de títulos (J2): cada línea. */
+export const timingReveal: WithTimingConfig = {
+  duration: 500,
+  easing: easeOutBrand,
+  reduceMotion: ReduceMotion.System,
+};
+
+/** Salidas (J3): más cortas que la entrada y acelerando, para que no estorben. */
+export const timingExit: WithTimingConfig = {
+  duration: 200,
+  easing: Easing.in(Easing.cubic),
+  reduceMotion: ReduceMotion.System,
+};
+
+/** Splash (I2): cuánto avanza la barra por cada paso real del arranque. */
+export const timingSplash: WithTimingConfig = {
+  duration: 220,
+  easing: easeOutBrand,
+  reduceMotion: ReduceMotion.System,
+};
+
+/**
+ * El "fundido corto" que reemplaza a cortinas y splash cuando el sistema
+ * pide reducir movimiento. Solo anima opacidad, por eso no se apaga con
+ * ReduceMotion.System (con System sería un corte seco).
+ */
+export const timingFadeReduced: WithTimingConfig = {
+  duration: 150,
+  easing: Easing.out(Easing.quad),
+  reduceMotion: ReduceMotion.Never,
+};
+
+/** Separación entre elementos de una cascada (A6, B6). */
+export const STAGGER_MS = 40;
+
+/** Splash (I2): duración de cada parte de la salida y tope total. */
+export const SPLASH = {
+  /** El contenido se desvanece antes de que suba el panel. */
+  fadeMs: 200,
+  /** El panel empieza a subir con el fundido a medio camino. */
+  curtainDelayMs: 100,
+  maxTotalMs: 1600,
+} as const;
