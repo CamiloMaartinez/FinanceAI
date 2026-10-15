@@ -58,6 +58,23 @@ export function setDatabaseFileName(fileName: string): void {
   activeDbFileName = fileName;
 }
 
+/**
+ * Cambia de perfil sin reiniciar la app: cierra la conexión abierta y la
+ * próxima consulta abre el archivo del perfil nuevo. Sin esto, `getDb`
+ * seguiría devolviendo la base del perfil anterior.
+ */
+export async function switchDatabase(fileName: string): Promise<void> {
+  if (fileName === activeDbFileName) return;
+  const previous = db;
+  db = null;
+  activeDbFileName = fileName;
+  try {
+    await previous?.closeAsync();
+  } catch {
+    // Si ya estaba cerrada no importa: la nueva se abre igual
+  }
+}
+
 // ─── Obtener o crear la conexión ───────────────────────────
 export async function getDb(): Promise<SQLite.SQLiteDatabase> {
   if (db) return db; // Si ya está abierta, la reutilizamos

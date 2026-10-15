@@ -17,6 +17,8 @@ import { Button } from './ui/Button';
 import { AnimatedPressable } from './ui/AnimatedPressable';
 import { hapticToggle } from '../utils/haptics';
 import { Avatar } from './ui/Avatar';
+import { useCurtain } from '../context/CurtainContext';
+import { useAppRestart } from '../context/AppRestartContext';
 
 interface ProfileSwitcherModalProps {
   visible: boolean;
@@ -30,6 +32,8 @@ export function ProfileSwitcherModal({ visible, onClose }: ProfileSwitcherModalP
   const [activeId, setActiveId] = useState('');
   const [step, setStep] = useState<'list' | 'create'>('list');
   const [newName, setNewName] = useState('');
+  const runCurtain = useCurtain();
+  const restart = useAppRestart();
 
   const load = async () => {
     const [list, id] = await Promise.all([getProfiles(), getActiveProfileId()]);
@@ -50,13 +54,17 @@ export function ProfileSwitcherModal({ visible, onClose }: ProfileSwitcherModalP
 
     Alert.alert(
       `Cambiar a "${profile.name}"`,
-      'Vas a cambiar de perfil. Cierra completamente la app y ábrela de nuevo para ver los datos de este perfil.',
+      'La app se recargará con los datos de este perfil.',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Cambiar', onPress: async () => {
-            await setActiveProfile(profile.id);
+          text: 'Cambiar', onPress: () => {
             onClose();
+            // Debajo de la cortina: se activa el perfil y la app arranca con sus datos
+            runCurtain(async () => {
+              await setActiveProfile(profile.id);
+              await restart();
+            });
           },
         },
       ]
@@ -104,7 +112,7 @@ export function ProfileSwitcherModal({ visible, onClose }: ProfileSwitcherModalP
         {step === 'list' ? (
           <>
             <Text style={styles.subtitle}>
-              Cada perfil tiene sus propios datos, completamente separados. Cambiar de perfil requiere reiniciar la app.
+              Cada perfil tiene sus propios datos, completamente separados.
             </Text>
 
             <ScrollView style={styles.list}>

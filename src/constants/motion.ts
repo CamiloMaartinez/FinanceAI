@@ -212,3 +212,31 @@ export const timingHop: WithTimingConfig = {
   easing: Easing.out(Easing.quad),
   reduceMotion: ReduceMotion.System,
 };
+
+// ─── Cortina de marca (J1) y desbloqueo (I3) ─────────────────
+
+export const CURTAIN = {
+  /** El panel morado sale un instante después del magenta. */
+  panelGapMs: 60,
+  /** Si la pantalla nueva no llega, la cortina se abre igual. */
+  failsafeMs: 5000,
+  /** El logo aparece cuando el panel morado ya va por la mitad. */
+  markDelayMs: 250,
+} as const;
+
+/** Logo de la cortina: aparece y desaparece rápido. */
+export const timingMark: WithTimingConfig = {
+  duration: 180,
+  easing: Easing.out(Easing.quad),
+  reduceMotion: ReduceMotion.System,
+};
+
+/** Desbloqueo: cuánto se ve el candado abierto antes de la cortina. */
+export const UNLOCK_HOLD_MS = 380;
+
+/** Temblor de error (PIN incorrecto): cada ida o vuelta. */
+export const timingShake: WithTimingConfig = {
+  duration: 55,
+  easing: Easing.inOut(Easing.quad),
+  reduceMotion: ReduceMotion.System,
+};

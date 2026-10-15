@@ -15,13 +15,15 @@ import { seedIfEmpty } from '../src/database/seed';
 import { isBiometricAvailable } from '../src/services/biometricAuth';
 import { LockScreen } from '../src/components/LockScreen';
 import { ThemeProvider } from '../src/context/ThemeContext';
+import { CurtainProvider, useCurtain } from '../src/context/CurtainContext';
+import { AppRestartContext } from '../src/context/AppRestartContext';
 import { evaluateAlerts } from '../src/services/alertEngine';
 import { useColors } from '../src/constants/theme';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { Onboarding } from '../src/components/Onboarding';
 import { hasSeenOnboarding } from '../src/services/onboarding';
 import { getActiveProfile } from '../src/services/profiles';
-import { setDatabaseFileName, processDueRecurring, processDueGoalContributions } from '../src/database/db';
+import { switchDatabase, processDueRecurring, processDueGoalContributions } from '../src/database/db';
 import { scheduleBackupReminder } from '../src/services/backup';
 import { refreshSubscriptionBilling } from '../src/services/subscriptionBilling';
 import { refreshExchangeRates } from '../src/services/exchangeRates';
@@ -36,7 +38,9 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ErrorBoundary>
         <ThemeProvider>
-          <RootLayoutInner />
+          <CurtainProvider>
+            <RootLayoutInner />
+          </CurtainProvider>
         </ThemeProvider>
       </ErrorBoundary>
     </GestureHandlerRootView>
@@ -45,6 +49,7 @@ export default function RootLayout() {
 
 function RootLayoutInner() {
   const c = useColors();
+  const runCurtain = useCurtain();
   const [isReady,        setIsReady]        = useState(false);
   const [isUnlocked,     setIsUnlocked]     = useState(false);
   const [needsBiometric, setNeedsBiometric] = useState(false);
@@ -71,12 +76,17 @@ function RootLayoutInner() {
     if (fontsReady) markStep('fuentes');
   }, [fontsReady, markStep]);
 
-  useEffect(() => {
-    const init = async () => {
+  /**
+   * Arranque con el perfil activo. Al abrir la app y también al cambiar de
+   * perfil (`restart`): en ese caso no vuelve a bloquear, porque el usuario
+   * ya se identificó.
+   */
+  const boot = useCallback(
+    async (firstLaunch: boolean) => {
       // Debe ser lo PRIMERO: define qué archivo de base de datos se abre
       // antes de que cualquier otra parte de la app intente usarlo.
       const activeProfile = await getActiveProfile();
-      setDatabaseFileName(activeProfile.dbFileName);
+      await switchDatabase(activeProfile.dbFileName);
       setActiveProfileId(activeProfile.id);
       // Antes de cualquier toque: la preferencia "Vibraciones" de Perfil
       await loadHapticsSetting();
@@ -101,26 +111,44 @@ function RootLayoutInner() {
       const seen = await hasSeenOnboarding(activeProfile.id);
       setOnboardingSeen(seen);
 
-      const available = await isBiometricAvailable();
-      setNeedsBiometric(available);
-      setIsUnlocked(!available); // Si no hay biometría disponible, desbloqueamos directo
+      if (firstLaunch) {
+        const available = await isBiometricAvailable();
+        setNeedsBiometric(available);
+        setIsUnlocked(!available); // Si no hay biometría disponible, desbloqueamos directo
+      }
 
       setIsReady(true);
-    };
-    init();
-  }, [markStep]);
+    },
+    [markStep],
+  );
+
+  useEffect(() => {
+    boot(true);
+  }, [boot]);
+
+  // Cambio de perfil sin cerrar la app: se llama debajo de la cortina
+  const restart = useCallback(async () => {
+    setIsReady(false);
+    await boot(false);
+  }, [boot]);
 
   const appReady = isReady && fontsReady;
 
   const renderApp = () => {
     if (!onboardingSeen) {
-      return <Onboarding profileId={activeProfileId} onFinish={() => setOnboardingSeen(true)} />;
+      return (
+        <Onboarding
+          profileId={activeProfileId}
+          onFinish={() => runCurtain(() => setOnboardingSeen(true))}
+        />
+      );
     }
     if (needsBiometric && !isUnlocked) {
-      return <LockScreen onUnlock={() => setIsUnlocked(true)} />;
+      return <LockScreen onUnlock={() => runCurtain(() => setIsUnlocked(true))} />;
     }
     return (
-      <Stack screenOptions={{ headerShown: false }}>
+      // La key monta todo de nuevo al cambiar de perfil: cada pantalla relee sus datos
+      <Stack key={activeProfileId} screenOptions={{ headerShown: false }}>
         {/* El detalle se dibuja encima de la pantalla anterior y anima su propia expansión */}
         <Stack.Screen name="account/[id]" options={{ presentation: 'transparentModal', animation: 'none' }} />
       </Stack>
@@ -129,16 +157,18 @@ function RootLayoutInner() {
 
   // La app se monta debajo apenas está lista; el splash sube y la deja ver
   return (
-    <View style={{ flex: 1, backgroundColor: c.background }}>
-      {appReady && renderApp()}
-      {!splashDone && (
-        <SplashScreen
-          progress={bootProgress(doneSteps)}
-          ready={appReady}
-          fontsReady={fontsReady}
-          onFinish={() => setSplashDone(true)}
-        />
-      )}
-    </View>
+    <AppRestartContext.Provider value={restart}>
+      <View style={{ flex: 1, backgroundColor: c.background }}>
+        {appReady && renderApp()}
+        {!splashDone && (
+          <SplashScreen
+            progress={bootProgress(doneSteps)}
+            ready={appReady}
+            fontsReady={fontsReady}
+            onFinish={() => setSplashDone(true)}
+          />
+        )}
+      </View>
+    </AppRestartContext.Provider>
   );
 }

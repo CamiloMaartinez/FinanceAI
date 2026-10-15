@@ -1,5 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
+import { timingShake } from '../constants/motion';
 import { useColors, spacing } from '../constants/theme';
 import { Keypad, KEY_DELETE, PIN_KEYS } from './ui/Keypad';
 
@@ -12,6 +14,20 @@ export function PinPad({ onComplete, error }: PinPadProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
   const [digits, setDigits] = useState<string[]>([]);
+
+  // PIN incorrecto: los puntos tiemblan de lado a lado (I3)
+  const shake = useSharedValue(0);
+  useEffect(() => {
+    if (!error) return;
+    shake.value = withSequence(
+      withTiming(-10, timingShake),
+      withTiming(10, timingShake),
+      withTiming(-7, timingShake),
+      withTiming(7, timingShake),
+      withTiming(0, timingShake),
+    );
+  }, [error, shake]);
+  const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shake.value }] }));
 
   const handleKey = (key: string) => {
     if (key === KEY_DELETE) {
@@ -29,8 +45,8 @@ export function PinPad({ onComplete, error }: PinPadProps) {
 
   return (
     <View style={styles.container}>
-      <View
-        style={styles.dotsRow}
+      <Animated.View
+        style={[styles.dotsRow, shakeStyle]}
         accessible
         accessibilityLabel={`${digits.length} de 4 dígitos`}
         accessibilityLiveRegion="polite"
@@ -45,7 +61,7 @@ export function PinPad({ onComplete, error }: PinPadProps) {
             ]}
           />
         ))}
-      </View>
+      </Animated.View>
 
       <Keypad keys={PIN_KEYS} onKey={handleKey} style={styles.grid} />
     </View>

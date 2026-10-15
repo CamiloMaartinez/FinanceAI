@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { Text } from './ui/Text';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,7 +6,16 @@ import { useColors, spacing, radius } from '../constants/theme';
 import { authenticateWithBiometrics } from '../services/biometricAuth';
 import { hasPinSet, verifyPin } from '../services/pinAuth';
 import { PinPad } from './PinPad';
-import { hapticDelete, hapticSuccess, hapticSave, hapticToggle } from '../utils/haptics';
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
+import { haptics, hapticSave, hapticToggle } from '../utils/haptics';
+import { springCelebrate, UNLOCK_HOLD_MS } from '../constants/motion';
 import { Mascot } from './mascot/Mascot';
 import { AnimatedPressable } from './ui/AnimatedPressable';
 
@@ -25,6 +34,17 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
   const [pinAvailable, setPinAvailable] = useState(false);
   const [pinError, setPinError] = useState(false);
   const [pinAttempt, setPinAttempt] = useState(0); // cambia para forzar remount del PinPad
+  // I3: el candado se abre y Moni celebra un instante antes de la cortina
+  const [opened, setOpened] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const unlockTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(unlockTimer.current), []);
+
+  const succeed = useCallback(() => {
+    haptics.success();
+    setOpened(true);
+    unlockTimer.current = setTimeout(onUnlock, reduceMotion ? 0 : UNLOCK_HOLD_MS);
+  }, [onUnlock, reduceMotion]);
 
   useEffect(() => {
     hasPinSet().then(setPinAvailable);
@@ -36,7 +56,7 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
     setIsAuthenticating(false);
 
     if (success) {
-      onUnlock();
+      succeed();
     } else {
       setFailedOnce(true);
     }
@@ -45,23 +65,25 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
   const handlePinComplete = useCallback(async (pin: string) => {
     const correct = await verifyPin(pin);
     if (correct) {
-      hapticSuccess();
-      onUnlock();
+      succeed();
     } else {
-      hapticDelete();
+      haptics.error();
       setPinError(true);
       setTimeout(() => {
         setPinError(false);
         setPinAttempt((n) => n + 1); // fuerza reinicio del teclado
       }, 500);
     }
-  }, [onUnlock]);
+  }, [succeed]);
 
   if (mode === 'pin') {
     return (
       <View style={styles.container}>
         {/* Si el PIN falla, Moni revisa con la lupa */}
-        <Mascot pose={pinError ? 'investigando' : 'protegiendo'} size={120} decorative />
+        <View>
+          <Mascot pose={opened ? 'celebrando' : pinError ? 'investigando' : 'protegiendo'} size={120} decorative />
+          <LockBadge opened={opened} />
+        </View>
         <Text style={styles.title}>Ingresa tu PIN</Text>
         <Text style={styles.subtitle}>Tu PIN de respaldo de 4 dígitos</Text>
 
@@ -82,7 +104,10 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
 
   return (
     <View style={styles.container}>
-      <Mascot pose="protegiendo" size={170} interactive />
+      <View>
+        <Mascot pose={opened ? 'celebrando' : 'protegiendo'} size={170} interactive />
+        <LockBadge opened={opened} />
+      </View>
 
       <Text style={styles.title}>Smart Finance</Text>
       <Text style={styles.subtitle}>
@@ -117,6 +142,44 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
         </AnimatedPressable>
       )}
     </View>
+  );
+}
+
+/** Candado que se abre con un pequeño salto al desbloquear (I3). */
+function LockBadge({ opened }: { opened: boolean }) {
+  const c = useColors();
+  const pop = useSharedValue(1);
+  const tilt = useSharedValue(0);
+  useEffect(() => {
+    if (!opened) return;
+    pop.value = withSequence(withTiming(1.25, { duration: 120 }), withSpring(1, springCelebrate));
+    tilt.value = withSpring(-14, springCelebrate);
+  }, [opened, pop, tilt]);
+  const style = useAnimatedStyle(() => ({
+    transform: [{ scale: pop.value }, { rotate: `${tilt.value}deg` }],
+  }));
+  return (
+    <Animated.View
+      accessible
+      accessibilityLabel={opened ? 'Desbloqueado' : 'Bloqueado'}
+      accessibilityLiveRegion="polite"
+      style={[
+        {
+          position: 'absolute',
+          right: 0,
+          bottom: 8,
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: opened ? c.income : c.accent,
+        },
+        style,
+      ]}
+    >
+      <Ionicons name={opened ? 'lock-open' : 'lock-closed'} size={20} color={c.onAccent} />
+    </Animated.View>
   );
 }
 
