@@ -1,6 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { View, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Text } from '../../../src/components/ui/Text';
+import { RevealText } from '../../../src/components/ui/RevealText';
 import { TextInput } from '../../../src/components/ui/TextInput';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -112,12 +113,17 @@ export default function AssistantScreen() {
                   </Text>
                 </View>
               )}
-              <Text style={[
-                styles.bubbleText,
-                msg.role === 'user' && styles.bubbleTextUser,
-              ]}>
-                {msg.text}
-              </Text>
+              {msg.isSummary ? (
+                // J2: el resumen de la IA se descubre línea por línea
+                <RevealText style={styles.bubbleText} delay={150}>{msg.text}</RevealText>
+              ) : (
+                <Text style={[
+                  styles.bubbleText,
+                  msg.role === 'user' && styles.bubbleTextUser,
+                ]}>
+                  {msg.text}
+                </Text>
+              )}
             </View>
           ))}
 

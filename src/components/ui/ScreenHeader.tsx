@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { useColors, fonts, spacing } from '../../constants/theme';
 import { BackButton } from './BackButton';
 import { Text } from './Text';
+import { RevealText } from './RevealText';
 
 interface ScreenHeaderProps {
   title: string;
@@ -22,9 +23,10 @@ export function ScreenHeader({ title, eyebrow, back, right }: ScreenHeaderProps)
       {back && <BackButton />}
       <View style={styles.titles}>
         {!!eyebrow && <Text style={[styles.eyebrow, { color: c.textSecondary }]}>{eyebrow}</Text>}
-        <Text style={[styles.title, { color: c.textPrimary }]} accessibilityRole="header" numberOfLines={1}>
+        {/* J2: el título se descubre con un bloque lavanda que se retira */}
+        <RevealText style={[styles.title, { color: c.textPrimary }]} accessibilityRole="header" numberOfLines={1}>
           {title}
-        </Text>
+        </RevealText>
       </View>
       {right}
     </View>

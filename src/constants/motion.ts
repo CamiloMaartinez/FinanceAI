@@ -256,3 +256,10 @@ export const timingFit: WithTimingConfig = {
   easing: Easing.out(Easing.cubic),
   reduceMotion: ReduceMotion.System,
 };
+
+/** Revelado de títulos (J2): separación entre líneas. */
+export const REVEAL = {
+  lineGapMs: 120,
+  /** Si no se pudo medir o animar, el texto aparece igual. */
+  failsafeMs: 2500,
+} as const;
