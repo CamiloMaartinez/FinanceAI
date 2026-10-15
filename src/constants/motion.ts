@@ -263,3 +263,8 @@ export const REVEAL = {
   /** Si no se pudo medir o animar, el texto aparece igual. */
   failsafeMs: 2500,
 } as const;
+
+// ─── Punto "en vivo" (B5) ────────────────────────────────────
+
+/** Pulso del mapa de Pixtta: el anillo crece y se desvanece en bucle. */
+export const PULSE = { durationMs: 1800, scaleTo: 2.4, opacityFrom: 0.6 } as const;

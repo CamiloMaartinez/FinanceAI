@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from '../../../src/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useColors, spacing, radius, fonts, PASTEL_LIST } from '../../../src/constants/theme';
 import { ScreenHeader } from '../../../src/components/ui/ScreenHeader';
 import { IconBadge } from '../../../src/components/ui/IconBadge';
@@ -12,6 +12,8 @@ import { TAB_BAR_HEIGHT } from '../../../src/constants/layout';
 import { AnimatedPressable } from '../../../src/components/ui/AnimatedPressable';
 import { hapticToggle } from '../../../src/utils/haptics';
 import { staggerEntering } from '../../../src/constants/motion';
+import { PulseDot } from '../../../src/components/ui/PulseDot';
+import { countAlertsTriggeredToday } from '../../../src/services/alertEngine';
 
 interface MenuItem {
   label: string;
@@ -86,6 +88,14 @@ const MENU_ITEMS: MenuItem[] = [
 export default function MoreScreen() {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
+  // B5: alertas que se dispararon hoy encienden un punto en vivo en "Alertas"
+  const [alertsToday, setAlertsToday] = useState(0);
+  useFocusEffect(
+    useCallback(() => {
+      countAlertsTriggeredToday().then(setAlertsToday);
+    }, []),
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <Animated.ScrollView entering={FadeIn.duration(350)}
@@ -106,9 +116,18 @@ export default function MoreScreen() {
               onPressFeedback={hapticToggle}
               pressScale={0.99}
               accessibilityRole="button"
-              accessibilityLabel={`${item.label}. ${item.description}`}
+              accessibilityLabel={`${item.label}. ${item.description}${
+                item.route === '/alerts' && alertsToday > 0
+                  ? `. ${alertsToday} ${alertsToday === 1 ? 'alerta' : 'alertas'} hoy`
+                  : ''
+              }`}
             >
-              <IconBadge icon={item.icon} color={PASTEL_LIST[index % PASTEL_LIST.length]} size={40} />
+              <View>
+                <IconBadge icon={item.icon} color={PASTEL_LIST[index % PASTEL_LIST.length]} size={40} />
+                {item.route === '/alerts' && alertsToday > 0 && (
+                  <PulseDot size={10} style={styles.liveDot} testID="alertas-en-vivo" />
+                )}
+              </View>
               <View style={styles.menuInfo}>
                 <Text style={styles.menuLabel}>{item.label}</Text>
                 <Text style={styles.menuDesc}>{item.description}</Text>
@@ -133,6 +152,7 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     paddingVertical: spacing.md,
     gap: spacing.md,
   },
+  liveDot: { position: 'absolute', top: -2, right: -2 },
   menuRowBorder: {
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: c.borderStrong,

@@ -151,6 +151,16 @@ async function evaluateUnusualSpending(): Promise<void> {
   if (changed) await AsyncStorage.setItem(UNUSUAL_NOTIFIED_KEY, JSON.stringify(notified));
 }
 
+/** Alertas activas que ya se dispararon hoy: encienden el punto "en vivo" de Más. */
+export async function countAlertsTriggeredToday(): Promise<number> {
+  try {
+    const alerts = await getAllAlerts();
+    return alerts.filter((a) => wasTriggeredToday(a.lastTriggered)).length;
+  } catch {
+    return 0;
+  }
+}
+
 export async function evaluateAlerts(): Promise<void> {
   try {
     await evaluateBudgetAlerts();

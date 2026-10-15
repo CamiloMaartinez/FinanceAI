@@ -7,6 +7,7 @@ import { useColors, spacing, radius } from '../constants/theme';
 import { scanReceipt } from '../services/receiptScanner';
 import { AnimatedPressable } from './ui/AnimatedPressable';
 import { Mascot } from './mascot/Mascot';
+import { PulseDot } from './ui/PulseDot';
 
 interface ReceiptScannerButtonProps {
   // photoUri: la foto tomada (temporal), para guardarla con el movimiento
@@ -73,6 +74,8 @@ export function ReceiptScannerButton({ onScanned }: ReceiptScannerButtonProps) {
         <>
           <Mascot pose="investigando" size={44} decorative />
           <Text style={styles.text}>Moni está leyendo tu recibo…</Text>
+          {/* B5: en vivo mientras la IA procesa */}
+          <PulseDot />
         </>
       ) : (
         <>
