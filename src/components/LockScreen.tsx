@@ -17,6 +17,7 @@ import Animated, {
 import { haptics, hapticSave, hapticToggle } from '../utils/haptics';
 import { springCelebrate, UNLOCK_HOLD_MS } from '../constants/motion';
 import { Mascot } from './mascot/Mascot';
+import { AmbientBackground } from './ui/AmbientBackground';
 import { AnimatedPressable } from './ui/AnimatedPressable';
 
 interface LockScreenProps {
@@ -79,6 +80,7 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
   if (mode === 'pin') {
     return (
       <View style={styles.container}>
+        <AmbientBackground />
         {/* Si el PIN falla, Moni revisa con la lupa */}
         <View>
           <Mascot pose={opened ? 'celebrando' : pinError ? 'investigando' : 'protegiendo'} size={120} decorative />
@@ -104,6 +106,7 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <View>
         <Mascot pose={opened ? 'celebrando' : 'protegiendo'} size={170} interactive />
         <LockBadge opened={opened} />

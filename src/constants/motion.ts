@@ -291,3 +291,21 @@ export const timingLaser: WithTimingConfig = {
   easing: Easing.inOut(Easing.sin),
   reduceMotion: ReduceMotion.System,
 };
+
+// ─── Fondo ambiental (J4) y cinta de tasas (J5) ──────────────
+
+/** Manchas del fondo: ida y vuelta muy lenta (≥ 40 s), como ambient-blob de Pixtta. */
+export const AMBIENT = { driftMs: [40_000, 46_000, 54_000] } as const;
+
+/** Cinta de tasas: velocidad base y empuje del scroll (de los marquees de Pixtta). */
+export const TICKER = {
+  /** px por ms sin scroll: discreta. */
+  baseSpeed: 0.03,
+  /** px/s de scroll que equivalen a 1 px extra por cuadro. */
+  boostDivisor: 300,
+  maxBoost: 8,
+  /** Cuánto conserva del empuje en cada cuadro. */
+  decay: 0.92,
+  /** Cada cuántos cuadros revisa si sigue en pantalla. */
+  visibilityEveryFrames: 12,
+} as const;

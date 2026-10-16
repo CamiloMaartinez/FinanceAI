@@ -35,6 +35,7 @@ import { Text } from '../../src/components/ui/Text';
 import { useColors, spacing, radius, fonts, pastels, type ThemeColors } from '../../src/constants/theme';
 import { TAB_BAR_HEIGHT } from '../../src/constants/layout';
 import { staggerEntering } from '../../src/constants/motion';
+import { RatesTicker } from '../../src/components/dashboard/RatesTicker';
 import { ACCOUNT_TYPE_LABELS } from '../../src/constants/accounts';
 import { formatWithCurrency } from '../../src/constants/currencies';
 import { useTheme } from '../../src/context/ThemeContext';
@@ -245,6 +246,9 @@ export default function DashboardScreen() {
                 onPeriodChange={dashboard.setNetWorthPeriod}
                 hidden={hideBalances}
               />
+
+              {/* J5: tasas de cambio que avanzan solas y aceleran con el scroll */}
+              <RatesTicker scrollY={scrollY} />
             </View>
 
             <BottomSheetCard style={s.sheet}>
