@@ -8,6 +8,7 @@ import { scanReceipt } from '../services/receiptScanner';
 import { AnimatedPressable } from './ui/AnimatedPressable';
 import { Mascot } from './mascot/Mascot';
 import { PulseDot } from './ui/PulseDot';
+import { ScanPreview } from './ScanPreview';
 
 interface ReceiptScannerButtonProps {
   // photoUri: la foto tomada (temporal), para guardarla con el movimiento
@@ -18,6 +19,8 @@ export function ReceiptScannerButton({ onScanned }: ReceiptScannerButtonProps) {
   const c = useColors();
   const styles = useMemo(() => createStyles(c), [c]);
   const [isScanning, setIsScanning] = useState(false);
+  // Foto que se está leyendo: se muestra con el láser encima (D6)
+  const [scanningUri, setScanningUri] = useState<string | null>(null);
 
   const handlePress = async () => {
     // Pedir permiso de cámara
@@ -41,6 +44,7 @@ export function ReceiptScannerButton({ onScanned }: ReceiptScannerButtonProps) {
       return;
     }
 
+    setScanningUri(result.assets[0].uri);
     setIsScanning(true);
     try {
       const scanned = await scanReceipt(result.assets[0].base64);
@@ -61,10 +65,13 @@ export function ReceiptScannerButton({ onScanned }: ReceiptScannerButtonProps) {
       );
     } finally {
       setIsScanning(false);
+      setScanningUri(null);
     }
   };
 
   return (
+    <View style={styles.wrap}>
+    {isScanning && scanningUri && <ScanPreview uri={scanningUri} />}
     <AnimatedPressable
       style={styles.button}
       onPress={handlePress}
@@ -84,10 +91,12 @@ export function ReceiptScannerButton({ onScanned }: ReceiptScannerButtonProps) {
         </>
       )}
     </AnimatedPressable>
+    </View>
   );
 }
 
 const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
+  wrap: { gap: spacing.sm },
   button: {
     flexDirection: 'row',
     alignItems: 'center',

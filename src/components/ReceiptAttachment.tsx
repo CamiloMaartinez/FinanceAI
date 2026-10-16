@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, StyleSheet, Image, Modal, Alert } from 'react-native';
 import { Text } from './ui/Text';
 import * as ImagePicker from 'expo-image-picker';
@@ -7,6 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors, spacing, radius } from '../constants/theme';
 import { AnimatedPressable } from './ui/AnimatedPressable';
 import { hapticToggle } from '../utils/haptics';
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { timingExit, timingViewerIn } from '../constants/motion';
 
 interface ReceiptAttachmentProps {
   // URI para mostrar (foto nueva temporal o la ya guardada), o null
@@ -73,21 +75,70 @@ export function ReceiptAttachment({ uri, onPick, onRemove }: ReceiptAttachmentPr
         </AnimatedPressable>
       </View>
 
-      <Modal visible={viewerOpen} animationType="fade" onRequestClose={() => setViewerOpen(false)}>
-        <View style={styles.viewer}>
-          <Image source={{ uri }} style={styles.viewerImage} resizeMode="contain" />
-          <AnimatedPressable
-            style={[styles.viewerClose, { top: insets.top + spacing.md }]}
-            onPress={() => setViewerOpen(false)}
-            accessibilityLabel="Cerrar"
-          >
-            <Ionicons name="close" size={24} color="#FFFFFF" />
-          </AnimatedPressable>
-        </View>
-      </Modal>
+      <ReceiptViewer uri={uri} visible={viewerOpen} topInset={insets.top} onClose={() => setViewerOpen(false)} />
     </>
   );
 }
+
+/**
+ * Visor a pantalla completa (D6): el fondo negro y la foto entran con un
+ * fundido y la foto crece de 0,96 a 1 (450 ms, curva de marca). La salida
+ * es más corta. Con "reducir movimiento" el sistema deja solo el cambio.
+ */
+function ReceiptViewer({ uri, visible, topInset, onClose }: { uri: string; visible: boolean; topInset: number; onClose: () => void }) {
+  const [mounted, setMounted] = useState(visible);
+  const t = useSharedValue(0);
+
+  useEffect(() => {
+    if (visible) {
+      setMounted(true);
+      t.value = withTiming(1, timingViewerIn);
+    } else if (mounted) {
+      t.value = withTiming(0, timingExit, (done) => {
+        if (done) runOnJS(setMounted)(false);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
+  const backdropStyle = useAnimatedStyle(() => ({ opacity: t.value }));
+  const photoStyle = useAnimatedStyle(() => ({ opacity: t.value, transform: [{ scale: 0.96 + 0.04 * t.value }] }));
+
+  if (!mounted) return null;
+  return (
+    <Modal visible transparent animationType="none" onRequestClose={onClose} statusBarTranslucent>
+      <Animated.View style={[viewerStyles.viewer, backdropStyle]}>
+        <Animated.View style={[viewerStyles.photo, photoStyle]}>
+          <Image source={{ uri }} style={viewerStyles.image} resizeMode="contain" accessibilityLabel="Foto del recibo" />
+        </Animated.View>
+        <AnimatedPressable
+          style={[viewerStyles.close, { top: topInset + spacing.md }]}
+          onPress={onClose}
+          accessibilityLabel="Cerrar"
+        >
+          <Ionicons name="close" size={24} color="#FFFFFF" />
+        </AnimatedPressable>
+      </Animated.View>
+    </Modal>
+  );
+}
+
+// El visor es siempre oscuro, como la app Fotos
+const viewerStyles = StyleSheet.create({
+  viewer: { flex: 1, backgroundColor: '#000000', justifyContent: 'center' },
+  photo: { flex: 1 },
+  image: { width: '100%', height: '100%' },
+  close: {
+    position: 'absolute',
+    right: spacing.lg,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
 
 const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   buttonsRow: {
@@ -134,25 +185,5 @@ const createStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
     fontSize: 12,
     color: c.textTertiary,
     marginTop: 2,
-  },
-  // El visor es siempre oscuro, como la app Fotos
-  viewer: {
-    flex: 1,
-    backgroundColor: '#000000',
-    justifyContent: 'center',
-  },
-  viewerImage: {
-    width: '100%',
-    height: '100%',
-  },
-  viewerClose: {
-    position: 'absolute',
-    right: spacing.lg,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

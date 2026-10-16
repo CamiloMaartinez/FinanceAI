@@ -268,3 +268,26 @@ export const REVEAL = {
 
 /** Pulso del mapa de Pixtta: el anillo crece y se desvanece en bucle. */
 export const PULSE = { durationMs: 1800, scaleTo: 2.4, opacityFrom: 0.6 } as const;
+
+// ─── Escaneo de recibo (D6) ──────────────────────────────────
+
+/** La foto del recibo entra con un zoom lento (1,14 → 1), como el hero de Pixtta. */
+export const timingZoomIn: WithTimingConfig = {
+  duration: 900,
+  easing: easeOutBrand,
+  reduceMotion: ReduceMotion.System,
+};
+
+/** Visor del recibo a pantalla completa: fundido y escala 0,96 → 1. */
+export const timingViewerIn: WithTimingConfig = {
+  duration: 450,
+  easing: easeOutBrand,
+  reduceMotion: ReduceMotion.System,
+};
+
+/** La línea láser recorre la foto de arriba abajo y vuelve. */
+export const timingLaser: WithTimingConfig = {
+  duration: 1400,
+  easing: Easing.inOut(Easing.sin),
+  reduceMotion: ReduceMotion.System,
+};
