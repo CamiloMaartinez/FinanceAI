@@ -14,12 +14,14 @@ import { Button } from '../../src/components/ui/Button';
 import { hapticToggle, isHapticsEnabled, setHapticsEnabled } from '../../src/utils/haptics';
 import { ExchangeRatesModal } from '../../src/components/ExchangeRatesModal';
 import { PinSetupModal } from '../../src/components/PinSetupModal';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { exportBackup, getLastBackupDate, pickBackupFile, restoreBackup } from '../../src/services/backup';
 import { exportTransactionsCsv } from '../../src/services/csvExport';
 import { ImportStatementModal } from '../../src/components/ImportStatementModal';
 import { ProfileSwitcherModal } from '../../src/components/ProfileSwitcherModal';
 import { getActiveProfileId } from '../../src/services/profiles';
+import { resetOnboarding } from '../../src/services/onboarding';
+import { useCurtain } from '../../src/context/CurtainContext';
+import { useAppRestart } from '../../src/context/AppRestartContext';
 import type { Achievement } from '../../src/hooks/useProfile';
 import { Avatar } from '../../src/components/ui/Avatar';
 import { AvatarEditorSheet } from '../../src/components/AvatarEditorSheet';
@@ -43,6 +45,8 @@ export default function ProfileScreen() {
   const { profile, stats, achievements, isLoading, updateName, toggleFaceId } = useProfile();
   const { mode, toggleTheme } = useTheme();
   const c = useColors();
+  const runCurtain = useCurtain();
+  const restart = useAppRestart();
   const [editNameVisible, setEditNameVisible] = useState(false);
   const [ratesModalVisible, setRatesModalVisible] = useState(false);
   const [pinModalVisible, setPinModalVisible] = useState(false);
@@ -182,15 +186,19 @@ export default function ProfileScreen() {
     setEditNameVisible(false);
   };
 
+  // La bienvenida se vuelve a mostrar enseguida, debajo de la cortina de marca
   const handleReplayOnboarding = () => {
     Alert.alert(
       'Ver introducción de nuevo',
-      'Cierra completamente la app (deslízala hacia arriba desde el selector de apps) y ábrela de nuevo para verla.',
+      'Te mostramos la bienvenida otra vez y puedes actualizar tu nombre y lo que quieres lograr.',
       [
+        { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Entendido', onPress: async () => {
-            const activeId = await getActiveProfileId();
-            await AsyncStorage.removeItem(`onboarding-completed:${activeId}`);
+          text: 'Ver ahora', onPress: () => {
+            runCurtain(async () => {
+              await resetOnboarding(await getActiveProfileId());
+              await restart();
+            });
           },
         },
       ]

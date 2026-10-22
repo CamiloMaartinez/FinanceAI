@@ -41,6 +41,7 @@ import { formatWithCurrency } from '../../src/constants/currencies';
 import { useTheme } from '../../src/context/ThemeContext';
 import { formatCurrency, formatDate, getGreeting } from '../../src/utils/currency';
 import { hapticToggle } from '../../src/utils/haptics';
+import { firstName } from '../../src/utils/onboardingPlan';
 import type { Account, TransactionWithCategory } from '../../src/models/types';
 
 const HIDDEN = '••••';
@@ -163,7 +164,9 @@ export default function DashboardScreen() {
                 >
                   <Ionicons name="grid-outline" size={20} color={c.heroText} />
                 </AnimatedPressable>
-                <Text style={s.greeting}>{getGreeting()}</Text>
+                <Text style={s.greeting} numberOfLines={1}>
+                  {active.personalName ? `${getGreeting()}, ${firstName(active.personalName)}` : getGreeting()}
+                </Text>
                 <AnimatedPressable
                   onPress={() => router.navigate('/profile')}
                   onPressFeedback={hapticToggle}
@@ -408,7 +411,7 @@ function createStyles(c: ThemeColors) {
       alignItems: 'center',
       justifyContent: 'center',
     },
-    greeting: { fontFamily: fonts.medium, fontSize: 14, color: c.heroTextSecondary },
+    greeting: { flexShrink: 1, marginHorizontal: spacing.sm, fontFamily: fonts.medium, fontSize: 14, color: c.heroTextSecondary },
     avatar: { borderWidth: 2, borderColor: c.sheet },
     balanceLabelRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: 2 },
     balanceLabel: { fontFamily: fonts.medium, fontSize: 15, color: c.heroTextSecondary },
