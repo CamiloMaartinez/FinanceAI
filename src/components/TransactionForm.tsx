@@ -42,7 +42,16 @@ interface TransactionFormProps {
   editingTransaction?: TransactionWithCategory | null;
   // Datos para precargar un movimiento NUEVO (por ejemplo, desde un atajo
   // de Siri que abre financeai://transactions?monto=...&nota=...)
-  prefill?: { amount?: number; notes?: string; type?: FormType; accountId?: string } | null;
+  // o desde el mensaje del banco: financeai://transactions?mensaje=...)
+  prefill?: {
+    amount?: number;
+    notes?: string;
+    type?: FormType;
+    accountId?: string;
+    toAccountId?: string;
+    categoryId?: string;
+    date?: string;
+  } | null;
   onClose: () => void;
   // `recurrence` solo llega en movimientos nuevos de ingreso o gasto
   // splitWith: personas con quienes se divide un gasto nuevo (null = no se divide)
@@ -185,6 +194,12 @@ export function TransactionForm({
       if (prefill.accountId && accounts.some((a) => a.id === prefill.accountId)) setAccountId(prefill.accountId);
       if (prefill.amount) setAmount(String(Math.round(prefill.amount)));
       if (prefill.notes) setNotes(prefill.notes);
+      if (prefill.toAccountId && accounts.some((a) => a.id === prefill.toAccountId)) setToAccountId(prefill.toAccountId);
+      if (prefill.categoryId && categories.some((cat) => cat.id === prefill.categoryId)) {
+        setCategoryId(prefill.categoryId);
+        setCategoryFromAI(false); // viene de tu historial: la IA no la cambia
+      }
+      if (prefill.date && !Number.isNaN(new Date(prefill.date).getTime())) setDate(new Date(prefill.date));
       setError('');
     }
   }, [visible, prefill]);

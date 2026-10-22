@@ -22,6 +22,7 @@ Los datos financieros se guardan **solo en el teléfono** (SQLite). La IA (Googl
 | **Reportes** | Gráficas por categoría, comparación entre meses, patrimonio y exportación a PDF |
 | **Asistente IA** | Responde preguntas con tus datos, evalúa compras, predice el gasto del mes y hace un resumen semanal |
 | **Escáner de recibos** | Lee monto y comercio desde una foto del recibo |
+| **Mensajes del banco** | Pega el SMS o correo del banco (o automatízalo con un Atajo) y el movimiento se llena solo: monto, comercio, cuenta y categoría. Ver [docs/mensajes-del-banco.md](docs/mensajes-del-banco.md) |
 | **Atajos de Siri / Apple Pay** | `financeai://transactions?monto=25000&nota=Starbucks` abre un movimiento precargado |
 | **Seguridad** | Face ID / huella, PIN de respaldo, perfiles separados |
 | **Respaldos** | Exportar e importar todos los datos; recordatorio semanal |
