@@ -22,7 +22,7 @@ Los datos financieros se guardan **solo en el teléfono** (SQLite). La IA (Googl
 | **Reportes** | Gráficas por categoría, comparación entre meses, patrimonio e informe mensual en PDF con la identidad de la marca (logo, colores, Moni, tendencia de 6 meses, presupuesto, metas, suscripciones y cuentas) |
 | **Asistente IA** | Responde preguntas con tus datos, evalúa compras, predice el gasto del mes y hace un resumen semanal |
 | **Escáner de recibos** | Lee monto y comercio desde una foto del recibo |
-| **Atajos de Siri / Apple Pay** | `financeai://transactions?monto=25000&nota=Starbucks` abre un movimiento precargado |
+| **Atajos de iPhone y voz** | `financeai://transactions?monto=25000&nota=Starbucks` abre un movimiento precargado; `financeai://comando?texto=gasté 25 mil en almuerzo` entiende frases dictadas a Siri ([guía](docs/atajos-y-voz.md)) |
 | **Seguridad** | Face ID / huella, PIN de respaldo, perfiles separados |
 | **Respaldos** | Exportar e importar todos los datos; recordatorio semanal |
 | **Exportar a Excel** | Movimientos en CSV listo para Excel en español |
