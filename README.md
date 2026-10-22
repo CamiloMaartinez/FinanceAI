@@ -19,7 +19,7 @@ Los datos financieros se guardan **solo en el teléfono** (SQLite). La IA (Googl
 | **Metas de ahorro** | Progreso y cuánto ahorrar por semana o mes para llegar a tiempo |
 | **Suscripciones** | Costo anual, recordatorios 7, 3 y 1 día antes de cada cobro |
 | **Tarjetas, alertas y retos** | Seguimiento de tarjetas, alertas de gasto inusual y retos de ahorro |
-| **Reportes** | Gráficas por categoría, comparación entre meses, patrimonio y exportación a PDF |
+| **Reportes** | Gráficas por categoría, comparación entre meses, patrimonio e informe mensual en PDF con la identidad de la marca (logo, colores, Moni, tendencia de 6 meses, presupuesto, metas, suscripciones y cuentas) |
 | **Asistente IA** | Responde preguntas con tus datos, evalúa compras, predice el gasto del mes y hace un resumen semanal |
 | **Escáner de recibos** | Lee monto y comercio desde una foto del recibo |
 | **Atajos de Siri / Apple Pay** | `financeai://transactions?monto=25000&nota=Starbucks` abre un movimiento precargado |

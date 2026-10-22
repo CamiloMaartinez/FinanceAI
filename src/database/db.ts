@@ -573,6 +573,31 @@ export async function getRecentTransactions(
     tags: JSON.parse(r.tags || '[]'),
   }));
 }
+/** Los gastos más grandes de un rango (para el informe mensual). */
+export async function getTopExpensesInRange(
+  startISO: string,
+  endISO: string,
+  limit: number = 5
+): Promise<TransactionWithCategory[]> {
+  const database = await getDb();
+  const rows = await database.getAllAsync<TransactionRow>(
+    `SELECT
+       t.*,
+       c.name     as categoryName,
+       c.iconName as categoryIcon,
+       c.colorHex as categoryColor,
+       a.name     as accountName
+     FROM transactions t
+     LEFT JOIN categories c ON c.id = t.categoryId
+     LEFT JOIN accounts a ON a.id = t.accountId
+     WHERE t.type IN ('expense','payment') AND t.date >= ? AND t.date < ?
+     ORDER BY t.amount DESC
+     LIMIT ?`,
+    [startISO, endISO, limit]
+  );
+  return rows.map((r) => ({ ...r, tags: JSON.parse(r.tags || '[]') }));
+}
+
 // ─── Queries de Cuentas ────────────────────────────────────
 
 export async function getAllAccounts(): Promise<Account[]> {
