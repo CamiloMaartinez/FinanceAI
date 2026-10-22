@@ -172,3 +172,36 @@ describe('cuenta y categoría', () => {
     expect(describeBankMessage(msg)).toBe('Transferencia');
   });
 });
+
+describe('guardado automático desde el Atajo', () => {
+  const { autoSaveBlocker } = require('../src/utils/bankMessage') as typeof import('../src/utils/bankMessage');
+  const accs = [
+    { id: 'bc', currency: 'COP' },
+    { id: 'dv', currency: 'COP' },
+    { id: 'usd', currency: 'USD' },
+  ];
+  const base = { type: 'expense' as const, amount: 45_900, notes: 'Exito', accountId: 'bc', date: new Date(2026, 9, 20, 15).toISOString() };
+
+  it('guarda cuando no hay nada que adivinar', () => {
+    expect(autoSaveBlocker(base, 'COP', accs, [], NOW)).toBeNull();
+  });
+
+  it('pide revisar si no reconoce la cuenta', () => {
+    expect(autoSaveBlocker({ ...base, accountId: undefined }, 'COP', accs, [], NOW)).toMatch(/cuenta/);
+  });
+
+  it('pide revisar si la moneda no coincide', () => {
+    expect(autoSaveBlocker(base, 'USD', accs, [], NOW)).toMatch(/USD/);
+  });
+
+  it('pide revisar una transferencia sin destino o entre monedas', () => {
+    expect(autoSaveBlocker({ ...base, type: 'transfer' }, 'COP', accs, [], NOW)).toMatch(/destino/);
+    expect(autoSaveBlocker({ ...base, type: 'transfer', toAccountId: 'usd' }, 'COP', accs, [], NOW)).toMatch(/monedas/);
+    expect(autoSaveBlocker({ ...base, type: 'transfer', toAccountId: 'dv' }, 'COP', accs, [], NOW)).toBeNull();
+  });
+
+  it('no guarda dos veces el mismo mensaje', () => {
+    const history = [{ amount: 45_900, type: 'expense' as const, date: new Date(2026, 9, 20, 9).toISOString(), accountId: 'bc' }];
+    expect(autoSaveBlocker(base, 'COP', accs, history, NOW)).toMatch(/igual/);
+  });
+});

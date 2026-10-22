@@ -28,6 +28,9 @@ import type { RecurrenceFrequency } from '../../src/utils/recurrence';
 import { RecurringListModal } from '../../src/components/RecurringListModal';
 import { BankMessageModal } from '../../src/components/BankMessageModal';
 import { parseBankMessage, buildPrefillFromMessage, type BankMessagePrefill } from '../../src/utils/bankMessage';
+import { autoSaveFromMessage } from '../../src/services/bankMessageAutoSave';
+import { deleteTransaction } from '../../src/database/db';
+import { formatWithCurrency } from '../../src/constants/currencies';
 
 function groupByDay(transactions: TransactionWithCategory[]) {
   const groups: { label: string; items: TransactionWithCategory[] }[] = [];
@@ -73,7 +76,8 @@ export default function TransactionsScreen() {
   // abre el formulario de un movimiento nuevo con esos datos ya escritos.
   // Los botones del inicio abren un movimiento nuevo con ?nuevo=ingreso|gasto|transferencia
   // Mensaje del banco (Atajo "Al recibir un mensaje"): financeai://transactions?mensaje=<texto del SMS>
-  const shortcut = useLocalSearchParams<{ monto?: string; nota?: string; tipo?: string; nuevo?: string; cuenta?: string; mensaje?: string }>();
+  // Con &guardar=1 se guarda solo, sin abrir el formulario (si hay datos suficientes)
+  const shortcut = useLocalSearchParams<{ monto?: string; nota?: string; tipo?: string; nuevo?: string; cuenta?: string; mensaje?: string; guardar?: string }>();
   const [prefill, setPrefill] = useState<{
     amount?: number; notes?: string; type?: 'expense' | 'income' | 'transfer';
     accountId?: string; toAccountId?: string; categoryId?: string; date?: string;
@@ -112,7 +116,8 @@ export default function TransactionsScreen() {
   useEffect(() => {
     if (!shortcut.mensaje || data.isLoading) return;
     const parsed = parseBankMessage(shortcut.mensaje);
-    router.setParams({ mensaje: undefined });
+    const autoSave = shortcut.guardar === '1' || shortcut.guardar === 'si';
+    router.setParams({ mensaje: undefined, guardar: undefined });
     if (!parsed) {
       Alert.alert(
         'No reconocimos el mensaje',
@@ -124,7 +129,40 @@ export default function TransactionsScreen() {
       Alert.alert('Sin cuentas', 'Crea una cuenta primero.');
       return;
     }
-    openFromMessage(buildPrefillFromMessage(parsed, data.accounts, data.transactions));
+    const values = buildPrefillFromMessage(parsed, data.accounts, data.transactions);
+    if (!autoSave) {
+      openFromMessage(values);
+      return;
+    }
+    autoSaveFromMessage(values, parsed.currency, data.accounts, data.categories, data.transactions)
+      .then(async (result) => {
+        if (result.status === 'review') {
+          Alert.alert('Revisa este movimiento', result.reason, [
+            { text: 'Revisar', onPress: () => openFromMessage(result.prefill) },
+          ]);
+          return;
+        }
+        hapticSave();
+        await data.refresh();
+        const { id, input } = result;
+        const currency = data.accounts.find((a) => a.id === input.accountId)?.currency ?? 'COP';
+        Alert.alert(
+          'Movimiento registrado',
+          `${input.notes} · ${formatWithCurrency(input.amount, currency)}`,
+          [
+            {
+              text: 'Deshacer',
+              style: 'destructive',
+              onPress: async () => {
+                await deleteTransaction({ id, ...input, toAccountId: input.toAccountId, toAmount: null });
+                await data.refresh();
+              },
+            },
+            { text: 'Listo', style: 'cancel' },
+          ]
+        );
+      })
+      .catch(() => openFromMessage(values));
   }, [shortcut.mensaje, data.isLoading]);
 
   const filteredTransactions = useMemo(

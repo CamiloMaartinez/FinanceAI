@@ -35,11 +35,33 @@ Si una cuenta solo lleva el nombre del banco, también funciona.
    paso anterior al final:
 
    ```
-   financeai://transactions?mensaje=[URL codificada]
+   financeai://transactions?guardar=1&mensaje=[URL codificada]
    ```
 
-7. Guarda. Cuando llegue el próximo SMS del banco, Smart Finance se abre con
-   el movimiento listo para confirmar.
+7. Guarda. Cuando llegue el próximo SMS del banco, Smart Finance se abre un
+   momento, **registra el movimiento solo** y muestra "Movimiento registrado"
+   con un botón **Deshacer**.
+
+### Modo automático o con revisión
+
+| URL | Qué pasa |
+|---|---|
+| `...?guardar=1&mensaje=...` | Se guarda solo. Recomendado. |
+| `...?mensaje=...` | Abre el formulario lleno y tú confirmas. |
+
+Aun en modo automático, la app **no guarda** y te abre el formulario si:
+
+- no reconoce la cuenta (pon los últimos dígitos en su nombre);
+- el mensaje está en otra moneda que la cuenta;
+- es una transferencia a una cuenta tuya en otra moneda, o sin cuenta destino;
+- ya hay un movimiento igual ese día en esa cuenta (evita duplicados si el
+  banco manda el SMS dos veces);
+- es un comercio nuevo y la IA no pudo sugerir la categoría (por ejemplo,
+  sin internet).
+
+> iOS siempre trae la app al frente al abrir un enlace. Registrar sin que la
+> app se abra necesita una acción nativa de Atajos (App Intents en Swift);
+> queda como una fase siguiente.
 
 > Para correos: igual, pero en el paso 2 elige **Correo** y filtra por el
 > remitente del banco (solo funciona con la app Mail de Apple).

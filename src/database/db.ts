@@ -909,11 +909,14 @@ async function insertTransaction(
 
 // Todas las operaciones van dentro de una transacción de SQLite: si algo
 // falla a mitad de camino, no queda un saldo descuadrado.
-export async function createTransaction(input: TransactionInput): Promise<void> {
+/** Devuelve el id del movimiento creado (para poder deshacerlo). */
+export async function createTransaction(input: TransactionInput): Promise<string> {
   const database = await getDb();
+  let id = '';
   await database.withTransactionAsync(async () => {
-    await insertTransaction(database, input);
+    id = await insertTransaction(database, input);
   });
+  return id;
 }
 
 export async function deleteTransaction(

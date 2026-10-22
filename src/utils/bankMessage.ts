@@ -345,3 +345,35 @@ export function buildPrefillFromMessage(
     : undefined;
   return { type: msg.type, amount: msg.amount, notes, accountId, categoryId, date: msg.date ?? undefined };
 }
+
+// ─── Guardado automático ────────────────────────────────────
+
+/**
+ * Con el Atajo en modo automático (?guardar=1) el movimiento se guarda sin
+ * abrir el formulario. Solo se hace cuando no hay nada que adivinar; si no,
+ * devuelve el motivo y se abre el formulario para revisarlo.
+ * La categoría de un gasto se resuelve aparte (historial o IA).
+ */
+export function autoSaveBlocker(
+  prefill: BankMessagePrefill,
+  currency: ParsedBankMessage['currency'],
+  accounts: Pick<Account, 'id' | 'currency'>[],
+  history: Pick<TransactionWithCategory, 'amount' | 'type' | 'date' | 'accountId'>[],
+  now: Date = new Date()
+): string | null {
+  const from = accounts.find((a) => a.id === prefill.accountId);
+  if (!from) return 'No reconocimos la cuenta. Elígela y guarda.';
+  if (from.currency !== currency) return `El mensaje está en ${currency} y la cuenta en ${from.currency}. Revisa el monto.`;
+  if (prefill.type === 'transfer') {
+    const to = accounts.find((a) => a.id === prefill.toAccountId);
+    if (!to) return 'No reconocimos la cuenta destino.';
+    if (to.currency !== from.currency) return 'La transferencia es entre monedas distintas. Revisa el monto que llega.';
+  }
+  const day = new Date(prefill.date ?? now).toDateString();
+  const duplicate = history.some((t) =>
+    t.accountId === prefill.accountId && t.type === prefill.type &&
+    Math.abs(t.amount - prefill.amount) < 0.005 && new Date(t.date).toDateString() === day
+  );
+  if (duplicate) return 'Ya tienes un movimiento igual ese día. Revisa que no sea el mismo.';
+  return null;
+}
