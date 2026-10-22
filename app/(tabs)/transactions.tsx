@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useTransactions } from '../../src/hooks/useTransactions';
-import { TransactionForm } from '../../src/components/TransactionForm';
+import { TransactionForm, type TransactionPrefill } from '../../src/components/TransactionForm';
 import { TransactionRow } from '../../src/components/TransactionRow';
 import { SwipeToDelete } from '../../src/components/SwipeToDelete';
 import {
@@ -66,11 +66,16 @@ export default function TransactionsScreen() {
   const [recurringVisible, setRecurringVisible] = useState(false);
   const [filters, setFilters] = useState<TransactionFiltersState>(EMPTY_FILTERS);
 
-  // Atajos de Siri / Apple Pay: financeai://transactions?monto=25000&nota=Starbucks&tipo=ingreso
+  // Atajos de iPhone / Siri / Apple Pay y comandos de voz (ver docs/atajos-y-voz.md):
+  //   financeai://transactions?monto=25000&nota=Starbucks&tipo=ingreso|gasto|transferencia
+  //   &cuenta=<id>&destino=<id>&categoria=<id> (los tres últimos son opcionales)
   // abre el formulario de un movimiento nuevo con esos datos ya escritos.
   // Los botones del inicio abren un movimiento nuevo con ?nuevo=ingreso|gasto|transferencia
-  const shortcut = useLocalSearchParams<{ monto?: string; nota?: string; tipo?: string; nuevo?: string; cuenta?: string }>();
-  const [prefill, setPrefill] = useState<{ amount?: number; notes?: string; type?: 'expense' | 'income' | 'transfer'; accountId?: string } | null>(null);
+  const shortcut = useLocalSearchParams<{
+    monto?: string; nota?: string; tipo?: string; nuevo?: string;
+    cuenta?: string; destino?: string; categoria?: string;
+  }>();
+  const [prefill, setPrefill] = useState<TransactionPrefill | null>(null);
 
   useEffect(() => {
     if (!shortcut.nuevo) return;
@@ -82,17 +87,23 @@ export default function TransactionsScreen() {
   }, [shortcut.nuevo, shortcut.cuenta]);
 
   useEffect(() => {
-    if (!shortcut.monto && !shortcut.nota) return;
+    if (shortcut.nuevo || (!shortcut.monto && !shortcut.nota && !shortcut.tipo)) return;
     setEditingTx(null);
     setPrefill({
       amount: parseShortcutAmount(shortcut.monto) ?? undefined,
       notes: shortcut.nota?.trim() || undefined,
-      type: shortcut.tipo === 'ingreso' ? 'income' : 'expense',
+      type: shortcut.tipo === 'ingreso' ? 'income' : shortcut.tipo === 'transferencia' ? 'transfer' : 'expense',
+      accountId: shortcut.cuenta || undefined,
+      toAccountId: shortcut.destino || undefined,
+      categoryId: shortcut.categoria || undefined,
     });
     setFormVisible(true);
     // Limpiamos los parámetros para que el formulario no se reabra solo
-    router.setParams({ monto: undefined, nota: undefined, tipo: undefined });
-  }, [shortcut.monto, shortcut.nota, shortcut.tipo]);
+    router.setParams({
+      monto: undefined, nota: undefined, tipo: undefined,
+      cuenta: undefined, destino: undefined, categoria: undefined,
+    });
+  }, [shortcut.monto, shortcut.nota, shortcut.tipo, shortcut.cuenta, shortcut.destino, shortcut.categoria, shortcut.nuevo]);
 
   const filteredTransactions = useMemo(
     () => filterTransactions(data.transactions, searchQuery, filters),

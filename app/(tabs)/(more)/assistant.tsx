@@ -1,4 +1,5 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
 import { View, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Text } from '../../../src/components/ui/Text';
 import { RevealText } from '../../../src/components/ui/RevealText';
@@ -13,6 +14,7 @@ import { TAB_BAR_HEIGHT } from '../../../src/constants/layout';
 import { AnimatedPressable } from '../../../src/components/ui/AnimatedPressable';
 import { BackButton } from '../../../src/components/ui/BackButton';
 import { hapticSave, hapticToggle } from '../../../src/utils/haptics';
+import { isDirectCommand } from '../../../src/utils/voiceCommand';
 
 const VERDICT_CONFIG = {
   si:            { label: 'Sí puedes comprarlo',  tone: 'income' as const,  icon: 'checkmark-circle' as const },
@@ -43,9 +45,25 @@ export default function AssistantScreen() {
     const question = text ?? input;
     if (!question.trim() || isLoading) return;
     setInput('');
+    // Órdenes dictadas con el micrófono del teclado ("gasté 20 mil en almuerzo",
+    // "abre metas") se ejecutan en vez de ir a la IA
+    if (isDirectCommand(question)) {
+      router.push({ pathname: '/comando', params: { texto: question } });
+      return;
+    }
     await sendMessage(question);
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
   };
+
+  // Preguntas que llegan por voz (financeai://comando?texto=¿cuánto gasté…?)
+  const { pregunta } = useLocalSearchParams<{ pregunta?: string }>();
+  useEffect(() => {
+    if (!pregunta?.trim()) return;
+    router.setParams({ pregunta: undefined });
+    sendMessage(pregunta).then(() =>
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100)
+    );
+  }, [pregunta]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -163,7 +181,7 @@ export default function AssistantScreen() {
           <View style={styles.inputRow}>
             <TextInput
               style={styles.input}
-              placeholder="Pregunta sobre tus finanzas..."
+              placeholder="Pregunta o di “gasté 20 mil en almuerzo”"
               placeholderTextColor={c.textTertiary}
               value={input}
               onChangeText={setInput}
