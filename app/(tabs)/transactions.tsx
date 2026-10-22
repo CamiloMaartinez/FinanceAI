@@ -17,7 +17,7 @@ import {
   type TransactionFiltersState,
 } from '../../src/components/TransactionFilters';
 import { filterTransactions } from '../../src/utils/transactionFilters';
-import { parseShortcutAmount } from '../../src/utils/shortcutParams';
+import { buildShortcutPrefill, quickSaveInput } from '../../src/utils/shortcutParams';
 import { hapticSave, hapticToggle } from '../../src/utils/haptics';
 import { Mascot } from '../../src/components/mascot/Mascot';
 import { useColors, spacing, typography, fonts } from '../../src/constants/theme';
@@ -29,7 +29,7 @@ import { RecurringListModal } from '../../src/components/RecurringListModal';
 import { BankMessageModal } from '../../src/components/BankMessageModal';
 import { parseBankMessage, buildPrefillFromMessage, type BankMessagePrefill } from '../../src/utils/bankMessage';
 import { autoSaveFromMessage } from '../../src/services/bankMessageAutoSave';
-import { deleteTransaction } from '../../src/database/db';
+import { createTransaction, deleteTransaction } from '../../src/database/db';
 import { formatWithCurrency } from '../../src/constants/currencies';
 
 function groupByDay(transactions: TransactionWithCategory[]) {
@@ -95,24 +95,54 @@ export default function TransactionsScreen() {
     router.setParams({ nuevo: undefined, cuenta: undefined });
   }, [shortcut.nuevo, shortcut.cuenta]);
 
+  // Espera a que carguen cuentas y categorías: el atajo las manda por nombre
   useEffect(() => {
     if (shortcut.nuevo || (!shortcut.monto && !shortcut.nota && !shortcut.tipo)) return;
-    setEditingTx(null);
-    setPrefill({
-      amount: parseShortcutAmount(shortcut.monto) ?? undefined,
-      notes: shortcut.nota?.trim() || undefined,
-      type: shortcut.tipo === 'ingreso' ? 'income' : shortcut.tipo === 'transferencia' ? 'transfer' : 'expense',
-      accountId: shortcut.cuenta || undefined,
-      toAccountId: shortcut.destino || undefined,
-      categoryId: shortcut.categoria || undefined,
-    });
-    setFormVisible(true);
+    if (shortcut.mensaje || data.isLoading) return;
+    const values = buildShortcutPrefill(shortcut, data.accounts, data.categories);
+    const autoSave = shortcut.guardar === '1' || shortcut.guardar === 'si';
     // Limpiamos los parámetros para que el formulario no se reabra solo
     router.setParams({
       monto: undefined, nota: undefined, tipo: undefined,
-      cuenta: undefined, destino: undefined, categoria: undefined,
+      cuenta: undefined, destino: undefined, categoria: undefined, guardar: undefined,
     });
-  }, [shortcut.monto, shortcut.nota, shortcut.tipo, shortcut.cuenta, shortcut.destino, shortcut.categoria, shortcut.nuevo]);
+    const input = autoSave ? quickSaveInput(values, data.categories) : null;
+    if (!input) {
+      setEditingTx(null);
+      setPrefill(values);
+      setFormVisible(true);
+      return;
+    }
+    createTransaction(input)
+      .then((id) => confirmSaved(id, input))
+      .catch(() => {
+        setEditingTx(null);
+        setPrefill(values);
+        setFormVisible(true);
+      });
+  }, [shortcut.monto, shortcut.nota, shortcut.tipo, shortcut.cuenta, shortcut.destino, shortcut.categoria, shortcut.nuevo, data.isLoading]);
+
+  // Aviso tras guardar desde un atajo, con opción de deshacer
+  const confirmSaved = async (id: string, input: TransactionInput) => {
+    hapticSave();
+    await data.refresh();
+    const currency = data.accounts.find((a) => a.id === input.accountId)?.currency ?? 'COP';
+    Alert.alert(
+      'Movimiento registrado',
+      `${input.notes} · ${formatWithCurrency(input.amount, currency)}`,
+      [
+        {
+          text: 'Deshacer',
+          style: 'destructive',
+          onPress: async () => {
+            await deleteTransaction({ id, ...input, toAccountId: input.toAccountId, toAmount: null });
+            await data.refresh();
+          },
+        },
+        { text: 'Listo', style: 'cancel' },
+      ]
+    );
+  };
 
   const openFromMessage = (values: BankMessagePrefill) => {
     setEditingTx(null);
@@ -151,25 +181,7 @@ export default function TransactionsScreen() {
           ]);
           return;
         }
-        hapticSave();
-        await data.refresh();
-        const { id, input } = result;
-        const currency = data.accounts.find((a) => a.id === input.accountId)?.currency ?? 'COP';
-        Alert.alert(
-          'Movimiento registrado',
-          `${input.notes} · ${formatWithCurrency(input.amount, currency)}`,
-          [
-            {
-              text: 'Deshacer',
-              style: 'destructive',
-              onPress: async () => {
-                await deleteTransaction({ id, ...input, toAccountId: input.toAccountId, toAmount: null });
-                await data.refresh();
-              },
-            },
-            { text: 'Listo', style: 'cancel' },
-          ]
-        );
+        await confirmSaved(result.id, result.input);
       })
       .catch(() => openFromMessage(values));
   }, [shortcut.mensaje, data.isLoading]);

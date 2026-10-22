@@ -22,8 +22,9 @@ Parámetros de `transactions` (todos opcionales):
 | `monto` | `25000`, `25.000`, `$25.000`, `25,50` |
 | `nota` | Texto libre (comercio, descripción) |
 | `tipo` | `gasto` (por defecto), `ingreso`, `transferencia` |
-| `cuenta` / `destino` | Id de la cuenta de origen / destino |
-| `categoria` | Id de la categoría (solo gastos) |
+| `cuenta` / `destino` | Nombre de la cuenta de origen / destino (`Nequi`, `Bancolombia`). Sin tildes ni mayúsculas también sirve; el id interno también |
+| `categoria` | Nombre de la categoría (`Alimentacion`, `Transporte`), solo gastos |
+| `guardar` | `1` = guarda sin abrir el formulario si trae monto, cuenta y categoría; si falta algo, abre el formulario |
 
 ### Qué entiende `comando`
 
@@ -41,17 +42,22 @@ mil”, “un millón y medio”, “1,5 millones”, “50k”.
 
 ## Crear los atajos en el iPhone
 
-### 1. “Gasto rápido” (panel de Atajos, widget o botón de acción)
+### 1. “Gasto rápido” (monto, cuenta, categoría y nota opcional)
 
-1. Abre **Atajos** → **+**.
-2. Agrega **Solicitar entrada** → tipo **Número**, pregunta “¿Cuánto?”.
-3. Agrega **Solicitar entrada** → tipo **Texto**, pregunta “¿En qué?”.
-4. Agrega **URL** con:
-   `financeai://transactions?tipo=gasto&monto=`**[Entrada 1]**`&nota=`**[Entrada 2]**
-5. Agrega **Abrir URL**.
-6. Nómbralo “Gasto rápido” y elige ícono y color.
+> Todo lo que escribe o elige la persona pasa por **Codificar URL**: sin ese
+> paso, un espacio o una tilde rompen el enlace.
 
-Duplícalo y cambia `tipo=gasto` por `tipo=ingreso` para “Ingreso rápido”.
+1. **Solicitar entrada** (Número, “¿Cuánto?”) → **Codificar URL** → **Establecer variable** `Monto`.
+2. **Elegir de la lista** con los nombres de tus cuentas (como aparecen en la app) → **Codificar URL** → **Establecer variable** `Cuenta`.
+3. **Elegir de la lista** con tus categorías → **Codificar URL** → **Establecer variable** `Categoria`.
+4. **Solicitar entrada** (Texto, “Nota (opcional)”) → **Codificar URL** → **Establecer variable** `Nota`.
+5. **Texto**:
+   `financeai://transactions?tipo=gasto&monto=[Monto]&cuenta=[Cuenta]&categoria=[Categoria]&nota=[Nota]&guardar=1`
+6. **Abrir URLs**.
+
+Con `&guardar=1` el gasto se registra directamente y sale “Movimiento
+registrado” con **Deshacer**. Sin él, abre el formulario lleno para confirmar.
+Si la nota queda vacía, el movimiento toma el nombre de la categoría.
 
 ### 2. “Anotar en Smart Finance” (voz con Siri)
 
