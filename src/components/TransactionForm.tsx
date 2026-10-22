@@ -35,6 +35,17 @@ function isSameDay(a: Date, b: Date): boolean {
     && a.getDate() === b.getDate();
 }
 
+// Datos para precargar un movimiento NUEVO (atajos de iPhone, comandos de voz)
+export interface TransactionPrefill {
+  amount?: number;
+  notes?: string;
+  type?: FormType;
+  accountId?: string;
+  toAccountId?: string;
+  categoryId?: string;
+  date?: string; // ISO, por ejemplo la fecha que trae el mensaje del banco
+}
+
 interface TransactionFormProps {
   visible: boolean;
   accounts: Account[];
@@ -42,7 +53,8 @@ interface TransactionFormProps {
   editingTransaction?: TransactionWithCategory | null;
   // Datos para precargar un movimiento NUEVO (por ejemplo, desde un atajo
   // de Siri que abre financeai://transactions?monto=...&nota=...)
-  prefill?: { amount?: number; notes?: string; type?: FormType; accountId?: string } | null;
+  // o desde el mensaje del banco: financeai://transactions?mensaje=...)
+  prefill?: TransactionPrefill | null;
   onClose: () => void;
   // `recurrence` solo llega en movimientos nuevos de ingreso o gasto
   // splitWith: personas con quienes se divide un gasto nuevo (null = no se divide)
@@ -185,6 +197,22 @@ export function TransactionForm({
       if (prefill.accountId && accounts.some((a) => a.id === prefill.accountId)) setAccountId(prefill.accountId);
       if (prefill.amount) setAmount(String(Math.round(prefill.amount)));
       if (prefill.notes) setNotes(prefill.notes);
+      if (prefill.type === 'transfer' && prefill.toAccountId && prefill.toAccountId !== prefill.accountId
+        && accounts.some((a) => a.id === prefill.toAccountId)) {
+        setToAccountId(prefill.toAccountId);
+        // "pasa 50 mil a Efectivo": sin origen, sale de otra cuenta distinta al destino
+        if (!prefill.accountId) {
+          const from = accounts.find((a) => a.id !== prefill.toAccountId);
+          if (from) setAccountId(from.id);
+        }
+      }
+      // Una categoría reconocida en la frase cuenta como elegida a mano: la IA no la cambia
+      if ((prefill.type ?? 'expense') === 'expense' && prefill.categoryId
+        && categories.some((cat) => cat.id === prefill.categoryId)) {
+        setCategoryId(prefill.categoryId);
+        setCategoryFromAI(false);
+      }
+      if (prefill.date && !Number.isNaN(new Date(prefill.date).getTime())) setDate(new Date(prefill.date));
       setError('');
     }
   }, [visible, prefill]);
