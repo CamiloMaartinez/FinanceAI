@@ -26,6 +26,11 @@ import { AnimatedPressable } from '../../src/components/ui/AnimatedPressable';
 import type { TransactionInput, TransactionWithCategory } from '../../src/models/types';
 import type { RecurrenceFrequency } from '../../src/utils/recurrence';
 import { RecurringListModal } from '../../src/components/RecurringListModal';
+import { BankMessageModal } from '../../src/components/BankMessageModal';
+import { parseBankMessage, buildPrefillFromMessage, type BankMessagePrefill } from '../../src/utils/bankMessage';
+import { autoSaveFromMessage } from '../../src/services/bankMessageAutoSave';
+import { deleteTransaction } from '../../src/database/db';
+import { formatWithCurrency } from '../../src/constants/currencies';
 
 function groupByDay(transactions: TransactionWithCategory[]) {
   const groups: { label: string; items: TransactionWithCategory[] }[] = [];
@@ -64,6 +69,7 @@ export default function TransactionsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [recurringVisible, setRecurringVisible] = useState(false);
+  const [messageVisible, setMessageVisible] = useState(false);
   const [filters, setFilters] = useState<TransactionFiltersState>(EMPTY_FILTERS);
 
   // Atajos de iPhone / Siri / Apple Pay y comandos de voz (ver docs/atajos-y-voz.md):
@@ -71,9 +77,12 @@ export default function TransactionsScreen() {
   //   &cuenta=<id>&destino=<id>&categoria=<id> (los tres últimos son opcionales)
   // abre el formulario de un movimiento nuevo con esos datos ya escritos.
   // Los botones del inicio abren un movimiento nuevo con ?nuevo=ingreso|gasto|transferencia
+  // Mensaje del banco (Atajo "Al recibir un mensaje"): financeai://transactions?mensaje=<texto del SMS>
+  // Con &guardar=1 se guarda solo, sin abrir el formulario (si hay datos suficientes)
   const shortcut = useLocalSearchParams<{
     monto?: string; nota?: string; tipo?: string; nuevo?: string;
     cuenta?: string; destino?: string; categoria?: string;
+    mensaje?: string; guardar?: string;
   }>();
   const [prefill, setPrefill] = useState<TransactionPrefill | null>(null);
 
@@ -104,6 +113,66 @@ export default function TransactionsScreen() {
       cuenta: undefined, destino: undefined, categoria: undefined,
     });
   }, [shortcut.monto, shortcut.nota, shortcut.tipo, shortcut.cuenta, shortcut.destino, shortcut.categoria, shortcut.nuevo]);
+
+  const openFromMessage = (values: BankMessagePrefill) => {
+    setEditingTx(null);
+    setPrefill(values);
+    setFormVisible(true);
+  };
+
+  // Espera a que carguen las cuentas: sin ellas no se puede reconocer la
+  // cuenta del mensaje ni guardar el movimiento
+  useEffect(() => {
+    if (!shortcut.mensaje || data.isLoading) return;
+    const parsed = parseBankMessage(shortcut.mensaje);
+    const autoSave = shortcut.guardar === '1' || shortcut.guardar === 'si';
+    router.setParams({ mensaje: undefined, guardar: undefined });
+    if (!parsed) {
+      Alert.alert(
+        'No reconocimos el mensaje',
+        'No encontramos un monto y un movimiento en ese texto. Puedes registrarlo a mano o pegarlo en "Mensaje del banco".'
+      );
+      return;
+    }
+    if (data.accounts.length === 0) {
+      Alert.alert('Sin cuentas', 'Crea una cuenta primero.');
+      return;
+    }
+    const values = buildPrefillFromMessage(parsed, data.accounts, data.transactions);
+    if (!autoSave) {
+      openFromMessage(values);
+      return;
+    }
+    autoSaveFromMessage(values, parsed.currency, data.accounts, data.categories, data.transactions)
+      .then(async (result) => {
+        if (result.status === 'review') {
+          Alert.alert('Revisa este movimiento', result.reason, [
+            { text: 'Revisar', onPress: () => openFromMessage(result.prefill) },
+          ]);
+          return;
+        }
+        hapticSave();
+        await data.refresh();
+        const { id, input } = result;
+        const currency = data.accounts.find((a) => a.id === input.accountId)?.currency ?? 'COP';
+        Alert.alert(
+          'Movimiento registrado',
+          `${input.notes} · ${formatWithCurrency(input.amount, currency)}`,
+          [
+            {
+              text: 'Deshacer',
+              style: 'destructive',
+              onPress: async () => {
+                await deleteTransaction({ id, ...input, toAccountId: input.toAccountId, toAmount: null });
+                await data.refresh();
+              },
+            },
+            { text: 'Listo', style: 'cancel' },
+          ]
+        );
+      })
+      .catch(() => openFromMessage(values));
+  }, [shortcut.mensaje, data.isLoading]);
 
   const filteredTransactions = useMemo(
     () => filterTransactions(data.transactions, searchQuery, filters),
@@ -182,6 +251,21 @@ export default function TransactionsScreen() {
             </Text>
           </View>
           <View style={styles.headerActions}>
+          <AnimatedPressable
+            style={styles.secondaryButton}
+            onPress={() => {
+              if (data.accounts.length === 0) {
+                Alert.alert('Sin cuentas', 'Crea una cuenta primero.');
+                return;
+              }
+              setMessageVisible(true);
+            }}
+            onPressFeedback={hapticToggle}
+            accessibilityRole="button"
+            accessibilityLabel="Registrar desde un mensaje del banco"
+          >
+            <Ionicons name="chatbubble-ellipses-outline" size={18} color={c.textPrimary} />
+          </AnimatedPressable>
           <AnimatedPressable
             style={styles.secondaryButton}
             onPress={() => setRecurringVisible(true)}
@@ -317,6 +401,19 @@ export default function TransactionsScreen() {
         prefill={prefill}
         onClose={handleCloseForm}
         onSave={handleSave}
+      />
+
+      <BankMessageModal
+        visible={messageVisible}
+        accounts={data.accounts}
+        categories={data.categories}
+        history={data.transactions}
+        onClose={() => setMessageVisible(false)}
+        onUse={(p) => {
+          setMessageVisible(false);
+          // iOS no presenta un modal mientras el anterior aún se está cerrando
+          setTimeout(() => openFromMessage(p), 400);
+        }}
       />
 
       <RecurringListModal

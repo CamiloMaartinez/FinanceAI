@@ -43,6 +43,7 @@ export interface TransactionPrefill {
   accountId?: string;
   toAccountId?: string;
   categoryId?: string;
+  date?: string; // ISO, por ejemplo la fecha que trae el mensaje del banco
 }
 
 interface TransactionFormProps {
@@ -52,6 +53,7 @@ interface TransactionFormProps {
   editingTransaction?: TransactionWithCategory | null;
   // Datos para precargar un movimiento NUEVO (por ejemplo, desde un atajo
   // de Siri que abre financeai://transactions?monto=...&nota=...)
+  // o desde el mensaje del banco: financeai://transactions?mensaje=...)
   prefill?: TransactionPrefill | null;
   onClose: () => void;
   // `recurrence` solo llega en movimientos nuevos de ingreso o gasto
@@ -210,6 +212,7 @@ export function TransactionForm({
         setCategoryId(prefill.categoryId);
         setCategoryFromAI(false);
       }
+      if (prefill.date && !Number.isNaN(new Date(prefill.date).getTime())) setDate(new Date(prefill.date));
       setError('');
     }
   }, [visible, prefill]);
