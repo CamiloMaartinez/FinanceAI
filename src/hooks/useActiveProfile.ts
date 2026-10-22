@@ -9,12 +9,17 @@ import { getProfile } from '../services/profile';
 export function useActiveProfile() {
   const [profile, setProfile] = useState<AppProfile | null>(null);
   const [displayName, setDisplayName] = useState('');
+  // Nombre que eligió la persona (vacío si sigue el genérico "Principal"): para saludar
+  const [personalName, setPersonalName] = useState('');
 
   const load = useCallback(async () => {
     const [active, user] = await Promise.all([getActiveProfile(), getProfile()]);
     setProfile(active);
     // El nombre que el usuario escribió en Perfil manda; si no lo cambió, el del perfil
-    setDisplayName(user.name && user.name !== 'Mi Perfil' ? user.name : active.name);
+    const userName = user.name && user.name !== 'Mi Perfil' ? user.name : '';
+    setDisplayName(userName || active.name);
+    const isGenericDefault = active.id === 'default' && active.name === 'Principal';
+    setPersonalName(userName || (isGenericDefault ? '' : active.name));
   }, []);
 
   useEffect(() => {
@@ -22,5 +27,5 @@ export function useActiveProfile() {
     return onProfilesChanged(() => { load().catch(() => {}); });
   }, [load]);
 
-  return { profile, displayName, refresh: load };
+  return { profile, displayName, personalName, refresh: load };
 }

@@ -6,7 +6,9 @@ import { AmountEntrySheet } from '../../src/components/AmountEntrySheet';
 import { SwipeToConfirm } from '../../src/components/ui/SwipeToConfirm';
 import { PinPad } from '../../src/components/PinPad';
 import { Onboarding } from '../../src/components/Onboarding';
-import { hasSeenOnboarding } from '../../src/services/onboarding';
+import { getOnboardingInterests, hasSeenOnboarding } from '../../src/services/onboarding';
+import { getProfiles } from '../../src/services/profiles';
+import { getProfile } from '../../src/services/profile';
 
 const type = (keys: string, decimals = 0) => keys.split('').reduce((raw, k) => applyAmountKey(raw, k === '<' ? 'del' : k, decimals), '');
 
@@ -80,17 +82,49 @@ describe('PinPad sobre el teclado compartido', () => {
 });
 
 describe('Onboarding', () => {
-  it('avanza con Siguiente, los puntos marcan la página y Empezar lo da por visto', async () => {
+  it('pregunta nombre e intereses, arma el recorrido y lo guarda al empezar', async () => {
     const onFinish = jest.fn();
     await render(<Onboarding profileId="p-test" onFinish={onFinish} />);
-    expect(screen.getByRole('tab', { name: /Página 1 de 4/ }).props.accessibilityState).toEqual({ selected: true });
+    expect(screen.getByRole('tab', { name: /Página 1 de/ }).props.accessibilityState).toEqual({ selected: true });
 
+    await fireEvent.press(screen.getByRole('button', { name: 'Personalizar' }));
+    await fireEvent.changeText(screen.getByLabelText('Tu nombre'), '  Camilo  Martínez ');
+    await fireEvent.press(screen.getByRole('button', { name: 'Siguiente' }));
+
+    expect(screen.getByText('Camilo, ¿qué quieres lograr?')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Salir de deudas' }));
+    expect(screen.getByRole('checkbox', { name: 'Salir de deudas' }).props.accessibilityState).toEqual({ checked: true });
+    await fireEvent.press(screen.getByRole('button', { name: 'Siguiente' }));
+
+    // Recorrido: movimientos, deudas, asistente y seguridad, luego el resumen
+    expect(screen.getByText('Registra en segundos')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Siguiente' }));
+    expect(screen.getByText('Deudas bajo control')).toBeTruthy();
     for (let i = 0; i < 3; i++) await fireEvent.press(screen.getByRole('button', { name: 'Siguiente' }));
-    expect(screen.getByText('Un asistente con IA')).toBeTruthy();
+    expect(screen.getByText('Todo listo, Camilo')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Saltar la introducción' })).toBeNull();
 
     await fireEvent.press(screen.getByRole('button', { name: 'Empezar' }));
     await waitFor(() => expect(onFinish).toHaveBeenCalled());
     expect(await hasSeenOnboarding('p-test')).toBe(true);
+    expect(await getOnboardingInterests('p-test')).toEqual(['deudas']);
+    expect((await getProfiles()).find((p) => p.id === 'p-test')).toBeUndefined();
+  });
+
+  it('Saltar la da por vista sin pedir datos', async () => {
+    const onFinish = jest.fn();
+    await render(<Onboarding profileId="p-skip" onFinish={onFinish} />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Saltar la introducción' }));
+    await waitFor(() => expect(onFinish).toHaveBeenCalled());
+    expect(await hasSeenOnboarding('p-skip')).toBe(true);
+  });
+
+  it('en el perfil principal guarda el nombre para el saludo', async () => {
+    await render(<Onboarding profileId="default" onFinish={jest.fn()} />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Personalizar' }));
+    await fireEvent.changeText(screen.getByLabelText('Tu nombre'), 'Camilo');
+    await fireEvent.press(screen.getByRole('button', { name: 'Saltar la introducción' }));
+    await waitFor(async () => expect((await getProfile()).name).toBe('Camilo'));
+    expect((await getProfiles())[0].name).toBe('Camilo');
   });
 });
