@@ -1,0 +1,67 @@
+@startuml 03a_actividades_registrar_gasto
+!include _estilo.iuml
+title Diagrama de actividades – Registrar un gasto con escaneo de recibo (CU-003 + CU-002)
+
+|Usuario|
+start
+:Toca «Gasto» en el Inicio;
+|App móvil|
+:Abrir hoja de monto con el\nsaldo disponible de la cuenta;
+|Usuario|
+:Elige la cuenta y digita el monto;
+|App móvil|
+if (¿Monto > 0?) then (no)
+  :Mantener deshabilitado\n«Desliza para confirmar»;
+  |Usuario|
+  :Corrige el monto;
+  |App móvil|
+else (sí)
+endif
+|Usuario|
+:Desliza para confirmar;
+|App móvil|
+:Mostrar formulario del movimiento\n(fecha «Hoy», cuenta elegida);
+|Usuario|
+if (¿Escanear el recibo?) then (sí)
+  :Toma o elige la foto del recibo;
+  |App móvil|
+  :Comprimir imagen (calidad 0,7) y\nenviarla a /api/scan-receipt (HTTPS);
+  |Servidor de IA|
+  :Validar token, límite de peticiones\ny tamaño máximo (8 MB);
+  if (¿Petición válida y Gemini responde?) then (sí)
+    :Extraer monto y comercio\ncon Gemini;
+    |App móvil|
+    if (¿Se leyó el monto?) then (sí)
+      :Precargar monto y nota;\nadjuntar la foto;
+    else (no)
+      :Mostrar «No se pudo leer el monto»;
+    endif
+  else (no: sin internet / 401 / 413 / 429)
+    |App móvil|
+    :Mostrar «Error al escanear»;\nel usuario completa a mano;
+  endif
+else (no)
+endif
+|Usuario|
+:Elige categoría y nota\n(opcional: repetir o dividir);
+:Toca «Guardar»;
+|App móvil|
+if (¿Monto válido y cuenta elegida?) then (no)
+  :Mostrar «Ingresa un monto válido»;
+  stop
+else (sí)
+endif
+if (¿Dividir con otras personas?) then (sí)
+  :Crear el gasto y una deuda\n«me deben» por persona;
+else (no)
+  :Guardar movimiento en SQLite y\nactualizar el saldo de la cuenta\n(transacción atómica);
+endif
+if (¿Eligió repetir (semanal,\nquincenal o mensual)?) then (sí)
+  :Crear regla de movimiento recurrente;
+else (no)
+endif
+:Recargar Inicio y Movimientos;
+|Usuario|
+:Ve el gasto en la lista «Hoy»;
+stop
+@enduml

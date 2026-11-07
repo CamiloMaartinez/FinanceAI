@@ -1,0 +1,175 @@
+@startuml 02b_clases_propuesta2_modelo
+!include _estilo.iuml
+title Diagrama de clases – Propuesta 2 (seleccionada): capa Modelo de la arquitectura MVVM
+skinparam linetype polyline
+hide empty members
+
+package "Modelo (src/models/types.ts)" {
+  package "Cuentas y movimientos" {
+    class Account {
+      + id : string
+      + name : string
+      + type : AccountType
+      + balance : number
+      + currency : 'COP' | 'USD' | 'EUR'
+      + colorHex : string
+      + gradientTo : string | null
+      + iconName : string
+      + isActive : boolean
+      + createdAt : string
+    }
+    enum AccountType {
+      checking
+      savings
+      cash
+      digital
+      investment
+      credit
+    }
+    class Transaction {
+      + id : string
+      + amount : number
+      + type : TransactionType
+      + date : string
+      + accountId : string
+      + toAccountId : string | null
+      + toAmount : number | null
+      + categoryId : string | null
+      + notes : string
+      + receiptUri : string | null
+      + createdAt : string
+    }
+    enum TransactionType {
+      income
+      expense
+      transfer
+      debt_in
+      debt_out
+    }
+    class Category {
+      + id : string
+      + name : string
+      + iconName : string
+      + colorHex : string
+      + isDefault : boolean
+      + subcategories : string[]
+    }
+    class RecurringTransaction {
+      + id : string
+      + amount : number
+      + type : 'income' | 'expense'
+      + frequency : 'weekly' | 'biweekly' | 'monthly'
+      + anchorDay : number
+      + nextDate : string
+      + isActive : boolean
+    }
+  }
+  package "Planificación" {
+    class Budget {
+      + id : string
+      + month : number
+      + year : number
+      + totalLimit : number
+      + categoryLimits : Record<categoryId, number>
+      + isAIGenerated : boolean
+    }
+    class Goal {
+      + id : string
+      + name : string
+      + targetAmount : number
+      + currentAmount : number
+      + targetDate : string
+      + priority : 'low' | 'medium' | 'high'
+      + isCompleted : boolean
+    }
+    class GoalAutoContribution {
+      + id : string
+      + amount : number
+      + frequency : 'weekly' | 'biweekly' | 'monthly'
+      + nextDate : string
+      + isActive : boolean
+    }
+    class Debt {
+      + id : string
+      + direction : 'owed_to_me' | 'i_owe'
+      + personName : string
+      + amount : number
+      + dueDate : string | null
+      + isSettled : boolean
+      + paidAmount : number
+      + remaining : number
+    }
+    class DebtPayment {
+      + id : string
+      + amount : number
+      + date : string
+    }
+    class Alert {
+      + id : string
+      + title : string
+      + type : AlertType
+      + threshold : number
+      + isActive : boolean
+      + lastTriggered : string | null
+    }
+    class Challenge {
+      + id : string
+      + title : string
+      + startDate : string
+      + endDate : string
+      + status : 'active' | 'completed' | 'failed'
+    }
+  }
+  package "Suscripciones y tarjetas" {
+    class Subscription {
+      + id : string
+      + name : string
+      + amount : number
+      + frequency : BillingFrequency
+      + nextBillingDate : string
+      + anchorDay : number | null
+      + isActive : boolean
+    }
+    class Card {
+      + id : string
+      + name : string
+      + bank : string
+      + annualFee : number
+      + cashbackPercent : number
+      + interestRate : number
+      + creditLimit : number | null
+      + last4 : string | null
+    }
+  }
+  package "Perfil (AsyncStorage)" {
+    class AppProfile {
+      + id : string
+      + name : string
+      + dbFileName : string
+      + avatarUri : string | null
+      + createdAt : string
+    }
+  }
+}
+
+AppProfile "1" -- "1" "Cuentas y movimientos" : su propio archivo SQLite >
+Account "1" -- "0..*" Transaction : origen (accountId) <
+Account "0..1" -- "0..*" Transaction : destino (toAccountId) <
+Category "0..1" -- "0..*" Transaction : clasifica >
+Account "1" -- "0..*" RecurringTransaction
+Category "0..1" -- "0..*" RecurringTransaction
+RecurringTransaction ..> Transaction : <<genera>>
+Budget "0..*" -- "0..*" Category : límite por categoría >
+Goal "1" *-- "0..*" GoalAutoContribution
+Debt "1" *-- "0..*" DebtPayment
+Debt "0..1" -- "0..1" Transaction : movimiento asociado >
+DebtPayment "0..1" -- "0..1" Transaction
+Alert "0..*" -- "0..1" Category
+Challenge "0..*" -- "1" Category
+Account .. AccountType
+Transaction .. TransactionType
+
+note bottom of Budget
+  Un presupuesto por mes y año (restricción UNIQUE(month, year)).
+end note
+@enduml

@@ -1,0 +1,35 @@
+@startuml 04d_secuencia_escanear_recibo
+!include _estilo.iuml
+title Diagrama de secuencia – Escanear un recibo con IA (CU-002)
+autonumber
+actor Usuario as U
+participant "ReceiptScannerButton\n<<vista>>" as RB
+participant "expo-image-picker\n(cámara)" as CAM
+participant "receiptScanner.ts" as RS
+participant "/api/scan-receipt\n+ guard.ts" as API
+participant "Google Gemini" as GEM
+participant "TransactionForm" as F
+
+U -> RB : Toca «Escanear recibo»
+RB -> CAM : requestCameraPermissionsAsync()
+alt permiso denegado
+  RB --> U : aviso para habilitar la cámara
+else permiso concedido
+RB -> CAM : launchCameraAsync(quality 0,7, base64)
+U -> CAM : Toma la foto
+CAM --> RB : imagen (uri + base64)
+RB -> RB : isScanning = true (láser de escaneo)
+RB -> RS : scanReceipt(base64)
+RS -> API : POST /api/scan-receipt (x-app-token, ≤ 8 MB)
+API -> GEM : imagen + instrucción de extracción
+GEM --> API : { amount, merchant }
+API --> RS : JSON
+RS --> RB : ScannedReceipt
+alt amount es null
+  RB --> U : «No se pudo leer el monto»
+else monto leído
+  RB -> F : onScanned(monto, notaSugerida, uri)
+  F --> U : Formulario precargado con la foto adjunta
+end
+end
+@enduml

@@ -1,0 +1,6 @@
+Summary,Issue Type,Status,Story Points,Sprint,Assignee,Description
+Informe final Entrega 3,Task,Done,5,Sprint 6,Mauro Alexander Romero Arias,Formato_Informe_3_Final_C2 diligenciado con los 16 criterios de evaluación.
+Plan de pruebas funcionales y unitarias con resultados,Task,Done,3,Sprint 6,Juan Camilo Alfonso Martínez,25 pruebas funcionales y 456 pruebas unitarias (Jest) con 92.8 % de cobertura.
+Presentación de la sustentación final,Task,Done,3,Sprint 6,Mauro Alexander Romero Arias,Presentación PPTX y PDF para 15 minutos.
+Video de funcionalidades (mínimo 5 minutos),Task,Done,3,Sprint 6,Mauro Alexander Romero Arias,Video MP4 con todas las funcionalidades de la app.
+Código fuente comprimido y entregable final,Task,Done,2,Sprint 6,Juan Camilo Alfonso Martínez,ZIP con el código y node_modules; paquete Grupo6-Proyecto.

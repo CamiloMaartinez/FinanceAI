@@ -1,0 +1,46 @@
+@startuml 01b_casos_de_uso_parte2
+!include _estilo.iuml
+title Diagrama de casos de uso (2/2) – Planificación, suscripciones y asistencia con IA
+left to right direction
+actor "Usuario" as U
+actor "Servicio de IA\n(servidor + Gemini)" as IA <<sistema>>
+actor "Notificaciones\ndel sistema" as NOT <<sistema>>
+rectangle "Smart Finance (aplicación móvil)" {
+  package "Planificación" {
+    usecase "CU-008 Gestionar\npresupuesto mensual" as CU8
+    usecase "CU-009 Gestionar metas\nde ahorro" as CU9
+    usecase "CU-009.1 Programar aporte\nautomático a meta" as AUT
+    usecase "CU-010 Gestionar deudas\ny préstamos" as CU10
+    usecase "CU-010.1 Registrar abono\na una deuda" as ABO
+    usecase "CU-011 Configurar alertas" as CU11
+  }
+  package "Suscripciones" {
+    usecase "CU-005 Configurar suscripciones\ny recordatorios" as CU5
+  }
+  package "Asistencia con IA" {
+    usecase "CU-006 Consultar al\nasistente financiero" as CU6
+    usecase "CU-014 Evaluar una compra\n(¿Puedo comprarlo?)" as CU14
+    usecase "CU-008.1 Sugerir\npresupuesto con IA" as SUG
+    usecase "CU-006.1 Construir contexto\nfinanciero" as CTX
+  }
+}
+U --> CU8
+U --> CU9
+U --> CU10
+U --> CU11
+U --> CU5
+U --> CU6
+U --> CU14
+AUT .> CU9 : <<extend>>
+ABO .> CU10 : <<extend>>
+SUG .> CU8 : <<extend>>
+CU6 ..> CTX : <<include>>
+CU14 ..> CTX : <<include>>
+CU6 --> IA
+CU14 --> IA
+SUG --> IA
+CU5 --> NOT
+CU11 --> NOT
+CU8 --> NOT
+CU10 --> NOT
+@enduml

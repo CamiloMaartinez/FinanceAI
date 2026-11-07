@@ -1,0 +1,54 @@
+@startuml 04b_secuencia_asistente_ia
+!include _estilo.iuml
+title Diagrama de secuencia – Consultar al asistente financiero con IA (CU-006)
+autonumber
+actor Usuario as U
+participant "AssistantScreen\n<<vista>>" as V
+participant "useFinancialAssistant\n<<viewmodel>>" as VM
+participant "db.ts" as DB
+participant "ai.ts\n<<servicio>>" as AI
+box "Servidor (EAS Hosting)" #F7F4FF
+participant "/api/assistant\n<<ruta API>>" as API
+participant "guard.ts" as G
+participant "gemini.ts" as GM
+end box
+participant "Google Gemini\n<<API externa>>" as GEM
+
+U -> V : Escribe la pregunta y toca enviar
+V -> VM : sendMessage(pregunta)
+activate VM
+VM -> VM : agregar mensaje del usuario;\nisLoading = true
+VM -> DB : buildFinancialContext()
+DB --> VM : saldo, ingresos, gastos, categorías,\nmetas, deudas, suscripciones, presupuesto
+VM -> AI : askFinancialAssistant(pregunta, contexto)
+AI -> API : POST /api/assistant (HTTPS)\nheader x-app-token
+activate API
+API -> G : guardRequest(req, 50 KB)
+alt token inválido
+  G --> API : 401 No autorizado
+else más de 20 peticiones/min por IP
+  G --> API : 429 Demasiadas peticiones
+else cuerpo muy grande
+  G --> API : 413 Petición demasiado grande
+else válida
+  G --> API : null (continuar)
+  API -> GM : askFinancialAssistantServer(pregunta, contexto)
+  loop hasta 3 intentos si 429 / 503
+    GM -> GEM : generateContent(prompt + contexto)
+    GEM --> GM : respuesta
+  end
+  GM --> API : texto
+end
+API --> AI : JSON { text } o { error }
+deactivate API
+alt respuesta correcta
+  AI --> VM : texto
+  VM -> VM : agregar mensaje de la IA
+else error o sin conexión
+  AI --> VM : excepción
+  VM -> VM : error = mensaje para el usuario
+end
+VM --> V : messages, isLoading = false
+deactivate VM
+V --> U : Muestra la respuesta (o el error)
+@enduml

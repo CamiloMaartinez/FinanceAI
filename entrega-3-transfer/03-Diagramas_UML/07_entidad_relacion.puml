@@ -1,0 +1,181 @@
+@startuml 07_entidad_relacion
+!include _estilo.iuml
+hide circle
+skinparam linetype ortho
+entity accounts {
+  * id : TEXT <<PK>>
+  --
+  name
+  type
+  balance
+  currency
+  colorHex
+  gradientTo
+  iconName
+  isActive
+  createdAt
+}
+entity transactions {
+  * id : TEXT <<PK>>
+  --
+  amount
+  type
+  date
+  accountId : TEXT <<FK>>
+  toAccountId : TEXT <<FK>>
+  toAmount
+  categoryId : TEXT <<FK>>
+  notes
+  tags (JSON)
+  receiptUri
+  createdAt
+}
+entity recurring_transactions {
+  * id : TEXT <<PK>>
+  --
+  amount
+  type
+  accountId : TEXT <<FK>>
+  categoryId : TEXT <<FK>>
+  notes
+  frequency
+  anchorDay
+  nextDate
+  isActive
+  createdAt
+}
+entity categories {
+  * id : TEXT <<PK>>
+  --
+  name
+  iconName
+  colorHex
+  isDefault
+  subcategories (JSON)
+}
+entity alerts {
+  * id : TEXT <<PK>>
+  --
+  title
+  type
+  condition
+  threshold
+  categoryId : TEXT <<FK>>
+  isActive
+  lastTriggered
+  createdAt
+}
+entity challenges {
+  * id : TEXT <<PK>>
+  --
+  title
+  description
+  categoryId : TEXT <<FK>>
+  startDate
+  endDate
+  status
+  createdAt
+}
+entity budgets {
+  * id : TEXT <<PK>>
+  --
+  month  (UQ)
+  year  (UQ)
+  totalLimit
+  categoryLimits (JSON)
+  isAIGenerated
+  createdAt
+}
+entity debts {
+  * id : TEXT <<PK>>
+  --
+  direction
+  personName
+  amount
+  notes
+  date
+  dueDate
+  accountId : TEXT <<FK>>
+  transactionId : TEXT <<FK>>
+  isSettled
+  settledAt
+  createdAt
+}
+entity debt_payments {
+  * id : TEXT <<PK>>
+  --
+  debtId : TEXT <<FK>>
+  amount
+  date
+  accountId : TEXT <<FK>>
+  transactionId : TEXT <<FK>>
+  createdAt
+}
+entity goals {
+  * id : TEXT <<PK>>
+  --
+  name
+  targetAmount
+  currentAmount
+  targetDate
+  priority
+  iconName
+  colorHex
+  isCompleted
+  createdAt
+}
+entity goal_auto_contributions {
+  * id : TEXT <<PK>>
+  --
+  goalId : TEXT <<FK>>
+  amount
+  frequency
+  anchorDay
+  nextDate
+  isActive
+  createdAt
+}
+entity subscriptions {
+  * id : TEXT <<PK>>
+  --
+  name
+  amount
+  frequency
+  nextBillingDate
+  anchorDay
+  iconName
+  colorHex
+  isActive
+  createdAt
+}
+entity cards {
+  * id : TEXT <<PK>>
+  --
+  name
+  bank
+  network
+  last4
+  creditLimit
+  annualFee
+  cashbackPercent
+  interestRate
+  benefits (JSON)
+  colorHex
+  isFavorite
+  createdAt
+}
+accounts ||--o{ transactions : accountId
+accounts ||--o{ transactions : toAccountId
+categories ||--o{ transactions : categoryId
+accounts ||--o{ recurring_transactions : accountId
+categories ||--o{ recurring_transactions : categoryId
+categories ||--o{ alerts : categoryId
+categories ||--o{ challenges : categoryId
+accounts ||--o{ debts : accountId
+transactions ||--o{ debts : transactionId
+debts ||--o{ debt_payments : debtId
+accounts ||--o{ debt_payments : accountId
+transactions ||--o{ debt_payments : transactionId
+goals ||--o{ goal_auto_contributions : goalId
+categories ||..o{ budgets : categoryLimits (JSON)
+@enduml
