@@ -1,6 +1,6 @@
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { getAllAccounts, getAllTransactionsWithCategory } from '../database/db';
+import { getAllAccounts, getAllTransactionsWithCategory, logActivity } from '../database/db';
 import { buildTransactionsCsv } from '../utils/csv';
 
 // Exporta todos los movimientos del perfil activo a un CSV y abre el menú
@@ -31,6 +31,7 @@ export async function exportTransactionsCsv(): Promise<number> {
     UTI: 'public.comma-separated-values-text',
     dialogTitle: 'Exportar movimientos de Smart Finance',
   });
+  await logActivity('Respaldo', 'respaldo', `${transactions.length} movimientos exportados a CSV`);
 
   return transactions.length;
 }

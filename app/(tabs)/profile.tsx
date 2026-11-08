@@ -3,6 +3,7 @@ import { View, StyleSheet, ActivityIndicator, Modal, Switch, Alert } from 'react
 import { Text } from '../../src/components/ui/Text';
 import { TextInput } from '../../src/components/ui/TextInput';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../../src/hooks/useProfile';
@@ -400,6 +401,20 @@ export default function ProfileScreen() {
           <View>
             <Text style={s.settingLabel}>PIN de respaldo</Text>
             <Text style={s.settingDesc}>Por si Face ID falla</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={c.textTertiary} />
+        </AnimatedPressable>
+        <View style={s.settingDivider} />
+        <AnimatedPressable
+          style={s.settingRow}
+          onPress={() => router.push('/activity')}
+          onPressFeedback={hapticToggle}
+          accessibilityRole="button"
+          accessibilityLabel="Historial de actividad. Quién cambió qué y cuándo"
+        >
+          <View>
+            <Text style={s.settingLabel}>Historial de actividad</Text>
+            <Text style={s.settingDesc}>Quién cambió qué y cuándo</Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={c.textTertiary} />
         </AnimatedPressable>

@@ -298,6 +298,7 @@ async function initDb(database: SQLite.SQLiteDatabase) {
   }
 
   await migrateDefaultCategoryStyle(database);
+  await setupActivityLog(database);
 }
 
 // Íconos propios: las categorías por defecto pasan del ícono de Ionicons
@@ -1810,4 +1811,107 @@ export async function getCategorySpentInRange(
     [categoryId, startISO, endISO]
   );
   return row?.total ?? 0;
+}
+// ─── Historial de actividad (bitácora) ─────────────────────
+// Registro de solo-agregar de quién cambió qué y cuándo (ISO/IEC 25010:
+// no repudio y responsabilidad). Los cambios a los datos los anotan
+// disparadores de SQLite, así ninguna ruta del código puede saltárselos;
+// los eventos de seguridad (PIN, Face ID, respaldos) los anota la app con
+// logActivity. Las entradas no se pueden editar ni borrar.
+
+export type ActivityAction = 'crear' | 'editar' | 'eliminar' | 'seguridad' | 'respaldo';
+
+export interface ActivityEntry {
+  id: number;
+  at: string;
+  entity: string;
+  entityId: string | null;
+  action: ActivityAction;
+  summary: string;
+}
+
+// Monto con separador de miles colombiano: 1234567 → $1.234.567
+const money = (col: string) => `'$' || replace(printf('%,d', CAST(ROUND(${col}) AS INTEGER)), ',', '.')`;
+
+// tabla → [etiqueta, resumen de la fila, columnas cuyo cambio cuenta como edición]
+// (los saldos y avances que se recalculan solos no se anotan como edición)
+const AUDITED: Record<string, [string, (r: string) => string, string[]]> = {
+  accounts: ['Cuenta', (r) => `${r}.name`, ['name', 'type', 'currency', 'isActive']],
+  transactions: ['Movimiento', (r) =>
+    `CASE ${r}.type WHEN 'expense' THEN 'Gasto' WHEN 'income' THEN 'Ingreso' WHEN 'transfer' THEN 'Transferencia' ELSE ${r}.type END`
+    + ` || ' de ' || ${money(`${r}.amount`)} || CASE WHEN ${r}.notes <> '' THEN ' · ' || ${r}.notes ELSE '' END`,
+    ['amount', 'type', 'date', 'accountId', 'categoryId', 'notes']],
+  goals: ['Meta', (r) => `${r}.name || ' (' || ${money(`${r}.targetAmount`)} || ')'`, ['name', 'targetAmount', 'targetDate', 'priority', 'isCompleted']],
+  subscriptions: ['Suscripción', (r) => `${r}.name || ' (' || ${money(`${r}.amount`)} || ')'`, ['name', 'amount', 'frequency', 'isActive']],
+  budgets: ['Presupuesto', (r) => `'Mes ' || ${r}.month || '/' || ${r}.year || ' (' || ${money(`${r}.totalLimit`)} || ')'`, ['totalLimit', 'categoryLimits']],
+  debts: ['Deuda', (r) => `${r}.personName || ' (' || ${money(`${r}.amount`)} || ')'`, ['personName', 'amount', 'dueDate', 'isSettled']],
+  debt_payments: ['Abono', (r) => money(`${r}.amount`), ['amount', 'date']],
+  cards: ['Tarjeta', (r) => `${r}.name || ' · ' || ${r}.bank`, ['name', 'bank', 'annualFee', 'cashbackPercent', 'interestRate']],
+  alerts: ['Alerta', (r) => `${r}.title`, ['title', 'type', 'condition', 'threshold', 'isActive']],
+};
+
+async function setupActivityLog(database: SQLite.SQLiteDatabase): Promise<void> {
+  const triggers: string[] = [];
+  for (const [table, [label, summary, watched]] of Object.entries(AUDITED)) {
+    // Durante la restauración de un respaldo la bitácora se pausa: se anota
+    // una sola entrada en vez de una por cada fila reemplazada.
+    const active = 'NOT EXISTS (SELECT 1 FROM activity_log_pause)';
+    const changed = watched.map((col) => `OLD.${col} IS NOT NEW.${col}`).join(' OR ');
+    const insert = (action: string, row: string) =>
+      `INSERT INTO activity_log (at, entity, entityId, action, summary) VALUES (strftime('%Y-%m-%dT%H:%M:%fZ','now'), '${label}', ${row}.id, '${action}', ${summary(row)});`;
+    triggers.push(
+      `CREATE TRIGGER IF NOT EXISTS log_${table}_insert AFTER INSERT ON ${table} WHEN ${active} BEGIN ${insert('crear', 'NEW')} END;`,
+      `CREATE TRIGGER IF NOT EXISTS log_${table}_update AFTER UPDATE ON ${table} WHEN ${active} AND (${changed}) BEGIN ${insert('editar', 'NEW')} END;`,
+      `CREATE TRIGGER IF NOT EXISTS log_${table}_delete AFTER DELETE ON ${table} WHEN ${active} BEGIN ${insert('eliminar', 'OLD')} END;`,
+    );
+  }
+  await database.execAsync(`
+    CREATE TABLE IF NOT EXISTS activity_log (
+      id       INTEGER PRIMARY KEY AUTOINCREMENT,
+      at       TEXT NOT NULL,
+      entity   TEXT NOT NULL,
+      entityId TEXT,
+      action   TEXT NOT NULL,
+      summary  TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_activity_log_at ON activity_log(at);
+    CREATE TABLE IF NOT EXISTS activity_log_pause (id INTEGER PRIMARY KEY CHECK (id = 1));
+    DELETE FROM activity_log_pause;
+    CREATE TRIGGER IF NOT EXISTS activity_log_no_update BEFORE UPDATE ON activity_log
+      BEGIN SELECT RAISE(ABORT, 'El historial de actividad no se puede modificar'); END;
+    CREATE TRIGGER IF NOT EXISTS activity_log_no_delete BEFORE DELETE ON activity_log
+      BEGIN SELECT RAISE(ABORT, 'El historial de actividad no se puede borrar'); END;
+    ${triggers.join('\n    ')}
+  `);
+}
+
+/** Anota un evento que no pasa por las tablas (seguridad, respaldos…). */
+export async function logActivity(entity: string, action: ActivityAction, summary: string): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(
+    `INSERT INTO activity_log (at, entity, entityId, action, summary) VALUES (?, ?, NULL, ?, ?)`,
+    [new Date().toISOString(), entity, action, summary],
+  );
+}
+
+/** Las entradas más recientes primero. */
+export async function getActivityLog(limit = 200): Promise<ActivityEntry[]> {
+  const database = await getDb();
+  return database.getAllAsync<ActivityEntry>(
+    'SELECT * FROM activity_log ORDER BY at DESC, id DESC LIMIT ?',
+    [limit],
+  );
+}
+
+/** Pausa la bitácora mientras corre `task` (p. ej. restaurar un respaldo). */
+export async function withActivityLogPaused(
+  database: SQLite.SQLiteDatabase,
+  task: () => Promise<void>,
+): Promise<void> {
+  await database.execAsync('INSERT OR IGNORE INTO activity_log_pause (id) VALUES (1);');
+  try {
+    await task();
+  } finally {
+    await database.execAsync('DELETE FROM activity_log_pause;');
+  }
 }

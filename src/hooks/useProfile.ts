@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { getProfile, updateProfile, UserProfile } from '../services/profile';
-import { getGlobalStats, getAverageMonthlySavings } from '../database/db';
+import { getGlobalStats, getAverageMonthlySavings, logActivity } from '../database/db';
 
 export interface ProfileStats {
   totalTransactions: number;
@@ -182,6 +182,7 @@ export function useProfile(): UseProfileResult {
 
   const toggleFaceId = useCallback(async (enabled: boolean) => {
     await updateProfile({ faceIdEnabled: enabled });
+    await logActivity('Seguridad', 'seguridad', enabled ? 'Face ID / Touch ID activado' : 'Face ID / Touch ID desactivado');
     await load();
   }, [load]);
 
