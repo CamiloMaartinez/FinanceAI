@@ -45,3 +45,7 @@ node_modules/
 .expo/
 # tests
 coverage/
+
+# Sitio web promocional (se genera con npm run build:web)
+dist-web/
+dist-app/
