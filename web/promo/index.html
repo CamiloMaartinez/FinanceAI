@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Smart Finance · Tu dinero, bajo control</title>
+  <meta name="description" content="Smart Finance es la app que te ayuda a ordenar tu dinero: registra gastos en segundos, cumple tus metas y pregúntale a Moni si puedes comprar algo. Pruébala gratis desde tu celular." />
+  <meta name="theme-color" content="#1B1240" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" />
+  <meta property="og:title" content="Smart Finance · Tu dinero, bajo control" />
+  <meta property="og:description" content="Registra, ahorra y decide mejor con Moni, tu asistente financiero. Pruébala gratis desde el navegador." />
+  <meta property="og:image" content="/img/og.jpg" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preload" href="/fonts/Outfit_400Regular.ttf" as="font" type="font/ttf" crossorigin />
+  <link rel="preload" href="/fonts/PlayfairDisplay_800ExtraBold_Italic.ttf" as="font" type="font/ttf" crossorigin />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <!-- Pantalla de carga -->
+  <div class="loader" id="loader" aria-hidden="true">
+    <img src="/img/moni-saludando.webp" alt="" width="140" height="140" />
+    <p>Preparando tu bolsillo<span class="dots"><i>.</i><i>.</i><i>.</i></span></p>
+  </div>
+
+  <header class="nav" id="nav">
+    <div class="wrap nav__inner">
+      <a href="#inicio" class="brand" aria-label="Smart Finance, ir al inicio">
+        <img src="/img/logo-mark.webp" alt="" width="36" height="36" />
+        <span>Smart <em>Finance</em></span>
+      </a>
+      <nav class="nav__links" aria-label="Secciones">
+        <a href="#funciones">Funciones</a>
+        <a href="#como-funciona">¿Cómo funciona?</a>
+        <a href="#moni">Conoce a Moni</a>
+        <a href="#pruebala">Pruébala</a>
+      </nav>
+      <a href="/app/" class="btn btn--peach btn--sm">Usar la app</a>
+      <button class="nav__toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobileMenu">
+        <span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu" hidden>
+      <a href="#funciones">Funciones</a>
+      <a href="#como-funciona">¿Cómo funciona?</a>
+      <a href="#moni">Conoce a Moni</a>
+      <a href="#pruebala">Pruébala</a>
+      <a href="/app/" class="btn btn--peach">Usar la app gratis</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero" id="inicio">
+      <div class="hero__glow" aria-hidden="true"></div>
+      <div class="wrap hero__grid">
+        <div class="hero__copy">
+          <span class="badge"><span class="pulse"></span> Gratis · Funciona desde tu celular</span>
+          <h1>Tu dinero.<br /><em>Tu control.</em><br />Tu bolsillo.</h1>
+          <p class="lead">Smart Finance te ayuda a saber en qué se va tu plata, a ahorrar para lo que sueñas y a decidir mejor antes de comprar. Todo con la ayuda de <strong>Moni</strong>, tu asistente financiero.</p>
+          <div class="hero__cta">
+            <a href="/app/" class="btn btn--peach">Probar ahora gratis <span aria-hidden="true">→</span></a>
+            <a href="#como-funciona" class="btn btn--ghost">Ver cómo funciona</a>
+          </div>
+          <ul class="hero__stats">
+            <li><strong><span data-count="5">0</span> s</strong><span>para anotar un gasto</span></li>
+            <li><strong><span data-count="15">0</span>+</strong><span>herramientas en una app</span></li>
+            <li><strong>$<span data-count="0">0</span></strong><span>no pagas nada</span></li>
+          </ul>
+        </div>
+
+        <div class="hero__visual">
+          <div class="phone phone--hero">
+            <img src="/img/app-inicio.webp" alt="Pantalla de inicio de Smart Finance con el saldo y las cuentas" width="560" height="1086" />
+          </div>
+          <!-- Chat animado con Moni -->
+          <div class="chat" id="chat" aria-label="Ejemplo de conversación con Moni">
+            <div class="chat__head">
+              <img src="/img/moni-saludando.webp" alt="" width="36" height="36" />
+              <div><b>Moni</b><small><span class="online"></span> en línea</small></div>
+            </div>
+            <div class="chat__body" id="chatBody"></div>
+          </div>
+          <img class="hero__moni float" src="/img/moni-celebrando.webp" alt="" width="150" height="150" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Cinta de beneficios -->
+    <div class="ribbon" aria-hidden="true">
+      <div class="ribbon__track">
+        <span>Registra gastos con tu voz</span><span>✦</span>
+        <span>Metas de ahorro</span><span>✦</span>
+        <span>¿Puedo comprarlo?</span><span>✦</span>
+        <span>Presupuestos que te avisan</span><span>✦</span>
+        <span>Informes en PDF</span><span>✦</span>
+        <span>Suscripciones bajo control</span><span>✦</span>
+        <span>Protegida con Face ID</span><span>✦</span>
+        <span>Registra gastos con tu voz</span><span>✦</span>
+        <span>Metas de ahorro</span><span>✦</span>
+        <span>¿Puedo comprarlo?</span><span>✦</span>
+        <span>Presupuestos que te avisan</span><span>✦</span>
+        <span>Informes en PDF</span><span>✦</span>
+        <span>Suscripciones bajo control</span><span>✦</span>
+        <span>Protegida con Face ID</span><span>✦</span>
+      </div>
+    </div>
+
+    <!-- PROBLEMA -->
+    <section class="section problem">
+      <div class="wrap problem__grid">
+        <img class="problem__moni reveal" src="/img/moni-investigando.webp" alt="Moni investigando con una lupa" width="300" height="300" loading="lazy" />
+        <div class="reveal">
+          <p class="eyebrow">¿Te suena familiar?</p>
+          <h2>“¿En qué se me fue la plata <em>este mes</em>?”</h2>
+          <p class="lead">Pagas con Nequi, con tarjeta, en efectivo… y a fin de mes el dinero no cuadra. Las suscripciones se cobran solas y el ahorro siempre queda “para el otro mes”. Smart Finance junta todo en un solo lugar y te lo explica en palabras simples.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FUNCIONES -->
+    <section class="section" id="funciones">
+      <div class="wrap">
+        <div class="section__head reveal">
+          <p class="eyebrow">Todo lo que necesitas</p>
+          <h2>Una app, <em>muchas formas</em> de cuidar tu dinero</h2>
+        </div>
+
+        <div class="cards">
+          <article class="card reveal">
+            <div class="card__icon" aria-hidden="true">⚡</div>
+            <h3>Anota en segundos</h3>
+            <p>Escribe, díctalo con tu voz o usa un atajo del iPhone. Tu gasto queda guardado con su categoría.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon" aria-hidden="true">🛍️</div>
+            <h3>¿Puedo comprarlo?</h3>
+            <p>Antes de comprar, pregúntale a Moni. Te dice si te alcanza y cómo afecta tus metas.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon" aria-hidden="true">🎯</div>
+            <h3>Metas de ahorro</h3>
+            <p>¿Un viaje, un celular nuevo? Crea tu meta y mira cuánto apartar cada semana para llegar a tiempo.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon" aria-hidden="true">📊</div>
+            <h3>Presupuestos que avisan</h3>
+            <p>Pon un tope a cada categoría y recibe una alerta antes de pasarte.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon" aria-hidden="true">🔔</div>
+            <h3>Suscripciones claras</h3>
+            <p>Netflix, Spotify, el gimnasio… te recordamos antes de cada cobro y ves cuánto pagas al año.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon" aria-hidden="true">💬</div>
+            <h3>Mensajes del banco</h3>
+            <p>Pega el SMS de tu banco y la app entiende el monto y el comercio por ti.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon" aria-hidden="true">🤝</div>
+            <h3>Deudas y gastos compartidos</h3>
+            <p>Divide la cuenta del cine con tus amigos y lleva quién te debe y a quién le debes.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card__icon" aria-hidden="true">📄</div>
+            <h3>Informes bonitos</h3>
+            <p>Descarga tu resumen del mes en PDF, listo para compartir o guardar.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- SHOWCASE con pestañas -->
+    <section class="section showcase">
+      <div class="wrap showcase__grid">
+        <div class="showcase__copy">
+          <p class="eyebrow reveal">Míralo por dentro</p>
+          <h2 class="reveal">Diseñada para <em>entenderse</em> a la primera</h2>
+          <div class="tabs" role="tablist" aria-label="Pantallas de la app">
+            <button role="tab" aria-selected="true" data-shot="asistente" data-moni="senalando">
+              <b>Asistente Moni</b><span>Pregúntale lo que quieras sobre tus gastos.</span>
+            </button>
+            <button role="tab" aria-selected="false" data-shot="presupuesto" data-moni="aprobando">
+              <b>Presupuesto del mes</b><span>Cuánto llevas y cuánto te queda, de un vistazo.</span>
+            </button>
+            <button role="tab" aria-selected="false" data-shot="reportes" data-moni="celebrando">
+              <b>Informes</b><span>Ingresos, gastos y tu tasa de ahorro.</span>
+            </button>
+            <button role="tab" aria-selected="false" data-shot="metas" data-moni="corriendo">
+              <b>Metas</b><span>Abona poco a poco y celebra cuando llegues.</span>
+            </button>
+            <button role="tab" aria-selected="false" data-shot="bloqueo" data-moni="protegiendo">
+              <b>Seguridad</b><span>Face ID o PIN para que solo tú entres.</span>
+            </button>
+          </div>
+        </div>
+        <div class="showcase__visual">
+          <div class="phone">
+            <img id="showcaseImg" src="/img/app-asistente.webp" alt="Pantalla de la app" width="560" height="1086" loading="lazy" />
+          </div>
+          <img id="showcaseMoni" class="showcase__moni float" src="/img/moni-senalando.webp" alt="" width="170" height="170" loading="lazy" />
+        </div>
+      </div>
+    </section>
+
+    <!-- CÓMO FUNCIONA -->
+    <section class="section steps-section" id="como-funciona">
+      <div class="wrap">
+        <div class="section__head reveal">
+          <p class="eyebrow">¿Cómo funciona?</p>
+          <h2>Empieza en <em>3 pasos</em></h2>
+        </div>
+        <ol class="steps">
+          <li class="step reveal">
+            <span class="step__n">1</span>
+            <img src="/img/moni-saludando.webp" alt="" width="120" height="120" loading="lazy" />
+            <h3>Cuéntale a Moni sobre ti</h3>
+            <p>Tu nombre y qué quieres lograr. La app se adapta a ti.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step__n">2</span>
+            <img src="/img/moni-corriendo.webp" alt="" width="120" height="120" loading="lazy" />
+            <h3>Anota tus movimientos</h3>
+            <p>Ingresos, gastos y transferencias entre tus cuentas, en segundos.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step__n">3</span>
+            <img src="/img/moni-celebrando.webp" alt="" width="120" height="120" loading="lazy" />
+            <h3>Decide mejor</h3>
+            <p>Mira tus informes, recibe alertas y cumple tus metas.</p>
+          </li>
+        </ol>
+        <div class="center reveal"><a href="/app/" class="btn btn--indigo">Empezar ahora <span aria-hidden="true">→</span></a></div>
+      </div>
+    </section>
+
+    <!-- MONI -->
+    <section class="section moni" id="moni">
+      <div class="wrap">
+        <div class="section__head reveal">
+          <p class="eyebrow">Conoce a Moni</p>
+          <h2>Tu compañera de <em>finanzas</em></h2>
+          <p class="lead">Moni es una monedita que te acompaña en toda la app: te saluda, te avisa, celebra contigo y te cuida cuando algo no va bien.</p>
+        </div>
+        <div class="moni__row">
+          <figure class="reveal"><img src="/img/moni-saludando.webp" alt="" width="160" height="160" loading="lazy" /><figcaption>Te da la bienvenida</figcaption></figure>
+          <figure class="reveal"><img src="/img/moni-investigando.webp" alt="" width="160" height="160" loading="lazy" /><figcaption>Analiza tus gastos</figcaption></figure>
+          <figure class="reveal"><img src="/img/moni-protegiendo.webp" alt="" width="160" height="160" loading="lazy" /><figcaption>Protege tus datos</figcaption></figure>
+          <figure class="reveal"><img src="/img/moni-aprobando.webp" alt="" width="160" height="160" loading="lazy" /><figcaption>Aprueba tus compras</figcaption></figure>
+          <figure class="reveal"><img src="/img/moni-celebrando.webp" alt="" width="160" height="160" loading="lazy" /><figcaption>Celebra tus logros</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONFIANZA -->
+    <section class="section">
+      <div class="wrap trust">
+        <div class="trust__item reveal">
+          <span class="trust__big">🔒</span>
+          <h3>Tus datos se quedan contigo</h3>
+          <p>La información se guarda en tu propio celular, no en una nube ajena.</p>
+        </div>
+        <div class="trust__item reveal">
+          <span class="trust__big">🪪</span>
+          <h3>Solo tú entras</h3>
+          <p>Desbloqueo con Face ID, huella o PIN.</p>
+        </div>
+        <div class="trust__item reveal">
+          <span class="trust__big">🧾</span>
+          <h3>Todo queda registrado</h3>
+          <p>Un historial de actividad te muestra cada cambio, con fecha y hora.</p>
+        </div>
+        <div class="trust__item reveal">
+          <span class="trust__big">🇨🇴</span>
+          <h3>Hecha para Colombia</h3>
+          <p>Pesos colombianos, Nequi, Bancolombia y también USD o EUR.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRUÉBALA -->
+    <section class="section try" id="pruebala">
+      <div class="wrap try__grid">
+        <div class="try__copy reveal">
+          <p class="eyebrow">Pruébala ya</p>
+          <h2>Úsala <em>como en tu celular</em>, sin descargar nada</h2>
+          <p class="lead">La versión web funciona igual que la app: tus datos se guardan en tu navegador. En el celular puedes agregarla a tu pantalla de inicio y abrirla como cualquier app.</p>
+          <div class="hero__cta">
+            <a href="/app/" class="btn btn--peach">Abrir Smart Finance <span aria-hidden="true">→</span></a>
+          </div>
+          <div class="qr">
+            <img src="/img/qr.png" alt="Código QR para abrir Smart Finance en el celular" width="132" height="132" loading="lazy" />
+            <p><b>¿Estás en el computador?</b><br />Escanea el código con la cámara de tu celular y ábrela al instante.</p>
+          </div>
+          <details class="howto">
+            <summary>¿Cómo la agrego a mi pantalla de inicio?</summary>
+            <p><b>iPhone (Safari):</b> toca Compartir <span aria-hidden="true">⬆︎</span> y luego “Agregar a inicio”.<br /><b>Android (Chrome):</b> toca el menú ⋮ y luego “Agregar a la pantalla principal”.</p>
+          </details>
+        </div>
+        <div class="try__device reveal">
+          <div class="device">
+            <div class="device__notch" aria-hidden="true"></div>
+            <iframe id="demoFrame" title="Smart Finance funcionando en vivo" data-src="/app/" loading="lazy"></iframe>
+            <button class="device__start" id="demoStart" type="button">
+              <img src="/img/moni-saludando.webp" alt="" width="110" height="110" />
+              <b>Toca para probarla aquí</b>
+              <span>Funciona en vivo, dentro de este teléfono</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PREGUNTAS -->
+    <section class="section faq-section">
+      <div class="wrap faq">
+        <div class="section__head reveal">
+          <p class="eyebrow">Preguntas frecuentes</p>
+          <h2>Lo que <em>suelen preguntar</em></h2>
+        </div>
+        <details class="reveal"><summary>¿Cuánto cuesta?</summary><p>Nada. Smart Finance es gratuita.</p></details>
+        <details class="reveal"><summary>¿Necesito conectar mi cuenta del banco?</summary><p>No. Tú anotas tus movimientos (o pegas el mensaje del banco) y la app hace el resto. Nunca te pedimos claves bancarias.</p></details>
+        <details class="reveal"><summary>¿Mis datos están seguros?</summary><p>Se guardan en tu propio dispositivo y puedes proteger la app con Face ID, huella o PIN.</p></details>
+        <details class="reveal"><summary>¿La versión web es igual a la app?</summary><p>Tiene las mismas pantallas y funciones principales. Algunas cosas propias del teléfono, como Face ID, la cámara o los atajos de Siri, están solo en la app instalada.</p></details>
+        <details class="reveal"><summary>¿Quién hizo Smart Finance?</summary><p>El Grupo 6 de Ingeniería de Software de la Universidad Industrial de Santander (UIS), como proyecto del curso.</p></details>
+      </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section class="final">
+      <div class="wrap final__inner reveal">
+        <img src="/img/moni-colgado.webp" alt="" width="180" height="180" loading="lazy" class="final__moni" />
+        <h2>Empieza hoy a <em>cuidar tu dinero</em></h2>
+        <p class="lead">Tu yo del próximo mes te lo va a agradecer.</p>
+        <a href="/app/" class="btn btn--peach btn--lg">Usar Smart Finance gratis <span aria-hidden="true">→</span></a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__grid">
+      <div>
+        <a href="#inicio" class="brand"><img src="/img/logo-mark.webp" alt="" width="36" height="36" /><span>Smart <em>Finance</em></span></a>
+        <p class="footer__tag">Finanzas de altura.</p>
+      </div>
+      <div class="stores">
+        <a class="store" href="/app/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"/></svg><span><small>Úsala ya en</small>la Web</span></a>
+        <span class="store store--soon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.6-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.2-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8 0 0-2.6-1-2.6-4zM14 5.4c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.4z"/></svg><span><small>Próximamente en</small>App Store</span></span>
+        <span class="store store--soon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 2.8v18.4c0 .6.7 1 1.2.7l15.9-9.2c.5-.3.5-1.1 0-1.4L5.2 2.1C4.7 1.8 4 2.2 4 2.8z"/></svg><span><small>Próximamente en</small>Google Play</span></span>
+      </div>
+    </div>
+    <div class="wrap footer__bottom">
+      <p>Desarrollado por Camilo Martínez</p>
+    </div>
+  </footer>
+
+  <script src="/main.js" defer></script>
+</body>
+</html>
