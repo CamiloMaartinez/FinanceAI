@@ -3,7 +3,7 @@ import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getDb } from '../database/db';
+import { getDb, logActivity, withActivityLogPaused } from '../database/db';
 import { getActiveProfileId } from './profiles';
 import { getExchangeRates, setExchangeRate } from './exchangeRates';
 
@@ -80,6 +80,7 @@ export async function exportBackup(): Promise<void> {
   // contamos el respaldo como hecho en cuanto se cierra.
   const profileId = await getActiveProfileId();
   await AsyncStorage.setItem(`${LAST_BACKUP_KEY_PREFIX}:${profileId}`, new Date().toISOString());
+  await logActivity('Respaldo', 'respaldo', 'Respaldo exportado');
   await scheduleBackupReminder();
 }
 
@@ -150,7 +151,7 @@ export async function pickBackupFile(): Promise<{ uri: string; data: BackupData 
 export async function restoreBackup(data: BackupData): Promise<void> {
   const database = await getDb();
 
-  await database.withTransactionAsync(async () => {
+  await database.withTransactionAsync(() => withActivityLogPaused(database, async () => {
     // Borramos en orden inverso (lo que depende de otras tablas primero)
     for (const table of [...BACKUP_TABLES].reverse()) {
       await database.execAsync(`DELETE FROM ${table};`);
@@ -169,7 +170,10 @@ export async function restoreBackup(data: BackupData): Promise<void> {
         );
       }
     }
-  });
+  }));
+
+  const rows = Object.values(data.tables).reduce((n, list) => n + (list?.length ?? 0), 0);
+  await logActivity('Respaldo', 'respaldo', `Respaldo del ${data.exportedAt.slice(0, 10)} restaurado (${rows} registros)`);
 
   for (const [code, rate] of Object.entries(data.settings?.exchangeRates ?? {})) {
     await setExchangeRate(code, rate);
