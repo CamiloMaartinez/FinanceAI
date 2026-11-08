@@ -3,11 +3,16 @@
 //   /app/   → la app completa exportada para navegador (Expo web)
 //
 // Uso: npm run build:web   (Vercel lo ejecuta automáticamente, ver vercel.json)
+//
+// SF_SITE=pitch construye la página del pitch (web/pitch) en lugar de la
+// promocional. Reutiliza las imágenes, fuentes y estilos de web/promo.
 
 import { execSync } from 'node:child_process';
 import { cpSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+const SITE =
+  process.env.SF_SITE === 'pitch' || (process.env.VERCEL_PROJECT_PRODUCTION_URL ?? '').includes('pitch') ? 'pitch' : 'promo';
 const OUT = 'dist-web';
 const APP = join(OUT, 'app');
 
@@ -20,8 +25,9 @@ execSync(`npx expo export -p web --output-dir ${APP}`, {
   env: { ...process.env, SF_WEB_DEMO: '1', EXPO_PUBLIC_APP_TOKEN: '' },
 });
 
-// 2. Página promocional en la raíz.
+// 2. Página en la raíz: la promocional, y encima la del pitch si se pidió.
 cpSync('web/promo', OUT, { recursive: true });
+if (SITE === 'pitch') cpSync('web/pitch', OUT, { recursive: true });
 
 // 3. La app se puede "instalar" en la pantalla de inicio del celular (PWA).
 writeFileSync(
@@ -68,4 +74,4 @@ const html = readFileSync(indexPath, 'utf8')
   .replace('</head>', `    ${head}\n  </head>`);
 writeFileSync(indexPath, html);
 
-console.log(`\nSitio listo en ${OUT}/ (promo en /, app en /app/)`);
+console.log(`\nSitio listo en ${OUT}/ (${SITE} en /, app en /app/)`);

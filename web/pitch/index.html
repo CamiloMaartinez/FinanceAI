@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Smart Finance · Pitch de modelo de negocio</title>
+  <meta name="description" content="Pitch de Smart Finance: problema, segmento, Lean Canvas, validación con usuarios y demostración en vivo de la app." />
+  <meta name="theme-color" content="#1B1240" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" />
+  <meta property="og:title" content="Smart Finance · Pitch" />
+  <meta property="og:description" content="Problema, segmento, Lean Canvas, validación y demo en vivo de Smart Finance." />
+  <meta property="og:image" content="/img/og.jpg" />
+  <link rel="preload" href="/fonts/Outfit_400Regular.ttf" as="font" type="font/ttf" crossorigin />
+  <link rel="preload" href="/fonts/PlayfairDisplay_800ExtraBold_Italic.ttf" as="font" type="font/ttf" crossorigin />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/pitch.css" />
+</head>
+<body>
+  <div class="loader" id="loader" aria-hidden="true">
+    <img src="/img/moni-saludando.webp" alt="" width="140" height="140" />
+    <p>Preparando el pitch<span class="dots"><i>.</i><i>.</i><i>.</i></span></p>
+  </div>
+
+  <header class="nav" id="nav">
+    <div class="wrap nav__inner">
+      <a href="#inicio" class="brand" aria-label="Smart Finance, ir al inicio">
+        <img src="/img/logo-mark.webp" alt="" width="36" height="36" />
+        <span>Smart <em>Finance</em></span>
+      </a>
+      <nav class="nav__links" aria-label="Secciones del pitch">
+        <a href="#problema">Problema</a>
+        <a href="#segmento">Segmento</a>
+        <a href="#canvas">Canvas</a>
+        <a href="#validacion">Validación</a>
+        <a href="#demo">Demo</a>
+      </nav>
+      <button class="timer" id="timer" type="button" title="Cronómetro del pitch (tecla T)" aria-label="Iniciar cronómetro del pitch">
+        <span class="timer__dot" aria-hidden="true"></span><span id="timerText">15:00</span>
+      </button>
+      <button class="nav__toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobileMenu">
+        <span></span><span></span>
+      </button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+    <div class="mobile-menu" id="mobileMenu" hidden>
+      <a href="#problema">1 · Problema</a>
+      <a href="#segmento">2 · Segmento</a>
+      <a href="#propuesta">3 · Propuesta de valor</a>
+      <a href="#validacion">4 · Validación</a>
+      <a href="#canvas">5 · Lean Canvas</a>
+      <a href="#ventaja">6 · Ventaja especial</a>
+      <a href="#demo">7 · Demostración</a>
+      <a href="/app/" class="btn btn--peach">Abrir la app</a>
+    </div>
+  </header>
+
+  <!-- Índice lateral del pitch (escritorio) -->
+  <nav class="rail" aria-label="Avance del pitch">
+    <a href="#inicio" data-label="Inicio"></a>
+    <a href="#problema" data-label="Problema"></a>
+    <a href="#segmento" data-label="Segmento"></a>
+    <a href="#propuesta" data-label="Propuesta de valor"></a>
+    <a href="#validacion" data-label="Validación"></a>
+    <a href="#canvas" data-label="Lean Canvas"></a>
+    <a href="#ventaja" data-label="Ventaja especial"></a>
+    <a href="#demo" data-label="Demostración"></a>
+    <a href="#cierre" data-label="Cierre"></a>
+  </nav>
+
+  <main>
+    <!-- PORTADA -->
+    <section class="slide hero" id="inicio" data-step>
+      <div class="hero__glow" aria-hidden="true"></div>
+      <div class="wrap hero__grid">
+        <div class="hero__copy">
+          <span class="badge"><span class="pulse"></span> Pitch · Modelo de negocios</span>
+          <h1>Tu dinero.<br /><em>Tu control.</em><br />Tu bolsillo.</h1>
+          <p class="lead">Smart Finance es un asistente financiero que registra tus gastos en segundos y te acompaña para pasar de “llegar a fin de mes” a <strong>ahorrar e invertir</strong>.</p>
+          <div class="hero__cta">
+            <a href="#problema" class="btn btn--peach">Empezar el pitch <span aria-hidden="true">↓</span></a>
+            <a href="#demo" class="btn btn--ghost">Ir a la demo</a>
+          </div>
+          <ol class="agenda" aria-label="Agenda del pitch, 15 minutos">
+            <li><a href="#problema"><b>1</b>Problema<span>1:30</span></a></li>
+            <li><a href="#segmento"><b>2</b>Segmento<span>1:30</span></a></li>
+            <li><a href="#propuesta"><b>3</b>Propuesta y solución<span>2:00</span></a></li>
+            <li><a href="#validacion"><b>4</b>Validación<span>2:30</span></a></li>
+            <li><a href="#canvas"><b>5</b>Lean Canvas<span>3:00</span></a></li>
+            <li><a href="#ventaja"><b>6</b>Ventaja especial<span>1:30</span></a></li>
+            <li><a href="#demo"><b>7</b>Demostración<span>2:30</span></a></li>
+          </ol>
+        </div>
+        <div class="hero__visual">
+          <div class="phone phone--hero">
+            <img src="/img/app-inicio.webp" alt="Pantalla de inicio de Smart Finance" width="560" height="1086" />
+          </div>
+          <div class="chat" aria-label="Ejemplo de conversación con Moni">
+            <div class="chat__head">
+              <img src="/img/moni-saludando.webp" alt="" width="36" height="36" />
+              <div><b>Moni</b><small><span class="online"></span> en línea</small></div>
+            </div>
+            <div class="chat__body" id="chatBody"></div>
+          </div>
+          <img class="hero__moni float" src="/img/moni-celebrando.webp" alt="" width="150" height="150" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. PROBLEMA -->
+    <section class="slide" id="problema" data-step>
+      <div class="wrap">
+        <header class="slide__head reveal">
+          <span class="chip">01 · Problema <i>⏱ 1:30</i></span>
+          <h2>“¿En qué se me <em>va la plata</em>?”</h2>
+        </header>
+        <div class="problem2">
+          <div class="quotes">
+            <blockquote class="reveal">“No me alcanza la plata”</blockquote>
+            <blockquote class="reveal">“No sé administrar mi dinero”</blockquote>
+            <blockquote class="reveal">“Invertir es para los que saben”</blockquote>
+          </div>
+          <img class="problem2__moni reveal float" src="/img/moni-investigando.webp" alt="Moni investigando con una lupa" width="300" height="300" loading="lazy" />
+        </div>
+        <div class="pains">
+          <article class="pain reveal">
+            <span class="pain__n">1</span>
+            <h3>Falta de control</h3>
+            <p>Los gastos hormiga y las suscripciones “invisibles” se comen el sueldo sin que nadie lo note.</p>
+          </article>
+          <article class="pain reveal">
+            <span class="pain__n">2</span>
+            <h3>Falta de acompañamiento</h3>
+            <p>Nadie enseña a manejar el dinero, y las apps actuales no explican: solo muestran números.</p>
+          </article>
+          <article class="pain reveal">
+            <span class="pain__n">3</span>
+            <h3>No se da el salto</h3>
+            <p>Las personas no logran pasar de “llegar a fin de mes” a ahorrar e invertir de forma constante.</p>
+          </article>
+        </div>
+        <p class="punch reveal">El acceso ya existe. El vacío está en la <b>visibilidad</b>, el <b>acompañamiento</b> y el <b>salto al ahorro e inversión</b>.</p>
+      </div>
+    </section>
+
+    <!-- 2. SEGMENTO -->
+    <section class="slide slide--alt" id="segmento" data-step>
+      <div class="wrap">
+        <header class="slide__head reveal">
+          <span class="chip">02 · Segmento de clientes <i>⏱ 1:30</i></span>
+          <h2>Jóvenes que <em>empiezan</em> a manejar su dinero</h2>
+        </header>
+        <div class="segment">
+          <div class="personas">
+            <article class="persona reveal">
+              <span class="persona__icon" aria-hidden="true">🎒</span>
+              <div><h3>Último año de colegio y preuniversitarios</h3><p>Reciben su primera mesada fija y aún no tienen hábitos.</p></div>
+            </article>
+            <article class="persona reveal">
+              <span class="persona__icon" aria-hidden="true">🎓</span>
+              <div><h3>Estudiantes universitarios</h3><p>Viven con un presupuesto ajustado: transporte, comida, fotocopias y salidas.</p></div>
+            </article>
+            <article class="persona reveal">
+              <span class="persona__icon" aria-hidden="true">💼</span>
+              <div><h3>Jóvenes en su primer empleo formal</h3><p>Primer salario, primeras deudas y primeras ganas de ahorrar.</p></div>
+            </article>
+            <article class="persona reveal">
+              <span class="persona__icon" aria-hidden="true">🚀</span>
+              <div><h3>Independientes y emprendedores</h3><p>Ingresos variables que necesitan orden para no mezclar lo personal con el negocio.</p></div>
+            </article>
+          </div>
+          <figure class="stat-card reveal" aria-labelledby="ageTitle">
+            <figcaption id="ageTitle">¿A qué edad te hubiera gustado empezar a controlar tus finanzas?<small>Encuesta propia · 23 respuestas</small></figcaption>
+            <div class="donut-wrap">
+              <div class="donut" style="--a:47.8; --b:47.8; --c:4.4" role="img" aria-label="47,8 % antes de los 18 años, 47,8 % entre 18 y 24 años, 4,4 % entre 25 y 34 años">
+                <span><b data-count="95.7" data-decimals="1">0</b>%<small>antes de los 24</small></span>
+              </div>
+              <ul class="legend">
+                <li><i style="background:var(--lavender)"></i>Antes de los 18 años <b>47,8 %</b></li>
+                <li><i style="background:var(--peach)"></i>Universidad o primer trabajo (18-24) <b>47,8 %</b></li>
+                <li><i style="background:var(--violet)"></i>Adulto joven (25-34) <b>4,4 %</b></li>
+                <li><i style="background:rgba(255,255,255,.2)"></i>Después de los 35 <b>0 %</b></li>
+              </ul>
+            </div>
+            <p class="stat-card__note"><img src="/img/moni-celebrando.webp" alt="" width="44" height="44" /> <span>Por eso nuestro segmento son los jóvenes: <b>¡esto es para ti!</b></span></p>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. PROPUESTA DE VALOR + SOLUCIÓN -->
+    <section class="slide" id="propuesta" data-step>
+      <div class="wrap">
+        <header class="slide__head reveal">
+          <span class="chip">03 · Propuesta de valor y solución <i>⏱ 2:00</i></span>
+          <h2>Tu asistente financiero <em>por voz</em></h2>
+        </header>
+        <div class="uvp reveal">
+          <img src="/img/moni-senalando.webp" alt="" width="150" height="150" loading="lazy" />
+          <p>Dile adiós al registro manual y recibe <b>orientación inteligente</b> para controlar, ahorrar e invertir <b>sin esfuerzo</b>.</p>
+          <span class="bubble">¡Así de fácil!</span>
+        </div>
+        <div class="solution">
+          <article class="sol reveal">
+            <img src="/img/app-movimientos.webp" alt="Lista de movimientos" width="560" height="1086" loading="lazy" />
+            <div><h3>⚡ Registro rápido</h3><p>Por voz, atajo o mensaje del banco. Anotar un gasto toma segundos y se acaba la pereza.</p></div>
+          </article>
+          <article class="sol reveal">
+            <img src="/img/app-inicio.webp" alt="Saldo unificado" width="560" height="1086" loading="lazy" />
+            <div><h3>💳 Saldo unificado</h3><p>Bancos, Nequi y efectivo en un solo número: por fin sabes cuánto tienes de verdad.</p></div>
+          </article>
+          <article class="sol reveal">
+            <img src="/img/app-presupuesto.webp" alt="Presupuesto del mes" width="560" height="1086" loading="lazy" />
+            <div><h3>🔔 Recordatorios y presupuesto</h3><p>Avisos antes de cada pago y alertas cuando una categoría se acerca al límite.</p></div>
+          </article>
+          <article class="sol reveal">
+            <img src="/img/app-metas.webp" alt="Metas de ahorro" width="560" height="1086" loading="lazy" />
+            <div><h3>🎯 Metas y tips de ahorro</h3><p>Cuánto apartar cada semana para llegar a tu meta, con consejos prácticos.</p></div>
+          </article>
+          <article class="sol reveal">
+            <img src="/img/app-asistente.webp" alt="Asistente con IA" width="560" height="1086" loading="lazy" />
+            <div><h3>🤖 Asistente con IA</h3><p>Moni convierte tus datos en recomendaciones: “¿Puedo comprarlo?”, “¿en qué gasto más?”.</p></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. VALIDACIÓN -->
+    <section class="slide slide--alt" id="validacion" data-step>
+      <div class="wrap">
+        <header class="slide__head reveal">
+          <span class="chip">04 · Validación realizada <i>⏱ 2:30</i></span>
+          <h2>Le preguntamos a <em>nuestro segmento</em></h2>
+          <p class="lead">Aplicamos una encuesta a jóvenes del segmento para validar el problema, la propuesta de valor y el canal. Esto fue lo que encontramos.</p>
+        </header>
+
+        <div class="kpis">
+          <div class="kpi reveal"><b><span data-count="23">0</span></b><span>personas encuestadas</span></div>
+          <div class="kpi reveal"><b><span data-count="95.7" data-decimals="1">0</span>%</b><span>quiere empezar antes de los 24 años</span></div>
+          <div class="kpi reveal"><b><span data-count="57.1" data-decimals="1">0</span>%</b><span>no conocía apps para manejar su dinero</span></div>
+          <div class="kpi reveal"><b><span data-count="78.6" data-decimals="1">0</span>%</b><span>quiere saber exactamente en qué gasta</span></div>
+        </div>
+
+        <div class="charts">
+          <figure class="chart reveal">
+            <figcaption>¿Por qué no has usado una app para gestionar tu dinero?<small>14 respuestas · selección múltiple</small></figcaption>
+            <ul class="bars" data-max="8">
+              <li data-v="8"><span>No conocía aplicaciones de este tipo</span><i></i><b>57,1 %</b></li>
+              <li data-v="5"><span>Me da pereza o es complejo registrar gastos</span><i></i><b>35,7 %</b></li>
+              <li data-v="5"><span>Prefiero Excel, libreta o hacerlo mental</span><i></i><b>35,7 %</b></li>
+              <li data-v="2"><span>Desconfianza por la seguridad de mis datos</span><i></i><b>14,3 %</b></li>
+              <li data-v="1"><span>Las apps no se adaptan a lo que necesito</span><i></i><b>7,1 %</b></li>
+              <li data-v="1"><span>Uso notas para controlar mis cuentas</span><i></i><b>7,1 %</b></li>
+            </ul>
+            <p class="insight"><b>Qué aprendimos:</b> el reto no es la competencia, es que <b>no nos conocen</b> y que registrar da pereza. Por eso el canal es contenido corto y el registro es por voz.</p>
+          </figure>
+
+          <figure class="chart reveal">
+            <figcaption>¿Qué te motivaría a usar una app de finanzas?<small>14 respuestas · selección múltiple</small></figcaption>
+            <ul class="bars" data-max="11">
+              <li data-v="11"><span>Saber exactamente en qué se me va el dinero</span><i></i><b>78,6 %</b></li>
+              <li data-v="8"><span>Ver de un vistazo cuánto dinero tengo</span><i></i><b>57,1 %</b></li>
+              <li data-v="8"><span>Recordatorios de fechas de pago</span><i></i><b>57,1 %</b></li>
+              <li data-v="6"><span>Saber cuánto dinero me queda</span><i></i><b>42,9 %</b></li>
+              <li data-v="5"><span>Consejos o tips simples para ahorrar</span><i></i><b>35,7 %</b></li>
+              <li data-v="3"><span>Una sección para crear ahorros</span><i></i><b>21,4 %</b></li>
+              <li data-v="3"><span>Gestionar varias finanzas en la misma app</span><i></i><b>21,4 %</b></li>
+              <li data-v="2"><span>Crear perfiles separados</span><i></i><b>14,3 %</b></li>
+              <li data-v="1"><span>Que sea gratis</span><i></i><b>7,1 %</b></li>
+            </ul>
+            <p class="insight"><b>Qué aprendimos:</b> cada respuesta se volvió una función: categorías, saldo unificado, recordatorios, metas y perfiles.</p>
+          </figure>
+        </div>
+
+        <div class="loop reveal">
+          <h3>De la encuesta al producto</h3>
+          <div class="loop__row">
+            <div><b>Lo pidieron</b><span>Saber en qué gasto</span></div><i aria-hidden="true">→</i><div><b>Lo construimos</b><span>Categorías + informes</span></div>
+          </div>
+          <div class="loop__row">
+            <div><b>Lo pidieron</b><span>Ver cuánto tengo</span></div><i aria-hidden="true">→</i><div><b>Lo construimos</b><span>Saldo unificado</span></div>
+          </div>
+          <div class="loop__row">
+            <div><b>Lo pidieron</b><span>Recordatorios de pago</span></div><i aria-hidden="true">→</i><div><b>Lo construimos</b><span>Suscripciones y alertas</span></div>
+          </div>
+          <div class="loop__row">
+            <div><b>Les daba pereza</b><span>Registrar gastos</span></div><i aria-hidden="true">→</i><div><b>Lo construimos</b><span>Registro por voz y SMS</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. LEAN CANVAS -->
+    <section class="slide" id="canvas" data-step>
+      <div class="wrap">
+        <header class="slide__head reveal">
+          <span class="chip">05 · Lean Canvas <i>⏱ 3:00</i></span>
+          <h2>El modelo de negocio en <em>una hoja</em></h2>
+          <p class="lead">Toca cualquier bloque para ver el detalle.</p>
+        </header>
+
+        <div class="lc reveal" id="leanCanvas">
+          <button class="lc__cell lc--problema" data-block="problema"><b>Problema</b><span>Falta de control sobre los gastos (hormiga y suscripciones invisibles), falta de educación financiera y no dar el salto al ahorro.</span></button>
+          <button class="lc__cell lc--solucion" data-block="solucion"><b>Solución</b><span>Registro por voz, saldo unificado, recordatorios, metas y asistente con IA.</span></button>
+          <button class="lc__cell lc--metricas" data-block="metricas"><b>Métricas clave</b><span>% Premium, beneficios redimidos, licencias B2B, retención a 30 días, LTV/CAC.</span></button>
+          <button class="lc__cell lc--propuesta" data-block="propuesta"><b>Propuesta de valor</b><span>Controla tu dinero sin tocar la pantalla: díselo a tu asistente de IA, automatiza tus registros y recibe consejos para hacer crecer tus finanzas.</span></button>
+          <button class="lc__cell lc--ventaja" data-block="ventaja"><b>Ventaja especial</b><span>Neutralidad, red de aliados, historia que se acumula, canal B2B y adaptación a Latinoamérica.</span></button>
+          <button class="lc__cell lc--canales" data-block="canales"><b>Canales</b><span>TikTok e Instagram, charlas en universidades y referidos.</span></button>
+          <button class="lc__cell lc--segmento" data-block="segmento"><b>Segmento</b><span>Colegio y preuniversitarios, universitarios, primer empleo, independientes.</span></button>
+          <button class="lc__cell lc--costos" data-block="costos"><b>Estructura de costos</b><span>Equipo, nube, licencias de tiendas, cumplimiento legal y seguridad. Variables: IA, comisiones y marketing.</span></button>
+          <button class="lc__cell lc--ingresos" data-block="ingresos"><b>Flujo de ingresos</b><span>Premium (B2C), comisiones por referidos, campañas con aliados, licencias B2B y asesorías.</span></button>
+        </div>
+
+        <!-- Detalle de ingresos, costos y métricas (siempre visible en el pitch) -->
+        <div class="money">
+          <article class="money__col reveal">
+            <h3><img src="/img/moni-celebrando.webp" alt="" width="48" height="48" /> ¿Cómo genera dinero?</h3>
+            <div class="rev rev--mint"><b>Suscripción Premium</b><span>Asistente con IA personalizado, proyecciones de gasto y ahorro, y herramientas avanzadas de planificación. Pago mensual o anual.</span></div>
+            <div class="rev rev--yellow"><b>Convenios bancarios</b><span>Comisión por clientes referidos que contratan un producto, recomendado según su perfil de riesgo y sus metas.</span></div>
+            <div class="rev rev--pink"><b>Convenios comerciales</b><span>Alianzas con comercios y marcas: ofertas según los hábitos de consumo que ayudan a gastar menos.</span></div>
+            <div class="rev rev--lilac"><b>Licencias B2B</b><span>Empresas y universidades que ofrecen la app como beneficio de bienestar financiero.</span></div>
+          </article>
+          <article class="money__col reveal">
+            <h3><img src="/img/moni-investigando.webp" alt="" width="48" height="48" /> ¿En qué se gasta?</h3>
+            <div class="costs">
+              <div><b>Costos fijos</b><ul><li>Desarrollo y mantenimiento</li><li>Infraestructura en la nube</li><li>Personal técnico y comercial</li><li>Seguridad y cumplimiento legal</li><li>Licencias y servicios</li></ul></div>
+              <div><b>Costos variables</b><ul><li>Consumo de IA por usuario</li><li>Integraciones financieras</li><li>Marketing y adquisición</li><li>Soporte al usuario</li><li>Comisiones de las tiendas</li></ul></div>
+            </div>
+            <table class="need">
+              <caption>Cada necesidad validada tiene un costo</caption>
+              <thead><tr><th scope="col">Necesidad</th><th scope="col">Costo asociado</th></tr></thead>
+              <tbody>
+                <tr><td>Categorizar gastos</td><td>Procesamiento de datos</td></tr>
+                <tr><td>Saldo unificado</td><td>Integraciones financieras</td></tr>
+                <tr><td>Recordatorios</td><td>Servicio de notificaciones</td></tr>
+                <tr><td>Gráficos e informes</td><td>Nube y procesamiento</td></tr>
+                <tr><td>Consejos de ahorro</td><td>Inteligencia artificial</td></tr>
+              </tbody>
+            </table>
+          </article>
+          <article class="money__col reveal">
+            <h3><img src="/img/moni-senalando.webp" alt="" width="48" height="48" /> ¿Cómo medimos el éxito?</h3>
+            <ol class="questions">
+              <li>¿La gente <b>paga</b>?<span>% de usuarios que pasan a Premium · licencias B2B vendidas</span></li>
+              <li>¿El modelo es <b>sostenible</b>?<span>Relación LTV / CAC (lo que deja un usuario vs. lo que cuesta conseguirlo)</span></li>
+              <li>¿Los usuarios obtienen <b>beneficios</b>?<span>Retención a 30 días · beneficios redimidos · metas cumplidas</span></li>
+            </ol>
+            <p class="quote-sm">“Si respondemos sí a estas tres, sabemos que el modelo funciona.”</p>
+            <h3 class="mt"><img src="/img/moni-corriendo.webp" alt="" width="48" height="48" /> Canales</h3>
+            <ul class="channels">
+              <li><b>📱 TikTok e Instagram</b>Contenido educativo corto y promocional.</li>
+              <li><b>🎤 Universidades</b>Charlas y espacios sobre finanzas personales.</li>
+              <li><b>🤝 Referidos</b>Bienvenida personalizada según tu objetivo y recomendación entre amigos.</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. VENTAJA ESPECIAL -->
+    <section class="slide slide--alt" id="ventaja" data-step>
+      <div class="wrap">
+        <header class="slide__head reveal">
+          <span class="chip">06 · Ventaja especial <i>⏱ 1:30</i></span>
+          <h2>¿Por qué nadie nos <em>copia fácil</em>?</h2>
+          <p class="lead">Un banco no lo copia por conflicto de interés. Una app extranjera no lo replica sin años de alianzas locales.</p>
+        </header>
+        <div class="pillars">
+          <article class="pillar p1 reveal"><b>1</b><h3>Neutralidad</h3><p>Estamos del lado del usuario, no de un banco.</p></article>
+          <article class="pillar p2 reveal"><b>2</b><h3>Efecto de red</h3><p>Más usuarios atraen más aliados y más beneficios.</p></article>
+          <article class="pillar p3 reveal"><b>3</b><h3>Datos propios</h3><p>Sabemos qué metas se cumplen y cómo cambian los hábitos.</p></article>
+          <article class="pillar p4 reveal"><b>4</b><h3>Costo de cambio</h3><p>Irse significa perder tu historia, tus metas y tu plan.</p></article>
+          <article class="pillar p5 reveal"><b>5</b><h3>Canal B2B</h3><p>Empresas y universidades nos traen usuarios.</p></article>
+          <article class="pillar p6 reveal"><b>6</b><h3>Ventaja local</h3><p>Entendemos los bancos, la regulación y el lenguaje de aquí.</p></article>
+          <article class="pillar p7 reveal"><b>7</b><h3>Marca y equipo</h3><p>Confianza ganada y un equipo que aprende rápido.</p></article>
+        </div>
+        <p class="punch reveal">Un competidor puede copiar una pieza, pero <b>no las siete funcionando juntas</b>.</p>
+
+        <div class="versus">
+          <div class="flywheel reveal" aria-label="El volante de crecimiento">
+            <h3>El volante</h3>
+            <ol>
+              <li>Neutralidad y marca generan confianza</li>
+              <li>Llegan más usuarios, propios y por empresas</li>
+              <li>Se acumulan datos de progreso anónimos</li>
+              <li>Mejor personalización y más metas cumplidas</li>
+              <li>Más aliados y más beneficios</li>
+              <li>Más historia acumulada y menos abandono</li>
+            </ol>
+            <p class="flywheel__loop">↻ Recomiendan la app y el ciclo vuelve a empezar</p>
+          </div>
+          <div class="compare reveal">
+            <h3>Comparación con la competencia</h3>
+            <table>
+              <thead><tr><th scope="col">Alternativa</th><th scope="col">Su límite</th></tr></thead>
+              <tbody>
+                <tr><td>Bancos (Día a Día)</td><td>Solo ven sus propios productos</td></tr>
+                <tr><td>YNAB y Monarch</td><td>En inglés y pensadas para EE. UU.</td></tr>
+                <tr><td>Fintonic</td><td>Gana vendiendo préstamos y seguros</td></tr>
+                <tr><td>Mobills</td><td>Pertenece a un grupo bancario</td></tr>
+                <tr><td>trii</td><td>Solo cubre inversión</td></tr>
+                <tr class="us"><td>Smart Finance</td><td>Los 7 pilares juntos, en español y para Latinoamérica</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. DEMO -->
+    <section class="slide try" id="demo" data-step>
+      <div class="wrap try__grid">
+        <div class="try__copy">
+          <header class="reveal">
+            <span class="chip">07 · Prototipo y demostración <i>⏱ 2:30</i></span>
+            <h2>No es una idea: <em>ya funciona</em></h2>
+            <p class="lead">El prototipo es una app real. Pruébala aquí mismo o escanea el código para abrirla en tu celular.</p>
+          </header>
+          <ol class="demo-steps reveal">
+            <li><b>Personaliza</b> Moni te pregunta tu nombre y tu objetivo.</li>
+            <li><b>Registra un gasto</b> con el botón “Gasto” o por voz.</li>
+            <li><b>Mira tu presupuesto</b> y cuánto te queda este mes.</li>
+            <li><b>Pregúntale a Moni</b> “¿Puedo comprarlo?” antes de gastar.</li>
+            <li><b>Crea una meta</b> y abona para cumplirla.</li>
+          </ol>
+          <div class="qr reveal">
+            <img src="/img/qr-app.png" alt="Código QR para abrir Smart Finance en el celular" width="132" height="132" loading="lazy" />
+            <p><b>Pruébala en tu celular</b><br />Escanea con la cámara y se abre al instante, sin descargar nada.</p>
+          </div>
+          <div class="hero__cta reveal"><a href="/app/" class="btn btn--peach">Abrir la app en pantalla completa <span aria-hidden="true">→</span></a></div>
+        </div>
+        <div class="try__device reveal">
+          <div class="device">
+            <div class="device__notch" aria-hidden="true"></div>
+            <iframe id="demoFrame" title="Smart Finance funcionando en vivo" data-src="/app/" loading="lazy"></iframe>
+            <button class="device__start" id="demoStart" type="button">
+              <img src="/img/moni-saludando.webp" alt="" width="110" height="110" />
+              <b>Toca para iniciar la demo</b>
+              <span>La app funciona en vivo dentro de este teléfono</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PREGUNTAS DEL JURADO -->
+    <section class="slide faq-section" id="preguntas">
+      <div class="wrap faq">
+        <header class="slide__head reveal">
+          <span class="chip">Preguntas del jurado</span>
+          <h2>Lo que <em>nos pueden preguntar</em></h2>
+        </header>
+        <details class="reveal"><summary>¿Y si un banco los copia?</summary><p>Puede copiar las funciones, pero no la neutralidad: nunca le dirá a su cliente que otra entidad le conviene más. La red de aliados y la historia de cada usuario solo se construyen con tiempo.</p></details>
+        <details class="reveal"><summary>¿La IA no la tiene cualquiera?</summary><p>Sí, por eso no es nuestra ventaja. La IA es una herramienta; la ventaja está en los datos de progreso, los aliados y la confianza.</p></details>
+        <details class="reveal"><summary>¿Cómo consiguen aliados si no tienen usuarios?</summary><p>Entrando primero por instituciones (B2B), que traen usuarios de una vez, y con comercios locales que arriesgan poco y ganan clientes nuevos.</p></details>
+        <details class="reveal"><summary>¿Cómo ganan dinero sin vender datos?</summary><p>Con suscripción Premium, licencias para empresas, campañas de beneficios y comisiones transparentes por productos que el usuario decide tomar.</p></details>
+        <details class="reveal"><summary>¿Ya tienen ventaja injusta?</summary><p>Todavía no consolidada. Tenemos los elementos y una estrategia clara para construirla, que es lo esperado en un emprendimiento naciente.</p></details>
+      </div>
+    </section>
+
+    <!-- CIERRE -->
+    <section class="final" id="cierre" data-step>
+      <div class="wrap final__inner reveal">
+        <img src="/img/moni-colgado.webp" alt="" width="180" height="180" loading="lazy" class="final__moni" />
+        <h2>Ayudamos a los jóvenes a pasar de <em>sobrevivir el mes</em> a construir su futuro</h2>
+        <p class="lead">Gracias. ¿Preguntas?</p>
+        <ul class="team" aria-label="Equipo">
+          <li>Brayan Miguel Carvajal</li>
+          <li>Simon Fernando Ruedas</li>
+          <li>Daniel Felipe López</li>
+          <li>Juan Camilo Alfonso</li>
+          <li>José Augusto Quintero</li>
+        </ul>
+        <div class="hero__cta" style="justify-content:center">
+          <a href="/app/" class="btn btn--peach btn--lg">Probar Smart Finance <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__grid">
+      <div>
+        <a href="#inicio" class="brand"><img src="/img/logo-mark.webp" alt="" width="36" height="36" /><span>Smart <em>Finance</em></span></a>
+        <p class="footer__tag">Finanzas de altura.</p>
+      </div>
+      <p class="keys">Navega con <kbd>←</kbd> <kbd>→</kbd> · cronómetro con <kbd>T</kbd></p>
+    </div>
+    <div class="wrap footer__bottom">
+      <p>Desarrollado por Camilo Martínez</p>
+    </div>
+  </footer>
+
+  <!-- Detalle de cada bloque del canvas -->
+  <dialog class="sheet" id="sheet" aria-labelledby="sheetTitle">
+    <button class="sheet__close" id="sheetClose" type="button" aria-label="Cerrar">×</button>
+    <img id="sheetMoni" src="/img/moni-senalando.webp" alt="" width="90" height="90" />
+    <h3 id="sheetTitle"></h3>
+    <div id="sheetBody"></div>
+  </dialog>
+
+  <script src="/pitch.js" defer></script>
+</body>
+</html>
