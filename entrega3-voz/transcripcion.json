@@ -1,0 +1,4495 @@
+{
+ "audio": "WhatsApp Audio 2026-11-08 at 1.49.56 AM.mp4",
+ "modelo": "faster-whisper small (int8, CPU)",
+ "idioma": "es",
+ "duracion": 375.85,
+ "segmentos": [
+  {
+   "inicio": 0.78,
+   "fin": 6.9,
+   "texto": "Smart Finance, finanzas de altura, en tu bolsillo un proyecto del Grupo 6 de Ingeniería del Software.",
+   "palabras": [
+    {
+     "inicio": 0.78,
+     "fin": 1.38,
+     "palabra": "Smart",
+     "prob": 0.6
+    },
+    {
+     "inicio": 1.38,
+     "fin": 1.86,
+     "palabra": "Finance,",
+     "prob": 0.81
+    },
+    {
+     "inicio": 2.22,
+     "fin": 2.66,
+     "palabra": "finanzas",
+     "prob": 0.8
+    },
+    {
+     "inicio": 2.66,
+     "fin": 2.94,
+     "palabra": "de",
+     "prob": 0.97
+    },
+    {
+     "inicio": 2.94,
+     "fin": 3.18,
+     "palabra": "altura,",
+     "prob": 0.98
+    },
+    {
+     "inicio": 3.58,
+     "fin": 3.72,
+     "palabra": "en",
+     "prob": 0.93
+    },
+    {
+     "inicio": 3.72,
+     "fin": 3.84,
+     "palabra": "tu",
+     "prob": 0.99
+    },
+    {
+     "inicio": 3.84,
+     "fin": 4.16,
+     "palabra": "bolsillo",
+     "prob": 0.98
+    },
+    {
+     "inicio": 4.16,
+     "fin": 4.42,
+     "palabra": "un",
+     "prob": 0.89
+    },
+    {
+     "inicio": 4.42,
+     "fin": 4.76,
+     "palabra": "proyecto",
+     "prob": 0.99
+    },
+    {
+     "inicio": 4.76,
+     "fin": 5.22,
+     "palabra": "del",
+     "prob": 0.97
+    },
+    {
+     "inicio": 5.22,
+     "fin": 5.46,
+     "palabra": "Grupo",
+     "prob": 0.66
+    },
+    {
+     "inicio": 5.46,
+     "fin": 5.8,
+     "palabra": "6",
+     "prob": 0.82
+    },
+    {
+     "inicio": 5.8,
+     "fin": 6.12,
+     "palabra": "de",
+     "prob": 0.98
+    },
+    {
+     "inicio": 6.12,
+     "fin": 6.52,
+     "palabra": "Ingeniería",
+     "prob": 0.8
+    },
+    {
+     "inicio": 6.52,
+     "fin": 6.7,
+     "palabra": "del",
+     "prob": 0.87
+    },
+    {
+     "inicio": 6.7,
+     "fin": 6.9,
+     "palabra": "Software.",
+     "prob": 0.45
+    }
+   ]
+  },
+  {
+   "inicio": 9.9,
+   "fin": 16.4,
+   "texto": "Hola, soy Juan Camilo y junto a Moni, nuestra mascota, les voy a mostrar cómo funciona nuestra app.",
+   "palabras": [
+    {
+     "inicio": 9.9,
+     "fin": 10.5,
+     "palabra": "Hola,",
+     "prob": 0.94
+    },
+    {
+     "inicio": 10.84,
+     "fin": 11.02,
+     "palabra": "soy",
+     "prob": 0.99
+    },
+    {
+     "inicio": 11.02,
+     "fin": 11.18,
+     "palabra": "Juan",
+     "prob": 0.98
+    },
+    {
+     "inicio": 11.18,
+     "fin": 11.54,
+     "palabra": "Camilo",
+     "prob": 0.98
+    },
+    {
+     "inicio": 11.54,
+     "fin": 12.0,
+     "palabra": "y",
+     "prob": 0.82
+    },
+    {
+     "inicio": 12.0,
+     "fin": 12.12,
+     "palabra": "junto",
+     "prob": 0.94
+    },
+    {
+     "inicio": 12.12,
+     "fin": 12.34,
+     "palabra": "a",
+     "prob": 0.98
+    },
+    {
+     "inicio": 12.34,
+     "fin": 12.62,
+     "palabra": "Moni,",
+     "prob": 0.64
+    },
+    {
+     "inicio": 12.8,
+     "fin": 13.02,
+     "palabra": "nuestra",
+     "prob": 0.97
+    },
+    {
+     "inicio": 13.02,
+     "fin": 13.52,
+     "palabra": "mascota,",
+     "prob": 0.89
+    },
+    {
+     "inicio": 13.84,
+     "fin": 13.9,
+     "palabra": "les",
+     "prob": 1.0
+    },
+    {
+     "inicio": 13.9,
+     "fin": 14.12,
+     "palabra": "voy",
+     "prob": 1.0
+    },
+    {
+     "inicio": 14.12,
+     "fin": 14.24,
+     "palabra": "a",
+     "prob": 1.0
+    },
+    {
+     "inicio": 14.24,
+     "fin": 14.54,
+     "palabra": "mostrar",
+     "prob": 1.0
+    },
+    {
+     "inicio": 14.54,
+     "fin": 15.28,
+     "palabra": "cómo",
+     "prob": 0.91
+    },
+    {
+     "inicio": 15.28,
+     "fin": 15.72,
+     "palabra": "funciona",
+     "prob": 1.0
+    },
+    {
+     "inicio": 15.72,
+     "fin": 16.14,
+     "palabra": "nuestra",
+     "prob": 0.97
+    },
+    {
+     "inicio": 16.14,
+     "fin": 16.4,
+     "palabra": "app.",
+     "prob": 0.77
+    }
+   ]
+  },
+  {
+   "inicio": 18.32,
+   "fin": 28.7,
+   "texto": "Al abrir la app, se pide Face ID o la huella. Si esta llega a fallar, se usa un pin de respaldo que es guardado de manera cifrada en tu teléfono.",
+   "palabras": [
+    {
+     "inicio": 18.32,
+     "fin": 18.92,
+     "palabra": "Al",
+     "prob": 0.99
+    },
+    {
+     "inicio": 18.92,
+     "fin": 19.14,
+     "palabra": "abrir",
+     "prob": 1.0
+    },
+    {
+     "inicio": 19.14,
+     "fin": 19.36,
+     "palabra": "la",
+     "prob": 0.91
+    },
+    {
+     "inicio": 19.36,
+     "fin": 19.54,
+     "palabra": "app,",
+     "prob": 0.89
+    },
+    {
+     "inicio": 19.8,
+     "fin": 19.92,
+     "palabra": "se",
+     "prob": 1.0
+    },
+    {
+     "inicio": 19.92,
+     "fin": 20.24,
+     "palabra": "pide",
+     "prob": 0.99
+    },
+    {
+     "inicio": 20.24,
+     "fin": 20.66,
+     "palabra": "Face",
+     "prob": 0.87
+    },
+    {
+     "inicio": 20.66,
+     "fin": 21.0,
+     "palabra": "ID",
+     "prob": 0.94
+    },
+    {
+     "inicio": 21.0,
+     "fin": 21.4,
+     "palabra": "o",
+     "prob": 0.96
+    },
+    {
+     "inicio": 21.4,
+     "fin": 21.5,
+     "palabra": "la",
+     "prob": 0.86
+    },
+    {
+     "inicio": 21.5,
+     "fin": 21.82,
+     "palabra": "huella.",
+     "prob": 0.88
+    },
+    {
+     "inicio": 22.42,
+     "fin": 22.56,
+     "palabra": "Si",
+     "prob": 0.99
+    },
+    {
+     "inicio": 22.56,
+     "fin": 22.86,
+     "palabra": "esta",
+     "prob": 0.76
+    },
+    {
+     "inicio": 22.86,
+     "fin": 23.06,
+     "palabra": "llega",
+     "prob": 0.98
+    },
+    {
+     "inicio": 23.06,
+     "fin": 23.22,
+     "palabra": "a",
+     "prob": 0.99
+    },
+    {
+     "inicio": 23.22,
+     "fin": 23.52,
+     "palabra": "fallar,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 23.82,
+     "fin": 23.86,
+     "palabra": "se",
+     "prob": 1.0
+    },
+    {
+     "inicio": 23.86,
+     "fin": 24.16,
+     "palabra": "usa",
+     "prob": 0.99
+    },
+    {
+     "inicio": 24.16,
+     "fin": 24.44,
+     "palabra": "un",
+     "prob": 1.0
+    },
+    {
+     "inicio": 24.44,
+     "fin": 24.64,
+     "palabra": "pin",
+     "prob": 0.89
+    },
+    {
+     "inicio": 24.64,
+     "fin": 24.78,
+     "palabra": "de",
+     "prob": 0.98
+    },
+    {
+     "inicio": 24.78,
+     "fin": 25.24,
+     "palabra": "respaldo",
+     "prob": 1.0
+    },
+    {
+     "inicio": 25.24,
+     "fin": 25.64,
+     "palabra": "que",
+     "prob": 0.98
+    },
+    {
+     "inicio": 25.64,
+     "fin": 25.96,
+     "palabra": "es",
+     "prob": 0.99
+    },
+    {
+     "inicio": 25.96,
+     "fin": 26.5,
+     "palabra": "guardado",
+     "prob": 1.0
+    },
+    {
+     "inicio": 26.5,
+     "fin": 26.9,
+     "palabra": "de",
+     "prob": 0.99
+    },
+    {
+     "inicio": 26.9,
+     "fin": 27.08,
+     "palabra": "manera",
+     "prob": 1.0
+    },
+    {
+     "inicio": 27.08,
+     "fin": 27.6,
+     "palabra": "cifrada",
+     "prob": 0.99
+    },
+    {
+     "inicio": 27.6,
+     "fin": 28.02,
+     "palabra": "en",
+     "prob": 0.99
+    },
+    {
+     "inicio": 28.02,
+     "fin": 28.22,
+     "palabra": "tu",
+     "prob": 0.99
+    },
+    {
+     "inicio": 28.22,
+     "fin": 28.7,
+     "palabra": "teléfono.",
+     "prob": 1.0
+    }
+   ]
+  },
+  {
+   "inicio": 33.66,
+   "fin": 47.92,
+   "texto": "La primera vez que usas nuestra aplicación, Moni te da la bienvenida. El usuario escribe su nombre, elige que quiere lograr con su dinero, como puede ser ahorros, salir de algunas deudas o el control de sus gastos.",
+   "palabras": [
+    {
+     "inicio": 33.66,
+     "fin": 34.22,
+     "palabra": "La",
+     "prob": 0.88
+    },
+    {
+     "inicio": 34.22,
+     "fin": 34.48,
+     "palabra": "primera",
+     "prob": 1.0
+    },
+    {
+     "inicio": 34.48,
+     "fin": 34.76,
+     "palabra": "vez",
+     "prob": 0.93
+    },
+    {
+     "inicio": 34.76,
+     "fin": 34.92,
+     "palabra": "que",
+     "prob": 0.99
+    },
+    {
+     "inicio": 34.92,
+     "fin": 35.14,
+     "palabra": "usas",
+     "prob": 0.94
+    },
+    {
+     "inicio": 35.14,
+     "fin": 35.4,
+     "palabra": "nuestra",
+     "prob": 0.98
+    },
+    {
+     "inicio": 35.4,
+     "fin": 35.98,
+     "palabra": "aplicación,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 36.26,
+     "fin": 36.54,
+     "palabra": "Moni",
+     "prob": 0.44
+    },
+    {
+     "inicio": 36.54,
+     "fin": 36.84,
+     "palabra": "te",
+     "prob": 0.93
+    },
+    {
+     "inicio": 36.84,
+     "fin": 36.94,
+     "palabra": "da",
+     "prob": 0.99
+    },
+    {
+     "inicio": 36.94,
+     "fin": 37.04,
+     "palabra": "la",
+     "prob": 0.99
+    },
+    {
+     "inicio": 37.04,
+     "fin": 37.54,
+     "palabra": "bienvenida.",
+     "prob": 1.0
+    },
+    {
+     "inicio": 38.2,
+     "fin": 38.34,
+     "palabra": "El",
+     "prob": 1.0
+    },
+    {
+     "inicio": 38.34,
+     "fin": 38.62,
+     "palabra": "usuario",
+     "prob": 1.0
+    },
+    {
+     "inicio": 38.62,
+     "fin": 38.9,
+     "palabra": "escribe",
+     "prob": 0.97
+    },
+    {
+     "inicio": 38.9,
+     "fin": 39.14,
+     "palabra": "su",
+     "prob": 0.97
+    },
+    {
+     "inicio": 39.14,
+     "fin": 39.5,
+     "palabra": "nombre,",
+     "prob": 1.0
+    },
+    {
+     "inicio": 40.32,
+     "fin": 40.6,
+     "palabra": "elige",
+     "prob": 0.97
+    },
+    {
+     "inicio": 40.6,
+     "fin": 40.96,
+     "palabra": "que",
+     "prob": 0.51
+    },
+    {
+     "inicio": 40.96,
+     "fin": 41.24,
+     "palabra": "quiere",
+     "prob": 0.98
+    },
+    {
+     "inicio": 41.24,
+     "fin": 41.56,
+     "palabra": "lograr",
+     "prob": 1.0
+    },
+    {
+     "inicio": 41.56,
+     "fin": 41.72,
+     "palabra": "con",
+     "prob": 0.97
+    },
+    {
+     "inicio": 41.72,
+     "fin": 41.84,
+     "palabra": "su",
+     "prob": 0.99
+    },
+    {
+     "inicio": 41.84,
+     "fin": 42.16,
+     "palabra": "dinero,",
+     "prob": 1.0
+    },
+    {
+     "inicio": 42.7,
+     "fin": 43.0,
+     "palabra": "como",
+     "prob": 0.91
+    },
+    {
+     "inicio": 43.0,
+     "fin": 43.28,
+     "palabra": "puede",
+     "prob": 0.98
+    },
+    {
+     "inicio": 43.28,
+     "fin": 43.6,
+     "palabra": "ser",
+     "prob": 0.98
+    },
+    {
+     "inicio": 43.6,
+     "fin": 44.6,
+     "palabra": "ahorros,",
+     "prob": 0.89
+    },
+    {
+     "inicio": 44.82,
+     "fin": 45.16,
+     "palabra": "salir",
+     "prob": 0.99
+    },
+    {
+     "inicio": 45.16,
+     "fin": 45.32,
+     "palabra": "de",
+     "prob": 1.0
+    },
+    {
+     "inicio": 45.32,
+     "fin": 45.54,
+     "palabra": "algunas",
+     "prob": 0.96
+    },
+    {
+     "inicio": 45.54,
+     "fin": 46.18,
+     "palabra": "deudas",
+     "prob": 0.93
+    },
+    {
+     "inicio": 46.18,
+     "fin": 46.64,
+     "palabra": "o",
+     "prob": 0.62
+    },
+    {
+     "inicio": 46.64,
+     "fin": 46.94,
+     "palabra": "el",
+     "prob": 0.98
+    },
+    {
+     "inicio": 46.94,
+     "fin": 47.22,
+     "palabra": "control",
+     "prob": 1.0
+    },
+    {
+     "inicio": 47.22,
+     "fin": 47.36,
+     "palabra": "de",
+     "prob": 1.0
+    },
+    {
+     "inicio": 47.36,
+     "fin": 47.5,
+     "palabra": "sus",
+     "prob": 0.97
+    },
+    {
+     "inicio": 47.5,
+     "fin": 47.92,
+     "palabra": "gastos.",
+     "prob": 1.0
+    }
+   ]
+  },
+  {
+   "inicio": 50.3,
+   "fin": 54.72,
+   "texto": "Con esto, la app se personaliza y le deja un plan con los primeros pasos.",
+   "palabras": [
+    {
+     "inicio": 50.3,
+     "fin": 50.86,
+     "palabra": "Con",
+     "prob": 1.0
+    },
+    {
+     "inicio": 50.86,
+     "fin": 51.12,
+     "palabra": "esto,",
+     "prob": 0.94
+    },
+    {
+     "inicio": 51.38,
+     "fin": 51.58,
+     "palabra": "la",
+     "prob": 0.99
+    },
+    {
+     "inicio": 51.58,
+     "fin": 51.82,
+     "palabra": "app",
+     "prob": 0.78
+    },
+    {
+     "inicio": 51.82,
+     "fin": 52.06,
+     "palabra": "se",
+     "prob": 0.99
+    },
+    {
+     "inicio": 52.06,
+     "fin": 52.7,
+     "palabra": "personaliza",
+     "prob": 1.0
+    },
+    {
+     "inicio": 52.7,
+     "fin": 52.94,
+     "palabra": "y",
+     "prob": 0.99
+    },
+    {
+     "inicio": 52.94,
+     "fin": 53.02,
+     "palabra": "le",
+     "prob": 0.94
+    },
+    {
+     "inicio": 53.02,
+     "fin": 53.24,
+     "palabra": "deja",
+     "prob": 0.99
+    },
+    {
+     "inicio": 53.24,
+     "fin": 53.34,
+     "palabra": "un",
+     "prob": 0.98
+    },
+    {
+     "inicio": 53.34,
+     "fin": 53.5,
+     "palabra": "plan",
+     "prob": 1.0
+    },
+    {
+     "inicio": 53.5,
+     "fin": 53.82,
+     "palabra": "con",
+     "prob": 0.99
+    },
+    {
+     "inicio": 53.82,
+     "fin": 53.94,
+     "palabra": "los",
+     "prob": 1.0
+    },
+    {
+     "inicio": 53.94,
+     "fin": 54.34,
+     "palabra": "primeros",
+     "prob": 1.0
+    },
+    {
+     "inicio": 54.34,
+     "fin": 54.72,
+     "palabra": "pasos.",
+     "prob": 1.0
+    }
+   ]
+  },
+  {
+   "inicio": 63.74,
+   "fin": 78.54,
+   "texto": "Y es aquí como nuestras cuentas permiten hacer el registro de todas tus cuentas. El banco en billeteras digitales como lo puede ser Nequi o pues también tu efectivo, cada cuenta tiene su propio saldo y su moneda.",
+   "palabras": [
+    {
+     "inicio": 63.74,
+     "fin": 64.42,
+     "palabra": "Y",
+     "prob": 0.47
+    },
+    {
+     "inicio": 64.42,
+     "fin": 64.56,
+     "palabra": "es",
+     "prob": 0.59
+    },
+    {
+     "inicio": 64.56,
+     "fin": 64.86,
+     "palabra": "aquí",
+     "prob": 0.98
+    },
+    {
+     "inicio": 64.86,
+     "fin": 65.48,
+     "palabra": "como",
+     "prob": 0.39
+    },
+    {
+     "inicio": 65.48,
+     "fin": 65.74,
+     "palabra": "nuestras",
+     "prob": 0.99
+    },
+    {
+     "inicio": 65.74,
+     "fin": 66.34,
+     "palabra": "cuentas",
+     "prob": 1.0
+    },
+    {
+     "inicio": 66.34,
+     "fin": 67.0,
+     "palabra": "permiten",
+     "prob": 0.97
+    },
+    {
+     "inicio": 67.0,
+     "fin": 67.24,
+     "palabra": "hacer",
+     "prob": 0.98
+    },
+    {
+     "inicio": 67.24,
+     "fin": 67.42,
+     "palabra": "el",
+     "prob": 0.95
+    },
+    {
+     "inicio": 67.42,
+     "fin": 67.9,
+     "palabra": "registro",
+     "prob": 1.0
+    },
+    {
+     "inicio": 67.9,
+     "fin": 68.24,
+     "palabra": "de",
+     "prob": 0.99
+    },
+    {
+     "inicio": 68.24,
+     "fin": 68.48,
+     "palabra": "todas",
+     "prob": 0.99
+    },
+    {
+     "inicio": 68.48,
+     "fin": 68.7,
+     "palabra": "tus",
+     "prob": 0.8
+    },
+    {
+     "inicio": 68.7,
+     "fin": 69.6,
+     "palabra": "cuentas.",
+     "prob": 1.0
+    },
+    {
+     "inicio": 69.6,
+     "fin": 70.02,
+     "palabra": "El",
+     "prob": 0.97
+    },
+    {
+     "inicio": 70.02,
+     "fin": 70.18,
+     "palabra": "banco",
+     "prob": 0.98
+    },
+    {
+     "inicio": 70.18,
+     "fin": 70.34,
+     "palabra": "en",
+     "prob": 0.97
+    },
+    {
+     "inicio": 70.34,
+     "fin": 70.76,
+     "palabra": "billeteras",
+     "prob": 0.87
+    },
+    {
+     "inicio": 70.76,
+     "fin": 71.38,
+     "palabra": "digitales",
+     "prob": 1.0
+    },
+    {
+     "inicio": 71.38,
+     "fin": 71.56,
+     "palabra": "como",
+     "prob": 0.82
+    },
+    {
+     "inicio": 71.56,
+     "fin": 71.7,
+     "palabra": "lo",
+     "prob": 0.91
+    },
+    {
+     "inicio": 71.7,
+     "fin": 71.96,
+     "palabra": "puede",
+     "prob": 0.98
+    },
+    {
+     "inicio": 71.96,
+     "fin": 72.26,
+     "palabra": "ser",
+     "prob": 0.77
+    },
+    {
+     "inicio": 72.26,
+     "fin": 72.84,
+     "palabra": "Nequi",
+     "prob": 0.13
+    },
+    {
+     "inicio": 72.84,
+     "fin": 73.34,
+     "palabra": "o",
+     "prob": 0.88
+    },
+    {
+     "inicio": 73.34,
+     "fin": 73.64,
+     "palabra": "pues",
+     "prob": 0.81
+    },
+    {
+     "inicio": 73.64,
+     "fin": 73.88,
+     "palabra": "también",
+     "prob": 0.85
+    },
+    {
+     "inicio": 73.88,
+     "fin": 74.08,
+     "palabra": "tu",
+     "prob": 0.75
+    },
+    {
+     "inicio": 74.08,
+     "fin": 74.6,
+     "palabra": "efectivo,",
+     "prob": 0.93
+    },
+    {
+     "inicio": 75.32,
+     "fin": 75.66,
+     "palabra": "cada",
+     "prob": 0.99
+    },
+    {
+     "inicio": 75.66,
+     "fin": 76.22,
+     "palabra": "cuenta",
+     "prob": 0.99
+    },
+    {
+     "inicio": 76.22,
+     "fin": 76.74,
+     "palabra": "tiene",
+     "prob": 0.99
+    },
+    {
+     "inicio": 76.74,
+     "fin": 76.96,
+     "palabra": "su",
+     "prob": 0.99
+    },
+    {
+     "inicio": 76.96,
+     "fin": 77.26,
+     "palabra": "propio",
+     "prob": 1.0
+    },
+    {
+     "inicio": 77.26,
+     "fin": 77.74,
+     "palabra": "saldo",
+     "prob": 1.0
+    },
+    {
+     "inicio": 77.74,
+     "fin": 78.08,
+     "palabra": "y",
+     "prob": 0.99
+    },
+    {
+     "inicio": 78.08,
+     "fin": 78.2,
+     "palabra": "su",
+     "prob": 0.99
+    },
+    {
+     "inicio": 78.2,
+     "fin": 78.54,
+     "palabra": "moneda.",
+     "prob": 1.0
+    }
+   ]
+  },
+  {
+   "inicio": 78.54,
+   "fin": 86.26,
+   "texto": "Y lo mejor de todo es que en el inicio de la aplicación es donde se suma todo lo demás y muestra el saldo total en pesos.",
+   "palabras": [
+    {
+     "inicio": 78.54,
+     "fin": 79.26,
+     "palabra": "Y",
+     "prob": 0.22
+    },
+    {
+     "inicio": 79.26,
+     "fin": 79.36,
+     "palabra": "lo",
+     "prob": 0.95
+    },
+    {
+     "inicio": 79.36,
+     "fin": 79.58,
+     "palabra": "mejor",
+     "prob": 1.0
+    },
+    {
+     "inicio": 79.58,
+     "fin": 79.76,
+     "palabra": "de",
+     "prob": 0.95
+    },
+    {
+     "inicio": 79.76,
+     "fin": 80.0,
+     "palabra": "todo",
+     "prob": 0.99
+    },
+    {
+     "inicio": 80.0,
+     "fin": 80.32,
+     "palabra": "es",
+     "prob": 0.92
+    },
+    {
+     "inicio": 80.32,
+     "fin": 80.42,
+     "palabra": "que",
+     "prob": 0.99
+    },
+    {
+     "inicio": 80.42,
+     "fin": 80.5,
+     "palabra": "en",
+     "prob": 0.91
+    },
+    {
+     "inicio": 80.5,
+     "fin": 80.6,
+     "palabra": "el",
+     "prob": 0.99
+    },
+    {
+     "inicio": 80.6,
+     "fin": 81.04,
+     "palabra": "inicio",
+     "prob": 0.99
+    },
+    {
+     "inicio": 81.04,
+     "fin": 81.16,
+     "palabra": "de",
+     "prob": 0.99
+    },
+    {
+     "inicio": 81.16,
+     "fin": 81.26,
+     "palabra": "la",
+     "prob": 0.99
+    },
+    {
+     "inicio": 81.26,
+     "fin": 81.84,
+     "palabra": "aplicación",
+     "prob": 0.98
+    },
+    {
+     "inicio": 81.84,
+     "fin": 82.48,
+     "palabra": "es",
+     "prob": 0.89
+    },
+    {
+     "inicio": 82.48,
+     "fin": 82.66,
+     "palabra": "donde",
+     "prob": 0.98
+    },
+    {
+     "inicio": 82.66,
+     "fin": 82.86,
+     "palabra": "se",
+     "prob": 0.99
+    },
+    {
+     "inicio": 82.86,
+     "fin": 83.14,
+     "palabra": "suma",
+     "prob": 0.98
+    },
+    {
+     "inicio": 83.14,
+     "fin": 83.46,
+     "palabra": "todo",
+     "prob": 0.99
+    },
+    {
+     "inicio": 83.46,
+     "fin": 83.66,
+     "palabra": "lo",
+     "prob": 0.98
+    },
+    {
+     "inicio": 83.66,
+     "fin": 83.9,
+     "palabra": "demás",
+     "prob": 0.98
+    },
+    {
+     "inicio": 83.9,
+     "fin": 84.5,
+     "palabra": "y",
+     "prob": 0.67
+    },
+    {
+     "inicio": 84.5,
+     "fin": 84.88,
+     "palabra": "muestra",
+     "prob": 0.99
+    },
+    {
+     "inicio": 84.88,
+     "fin": 85.2,
+     "palabra": "el",
+     "prob": 0.98
+    },
+    {
+     "inicio": 85.2,
+     "fin": 85.48,
+     "palabra": "saldo",
+     "prob": 0.99
+    },
+    {
+     "inicio": 85.48,
+     "fin": 85.74,
+     "palabra": "total",
+     "prob": 0.99
+    },
+    {
+     "inicio": 85.74,
+     "fin": 85.94,
+     "palabra": "en",
+     "prob": 0.98
+    },
+    {
+     "inicio": 85.94,
+     "fin": 86.26,
+     "palabra": "pesos.",
+     "prob": 0.98
+    }
+   ]
+  },
+  {
+   "inicio": 93.88,
+   "fin": 104.1,
+   "texto": "Ahora bien, si quieres registrar un gasto, solo toma segundos. Escribes el monto que es deslizas para confirmar y eliges la categoría. Además, funciona sin internet.",
+   "palabras": [
+    {
+     "inicio": 93.88,
+     "fin": 94.4,
+     "palabra": "Ahora",
+     "prob": 0.98
+    },
+    {
+     "inicio": 94.4,
+     "fin": 94.62,
+     "palabra": "bien,",
+     "prob": 0.98
+    },
+    {
+     "inicio": 94.92,
+     "fin": 94.98,
+     "palabra": "si",
+     "prob": 0.99
+    },
+    {
+     "inicio": 94.98,
+     "fin": 95.2,
+     "palabra": "quieres",
+     "prob": 0.85
+    },
+    {
+     "inicio": 95.2,
+     "fin": 95.6,
+     "palabra": "registrar",
+     "prob": 1.0
+    },
+    {
+     "inicio": 95.6,
+     "fin": 95.74,
+     "palabra": "un",
+     "prob": 0.97
+    },
+    {
+     "inicio": 95.74,
+     "fin": 96.22,
+     "palabra": "gasto,",
+     "prob": 1.0
+    },
+    {
+     "inicio": 96.36,
+     "fin": 96.5,
+     "palabra": "solo",
+     "prob": 0.77
+    },
+    {
+     "inicio": 96.5,
+     "fin": 96.76,
+     "palabra": "toma",
+     "prob": 0.91
+    },
+    {
+     "inicio": 96.76,
+     "fin": 97.18,
+     "palabra": "segundos.",
+     "prob": 0.98
+    },
+    {
+     "inicio": 97.86,
+     "fin": 98.38,
+     "palabra": "Escribes",
+     "prob": 0.74
+    },
+    {
+     "inicio": 98.38,
+     "fin": 98.6,
+     "palabra": "el",
+     "prob": 0.99
+    },
+    {
+     "inicio": 98.6,
+     "fin": 98.8,
+     "palabra": "monto",
+     "prob": 0.83
+    },
+    {
+     "inicio": 98.8,
+     "fin": 99.06,
+     "palabra": "que",
+     "prob": 0.96
+    },
+    {
+     "inicio": 99.06,
+     "fin": 99.34,
+     "palabra": "es",
+     "prob": 0.99
+    },
+    {
+     "inicio": 99.34,
+     "fin": 99.98,
+     "palabra": "deslizas",
+     "prob": 0.69
+    },
+    {
+     "inicio": 99.98,
+     "fin": 100.18,
+     "palabra": "para",
+     "prob": 0.99
+    },
+    {
+     "inicio": 100.18,
+     "fin": 100.88,
+     "palabra": "confirmar",
+     "prob": 0.99
+    },
+    {
+     "inicio": 100.88,
+     "fin": 101.04,
+     "palabra": "y",
+     "prob": 0.97
+    },
+    {
+     "inicio": 101.04,
+     "fin": 101.3,
+     "palabra": "eliges",
+     "prob": 0.98
+    },
+    {
+     "inicio": 101.3,
+     "fin": 101.46,
+     "palabra": "la",
+     "prob": 0.99
+    },
+    {
+     "inicio": 101.46,
+     "fin": 102.04,
+     "palabra": "categoría.",
+     "prob": 0.98
+    },
+    {
+     "inicio": 102.42,
+     "fin": 102.74,
+     "palabra": "Además,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 102.96,
+     "fin": 103.46,
+     "palabra": "funciona",
+     "prob": 0.97
+    },
+    {
+     "inicio": 103.46,
+     "fin": 103.72,
+     "palabra": "sin",
+     "prob": 1.0
+    },
+    {
+     "inicio": 103.72,
+     "fin": 104.1,
+     "palabra": "internet.",
+     "prob": 0.78
+    }
+   ]
+  },
+  {
+   "inicio": 106.76,
+   "fin": 114.1,
+   "texto": "Para poder registrar un ingreso, pasa lo mismo. El saldo de la cuenta y el resumen del mes se actualizan al instante.",
+   "palabras": [
+    {
+     "inicio": 106.76,
+     "fin": 107.28,
+     "palabra": "Para",
+     "prob": 0.81
+    },
+    {
+     "inicio": 107.28,
+     "fin": 107.54,
+     "palabra": "poder",
+     "prob": 0.99
+    },
+    {
+     "inicio": 107.54,
+     "fin": 107.96,
+     "palabra": "registrar",
+     "prob": 1.0
+    },
+    {
+     "inicio": 107.96,
+     "fin": 108.1,
+     "palabra": "un",
+     "prob": 0.99
+    },
+    {
+     "inicio": 108.1,
+     "fin": 108.56,
+     "palabra": "ingreso,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 108.82,
+     "fin": 109.14,
+     "palabra": "pasa",
+     "prob": 0.96
+    },
+    {
+     "inicio": 109.14,
+     "fin": 109.32,
+     "palabra": "lo",
+     "prob": 0.99
+    },
+    {
+     "inicio": 109.32,
+     "fin": 109.56,
+     "palabra": "mismo.",
+     "prob": 1.0
+    },
+    {
+     "inicio": 110.28,
+     "fin": 110.5,
+     "palabra": "El",
+     "prob": 0.99
+    },
+    {
+     "inicio": 110.5,
+     "fin": 110.82,
+     "palabra": "saldo",
+     "prob": 1.0
+    },
+    {
+     "inicio": 110.82,
+     "fin": 110.92,
+     "palabra": "de",
+     "prob": 0.99
+    },
+    {
+     "inicio": 110.92,
+     "fin": 111.02,
+     "palabra": "la",
+     "prob": 0.99
+    },
+    {
+     "inicio": 111.02,
+     "fin": 111.34,
+     "palabra": "cuenta",
+     "prob": 0.99
+    },
+    {
+     "inicio": 111.34,
+     "fin": 111.88,
+     "palabra": "y",
+     "prob": 0.98
+    },
+    {
+     "inicio": 111.88,
+     "fin": 111.98,
+     "palabra": "el",
+     "prob": 0.99
+    },
+    {
+     "inicio": 111.98,
+     "fin": 112.3,
+     "palabra": "resumen",
+     "prob": 1.0
+    },
+    {
+     "inicio": 112.3,
+     "fin": 112.52,
+     "palabra": "del",
+     "prob": 0.98
+    },
+    {
+     "inicio": 112.52,
+     "fin": 112.72,
+     "palabra": "mes",
+     "prob": 0.99
+    },
+    {
+     "inicio": 112.72,
+     "fin": 112.94,
+     "palabra": "se",
+     "prob": 0.85
+    },
+    {
+     "inicio": 112.94,
+     "fin": 113.44,
+     "palabra": "actualizan",
+     "prob": 1.0
+    },
+    {
+     "inicio": 113.44,
+     "fin": 113.68,
+     "palabra": "al",
+     "prob": 0.91
+    },
+    {
+     "inicio": 113.68,
+     "fin": 114.1,
+     "palabra": "instante.",
+     "prob": 0.98
+    }
+   ]
+  },
+  {
+   "inicio": 121.5,
+   "fin": 132.44,
+   "texto": "Para poder hacer una transferencia de banco a banco de moneda a moneda, es muy fácil. Simplemente el mover dinero de Banco en Colombia Nequi, una cuenta baja y la otra sube y el total no cambia.",
+   "palabras": [
+    {
+     "inicio": 121.5,
+     "fin": 122.02,
+     "palabra": "Para",
+     "prob": 0.99
+    },
+    {
+     "inicio": 122.02,
+     "fin": 122.26,
+     "palabra": "poder",
+     "prob": 1.0
+    },
+    {
+     "inicio": 122.26,
+     "fin": 122.46,
+     "palabra": "hacer",
+     "prob": 1.0
+    },
+    {
+     "inicio": 122.46,
+     "fin": 122.6,
+     "palabra": "una",
+     "prob": 0.99
+    },
+    {
+     "inicio": 122.6,
+     "fin": 123.26,
+     "palabra": "transferencia",
+     "prob": 1.0
+    },
+    {
+     "inicio": 123.26,
+     "fin": 123.54,
+     "palabra": "de",
+     "prob": 0.98
+    },
+    {
+     "inicio": 123.54,
+     "fin": 123.74,
+     "palabra": "banco",
+     "prob": 0.95
+    },
+    {
+     "inicio": 123.74,
+     "fin": 123.92,
+     "palabra": "a",
+     "prob": 0.95
+    },
+    {
+     "inicio": 123.92,
+     "fin": 124.2,
+     "palabra": "banco",
+     "prob": 1.0
+    },
+    {
+     "inicio": 124.2,
+     "fin": 124.36,
+     "palabra": "de",
+     "prob": 0.84
+    },
+    {
+     "inicio": 124.36,
+     "fin": 124.62,
+     "palabra": "moneda",
+     "prob": 0.99
+    },
+    {
+     "inicio": 124.62,
+     "fin": 124.74,
+     "palabra": "a",
+     "prob": 0.97
+    },
+    {
+     "inicio": 124.74,
+     "fin": 125.0,
+     "palabra": "moneda,",
+     "prob": 1.0
+    },
+    {
+     "inicio": 125.46,
+     "fin": 125.66,
+     "palabra": "es",
+     "prob": 0.99
+    },
+    {
+     "inicio": 125.66,
+     "fin": 125.88,
+     "palabra": "muy",
+     "prob": 0.99
+    },
+    {
+     "inicio": 125.88,
+     "fin": 126.36,
+     "palabra": "fácil.",
+     "prob": 1.0
+    },
+    {
+     "inicio": 126.96,
+     "fin": 127.48,
+     "palabra": "Simplemente",
+     "prob": 0.99
+    },
+    {
+     "inicio": 127.48,
+     "fin": 127.58,
+     "palabra": "el",
+     "prob": 0.44
+    },
+    {
+     "inicio": 127.58,
+     "fin": 127.72,
+     "palabra": "mover",
+     "prob": 0.99
+    },
+    {
+     "inicio": 127.72,
+     "fin": 128.04,
+     "palabra": "dinero",
+     "prob": 0.98
+    },
+    {
+     "inicio": 128.04,
+     "fin": 128.2,
+     "palabra": "de",
+     "prob": 0.96
+    },
+    {
+     "inicio": 128.2,
+     "fin": 128.42,
+     "palabra": "Banco",
+     "prob": 0.52
+    },
+    {
+     "inicio": 128.42,
+     "fin": 128.48,
+     "palabra": "en",
+     "prob": 0.37
+    },
+    {
+     "inicio": 128.48,
+     "fin": 128.66,
+     "palabra": "Colombia",
+     "prob": 0.71
+    },
+    {
+     "inicio": 128.66,
+     "fin": 129.0,
+     "palabra": "Nequi,",
+     "prob": 0.09
+    },
+    {
+     "inicio": 129.18,
+     "fin": 129.3,
+     "palabra": "una",
+     "prob": 0.99
+    },
+    {
+     "inicio": 129.3,
+     "fin": 129.58,
+     "palabra": "cuenta",
+     "prob": 0.97
+    },
+    {
+     "inicio": 129.58,
+     "fin": 129.86,
+     "palabra": "baja",
+     "prob": 0.98
+    },
+    {
+     "inicio": 129.86,
+     "fin": 130.18,
+     "palabra": "y",
+     "prob": 0.8
+    },
+    {
+     "inicio": 130.18,
+     "fin": 130.26,
+     "palabra": "la",
+     "prob": 0.99
+    },
+    {
+     "inicio": 130.26,
+     "fin": 130.46,
+     "palabra": "otra",
+     "prob": 0.98
+    },
+    {
+     "inicio": 130.46,
+     "fin": 130.88,
+     "palabra": "sube",
+     "prob": 0.98
+    },
+    {
+     "inicio": 130.88,
+     "fin": 131.08,
+     "palabra": "y",
+     "prob": 0.8
+    },
+    {
+     "inicio": 131.08,
+     "fin": 131.18,
+     "palabra": "el",
+     "prob": 0.99
+    },
+    {
+     "inicio": 131.18,
+     "fin": 131.46,
+     "palabra": "total",
+     "prob": 0.99
+    },
+    {
+     "inicio": 131.46,
+     "fin": 132.04,
+     "palabra": "no",
+     "prob": 0.97
+    },
+    {
+     "inicio": 132.04,
+     "fin": 132.44,
+     "palabra": "cambia.",
+     "prob": 1.0
+    }
+   ]
+  },
+  {
+   "inicio": 135.08,
+   "fin": 147.54,
+   "texto": "Ahora bien, si quieres dividir un gasto como compartir una cuenta con un amigo, simplemente dividir el gasto entre tus amigos y la crea automáticamente la duda para cada uno, para que nadie olvide pagarte.",
+   "palabras": [
+    {
+     "inicio": 135.08,
+     "fin": 135.6,
+     "palabra": "Ahora",
+     "prob": 0.33
+    },
+    {
+     "inicio": 135.6,
+     "fin": 135.88,
+     "palabra": "bien,",
+     "prob": 0.95
+    },
+    {
+     "inicio": 136.2,
+     "fin": 136.32,
+     "palabra": "si",
+     "prob": 0.98
+    },
+    {
+     "inicio": 136.32,
+     "fin": 136.56,
+     "palabra": "quieres",
+     "prob": 0.99
+    },
+    {
+     "inicio": 136.56,
+     "fin": 137.0,
+     "palabra": "dividir",
+     "prob": 0.99
+    },
+    {
+     "inicio": 137.0,
+     "fin": 137.12,
+     "palabra": "un",
+     "prob": 0.96
+    },
+    {
+     "inicio": 137.12,
+     "fin": 137.5,
+     "palabra": "gasto",
+     "prob": 0.99
+    },
+    {
+     "inicio": 137.5,
+     "fin": 137.72,
+     "palabra": "como",
+     "prob": 0.45
+    },
+    {
+     "inicio": 137.72,
+     "fin": 139.32,
+     "palabra": "compartir",
+     "prob": 0.5
+    },
+    {
+     "inicio": 139.32,
+     "fin": 139.6,
+     "palabra": "una",
+     "prob": 0.94
+    },
+    {
+     "inicio": 139.6,
+     "fin": 139.8,
+     "palabra": "cuenta",
+     "prob": 0.99
+    },
+    {
+     "inicio": 139.8,
+     "fin": 140.02,
+     "palabra": "con",
+     "prob": 0.99
+    },
+    {
+     "inicio": 140.02,
+     "fin": 140.12,
+     "palabra": "un",
+     "prob": 0.92
+    },
+    {
+     "inicio": 140.12,
+     "fin": 140.34,
+     "palabra": "amigo,",
+     "prob": 1.0
+    },
+    {
+     "inicio": 140.64,
+     "fin": 140.96,
+     "palabra": "simplemente",
+     "prob": 0.95
+    },
+    {
+     "inicio": 140.96,
+     "fin": 141.48,
+     "palabra": "dividir",
+     "prob": 0.82
+    },
+    {
+     "inicio": 141.48,
+     "fin": 141.62,
+     "palabra": "el",
+     "prob": 0.99
+    },
+    {
+     "inicio": 141.62,
+     "fin": 141.84,
+     "palabra": "gasto",
+     "prob": 1.0
+    },
+    {
+     "inicio": 141.84,
+     "fin": 142.0,
+     "palabra": "entre",
+     "prob": 0.99
+    },
+    {
+     "inicio": 142.0,
+     "fin": 142.22,
+     "palabra": "tus",
+     "prob": 0.99
+    },
+    {
+     "inicio": 142.22,
+     "fin": 142.58,
+     "palabra": "amigos",
+     "prob": 0.99
+    },
+    {
+     "inicio": 142.58,
+     "fin": 142.88,
+     "palabra": "y",
+     "prob": 0.93
+    },
+    {
+     "inicio": 142.88,
+     "fin": 143.04,
+     "palabra": "la",
+     "prob": 0.97
+    },
+    {
+     "inicio": 143.04,
+     "fin": 143.46,
+     "palabra": "crea",
+     "prob": 0.59
+    },
+    {
+     "inicio": 143.46,
+     "fin": 144.42,
+     "palabra": "automáticamente",
+     "prob": 0.96
+    },
+    {
+     "inicio": 144.42,
+     "fin": 144.62,
+     "palabra": "la",
+     "prob": 0.99
+    },
+    {
+     "inicio": 144.62,
+     "fin": 144.82,
+     "palabra": "duda",
+     "prob": 0.5
+    },
+    {
+     "inicio": 144.82,
+     "fin": 145.18,
+     "palabra": "para",
+     "prob": 0.95
+    },
+    {
+     "inicio": 145.18,
+     "fin": 145.4,
+     "palabra": "cada",
+     "prob": 0.96
+    },
+    {
+     "inicio": 145.4,
+     "fin": 145.66,
+     "palabra": "uno,",
+     "prob": 0.98
+    },
+    {
+     "inicio": 145.9,
+     "fin": 146.12,
+     "palabra": "para",
+     "prob": 0.98
+    },
+    {
+     "inicio": 146.12,
+     "fin": 146.36,
+     "palabra": "que",
+     "prob": 0.99
+    },
+    {
+     "inicio": 146.36,
+     "fin": 146.66,
+     "palabra": "nadie",
+     "prob": 0.99
+    },
+    {
+     "inicio": 146.66,
+     "fin": 146.98,
+     "palabra": "olvide",
+     "prob": 0.97
+    },
+    {
+     "inicio": 146.98,
+     "fin": 147.54,
+     "palabra": "pagarte.",
+     "prob": 0.99
+    }
+   ]
+  },
+  {
+   "inicio": 156.22,
+   "fin": 163.54,
+   "texto": "Y si el banco te envió un mensaje, solo hay que pegarlo. La app detecta el monto, el comercio y la tarjeta.",
+   "palabras": [
+    {
+     "inicio": 156.22,
+     "fin": 156.8,
+     "palabra": "Y",
+     "prob": 0.28
+    },
+    {
+     "inicio": 156.8,
+     "fin": 156.9,
+     "palabra": "si",
+     "prob": 0.98
+    },
+    {
+     "inicio": 156.9,
+     "fin": 157.02,
+     "palabra": "el",
+     "prob": 0.99
+    },
+    {
+     "inicio": 157.02,
+     "fin": 157.3,
+     "palabra": "banco",
+     "prob": 0.99
+    },
+    {
+     "inicio": 157.3,
+     "fin": 157.68,
+     "palabra": "te",
+     "prob": 0.99
+    },
+    {
+     "inicio": 157.68,
+     "fin": 157.88,
+     "palabra": "envió",
+     "prob": 0.74
+    },
+    {
+     "inicio": 157.88,
+     "fin": 158.02,
+     "palabra": "un",
+     "prob": 0.98
+    },
+    {
+     "inicio": 158.02,
+     "fin": 158.4,
+     "palabra": "mensaje,",
+     "prob": 1.0
+    },
+    {
+     "inicio": 158.72,
+     "fin": 158.98,
+     "palabra": "solo",
+     "prob": 0.35
+    },
+    {
+     "inicio": 158.98,
+     "fin": 159.1,
+     "palabra": "hay",
+     "prob": 0.99
+    },
+    {
+     "inicio": 159.1,
+     "fin": 159.16,
+     "palabra": "que",
+     "prob": 1.0
+    },
+    {
+     "inicio": 159.16,
+     "fin": 159.7,
+     "palabra": "pegarlo.",
+     "prob": 0.99
+    },
+    {
+     "inicio": 160.18,
+     "fin": 160.42,
+     "palabra": "La",
+     "prob": 0.95
+    },
+    {
+     "inicio": 160.42,
+     "fin": 160.62,
+     "palabra": "app",
+     "prob": 0.52
+    },
+    {
+     "inicio": 160.62,
+     "fin": 161.14,
+     "palabra": "detecta",
+     "prob": 0.99
+    },
+    {
+     "inicio": 161.14,
+     "fin": 161.36,
+     "palabra": "el",
+     "prob": 0.92
+    },
+    {
+     "inicio": 161.36,
+     "fin": 161.74,
+     "palabra": "monto,",
+     "prob": 0.87
+    },
+    {
+     "inicio": 162.08,
+     "fin": 162.1,
+     "palabra": "el",
+     "prob": 0.99
+    },
+    {
+     "inicio": 162.1,
+     "fin": 162.7,
+     "palabra": "comercio",
+     "prob": 1.0
+    },
+    {
+     "inicio": 162.7,
+     "fin": 163.0,
+     "palabra": "y",
+     "prob": 0.92
+    },
+    {
+     "inicio": 163.0,
+     "fin": 163.12,
+     "palabra": "la",
+     "prob": 0.99
+    },
+    {
+     "inicio": 163.12,
+     "fin": 163.54,
+     "palabra": "tarjeta.",
+     "prob": 1.0
+    }
+   ]
+  },
+  {
+   "inicio": 170.5,
+   "fin": 176.58,
+   "texto": "Ahora bien, que pasa con los movimientos, quedan todos aquí, con filtros y búsquedas de texto.",
+   "palabras": [
+    {
+     "inicio": 170.5,
+     "fin": 171.08,
+     "palabra": "Ahora",
+     "prob": 0.96
+    },
+    {
+     "inicio": 171.08,
+     "fin": 171.34,
+     "palabra": "bien,",
+     "prob": 0.97
+    },
+    {
+     "inicio": 171.54,
+     "fin": 171.6,
+     "palabra": "que",
+     "prob": 0.11
+    },
+    {
+     "inicio": 171.6,
+     "fin": 171.82,
+     "palabra": "pasa",
+     "prob": 0.97
+    },
+    {
+     "inicio": 171.82,
+     "fin": 172.02,
+     "palabra": "con",
+     "prob": 1.0
+    },
+    {
+     "inicio": 172.02,
+     "fin": 172.12,
+     "palabra": "los",
+     "prob": 0.99
+    },
+    {
+     "inicio": 172.12,
+     "fin": 172.6,
+     "palabra": "movimientos,",
+     "prob": 1.0
+    },
+    {
+     "inicio": 173.04,
+     "fin": 173.44,
+     "palabra": "quedan",
+     "prob": 0.95
+    },
+    {
+     "inicio": 173.44,
+     "fin": 173.88,
+     "palabra": "todos",
+     "prob": 1.0
+    },
+    {
+     "inicio": 173.88,
+     "fin": 174.3,
+     "palabra": "aquí,",
+     "prob": 0.96
+    },
+    {
+     "inicio": 174.58,
+     "fin": 174.86,
+     "palabra": "con",
+     "prob": 0.99
+    },
+    {
+     "inicio": 174.86,
+     "fin": 175.34,
+     "palabra": "filtros",
+     "prob": 0.99
+    },
+    {
+     "inicio": 175.34,
+     "fin": 175.74,
+     "palabra": "y",
+     "prob": 0.98
+    },
+    {
+     "inicio": 175.74,
+     "fin": 176.2,
+     "palabra": "búsquedas",
+     "prob": 0.96
+    },
+    {
+     "inicio": 176.2,
+     "fin": 176.38,
+     "palabra": "de",
+     "prob": 0.98
+    },
+    {
+     "inicio": 176.38,
+     "fin": 176.58,
+     "palabra": "texto.",
+     "prob": 0.94
+    }
+   ]
+  },
+  {
+   "inicio": 180.38,
+   "fin": 186.54,
+   "texto": "Y si quiero hacer un presupuesto, claro, el presupuesto se define para el mes, en total o por categoría.",
+   "palabras": [
+    {
+     "inicio": 180.38,
+     "fin": 180.9,
+     "palabra": "Y",
+     "prob": 0.44
+    },
+    {
+     "inicio": 180.9,
+     "fin": 181.08,
+     "palabra": "si",
+     "prob": 0.95
+    },
+    {
+     "inicio": 181.08,
+     "fin": 181.3,
+     "palabra": "quiero",
+     "prob": 0.98
+    },
+    {
+     "inicio": 181.3,
+     "fin": 181.46,
+     "palabra": "hacer",
+     "prob": 0.87
+    },
+    {
+     "inicio": 181.46,
+     "fin": 181.56,
+     "palabra": "un",
+     "prob": 0.99
+    },
+    {
+     "inicio": 181.56,
+     "fin": 182.1,
+     "palabra": "presupuesto,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 182.52,
+     "fin": 182.78,
+     "palabra": "claro,",
+     "prob": 0.91
+    },
+    {
+     "inicio": 183.24,
+     "fin": 183.28,
+     "palabra": "el",
+     "prob": 0.99
+    },
+    {
+     "inicio": 183.28,
+     "fin": 183.78,
+     "palabra": "presupuesto",
+     "prob": 1.0
+    },
+    {
+     "inicio": 183.78,
+     "fin": 184.02,
+     "palabra": "se",
+     "prob": 0.99
+    },
+    {
+     "inicio": 184.02,
+     "fin": 184.36,
+     "palabra": "define",
+     "prob": 0.98
+    },
+    {
+     "inicio": 184.36,
+     "fin": 184.8,
+     "palabra": "para",
+     "prob": 0.98
+    },
+    {
+     "inicio": 184.8,
+     "fin": 184.94,
+     "palabra": "el",
+     "prob": 0.99
+    },
+    {
+     "inicio": 184.94,
+     "fin": 185.06,
+     "palabra": "mes,",
+     "prob": 1.0
+    },
+    {
+     "inicio": 185.46,
+     "fin": 185.74,
+     "palabra": "en",
+     "prob": 0.98
+    },
+    {
+     "inicio": 185.74,
+     "fin": 186.04,
+     "palabra": "total",
+     "prob": 0.99
+    },
+    {
+     "inicio": 186.04,
+     "fin": 186.36,
+     "palabra": "o",
+     "prob": 0.96
+    },
+    {
+     "inicio": 186.36,
+     "fin": 186.48,
+     "palabra": "por",
+     "prob": 1.0
+    },
+    {
+     "inicio": 186.48,
+     "fin": 186.74,
+     "palabra": "categoría.",
+     "prob": 0.99
+    }
+   ]
+  },
+  {
+   "inicio": 187.38,
+   "fin": 193.86,
+   "texto": "Y mientras vas bien, se ve bien en verde, al llegar al 80% avisa naranja y en rojo si te pasas.",
+   "palabras": [
+    {
+     "inicio": 187.38,
+     "fin": 187.44,
+     "palabra": "Y",
+     "prob": 0.91
+    },
+    {
+     "inicio": 187.44,
+     "fin": 187.66,
+     "palabra": "mientras",
+     "prob": 0.99
+    },
+    {
+     "inicio": 187.66,
+     "fin": 187.9,
+     "palabra": "vas",
+     "prob": 0.96
+    },
+    {
+     "inicio": 187.9,
+     "fin": 188.14,
+     "palabra": "bien,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 188.44,
+     "fin": 188.5,
+     "palabra": "se",
+     "prob": 0.99
+    },
+    {
+     "inicio": 188.5,
+     "fin": 188.66,
+     "palabra": "ve",
+     "prob": 0.79
+    },
+    {
+     "inicio": 188.66,
+     "fin": 188.84,
+     "palabra": "bien",
+     "prob": 0.99
+    },
+    {
+     "inicio": 188.84,
+     "fin": 188.96,
+     "palabra": "en",
+     "prob": 0.99
+    },
+    {
+     "inicio": 188.96,
+     "fin": 189.14,
+     "palabra": "verde,",
+     "prob": 1.0
+    },
+    {
+     "inicio": 189.7,
+     "fin": 189.86,
+     "palabra": "al",
+     "prob": 0.99
+    },
+    {
+     "inicio": 189.86,
+     "fin": 190.04,
+     "palabra": "llegar",
+     "prob": 1.0
+    },
+    {
+     "inicio": 190.04,
+     "fin": 190.22,
+     "palabra": "al",
+     "prob": 0.97
+    },
+    {
+     "inicio": 190.22,
+     "fin": 190.48,
+     "palabra": "80",
+     "prob": 0.99
+    },
+    {
+     "inicio": 190.48,
+     "fin": 190.92,
+     "palabra": "%",
+     "prob": 0.58
+    },
+    {
+     "inicio": 190.92,
+     "fin": 191.58,
+     "palabra": "avisa",
+     "prob": 0.89
+    },
+    {
+     "inicio": 191.58,
+     "fin": 192.08,
+     "palabra": "naranja",
+     "prob": 0.85
+    },
+    {
+     "inicio": 192.08,
+     "fin": 192.44,
+     "palabra": "y",
+     "prob": 0.42
+    },
+    {
+     "inicio": 192.44,
+     "fin": 192.58,
+     "palabra": "en",
+     "prob": 0.99
+    },
+    {
+     "inicio": 192.58,
+     "fin": 192.86,
+     "palabra": "rojo",
+     "prob": 0.99
+    },
+    {
+     "inicio": 192.86,
+     "fin": 193.26,
+     "palabra": "si",
+     "prob": 0.63
+    },
+    {
+     "inicio": 193.26,
+     "fin": 193.38,
+     "palabra": "te",
+     "prob": 0.99
+    },
+    {
+     "inicio": 193.38,
+     "fin": 193.86,
+     "palabra": "pasas.",
+     "prob": 1.0
+    }
+   ]
+  },
+  {
+   "inicio": 207.54,
+   "fin": 215.08,
+   "texto": "Y si sueño con un viaje, puedes crear una meta con montos y plazo. La app calcula cuánto debes ahorrar cada mes.",
+   "palabras": [
+    {
+     "inicio": 207.54,
+     "fin": 208.06,
+     "palabra": "Y",
+     "prob": 0.24
+    },
+    {
+     "inicio": 208.06,
+     "fin": 208.14,
+     "palabra": "si",
+     "prob": 0.97
+    },
+    {
+     "inicio": 208.14,
+     "fin": 208.5,
+     "palabra": "sueño",
+     "prob": 0.99
+    },
+    {
+     "inicio": 208.5,
+     "fin": 208.76,
+     "palabra": "con",
+     "prob": 0.98
+    },
+    {
+     "inicio": 208.76,
+     "fin": 208.88,
+     "palabra": "un",
+     "prob": 1.0
+    },
+    {
+     "inicio": 208.88,
+     "fin": 209.08,
+     "palabra": "viaje,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 209.6,
+     "fin": 209.7,
+     "palabra": "puedes",
+     "prob": 0.99
+    },
+    {
+     "inicio": 209.7,
+     "fin": 209.94,
+     "palabra": "crear",
+     "prob": 0.98
+    },
+    {
+     "inicio": 209.94,
+     "fin": 210.1,
+     "palabra": "una",
+     "prob": 0.98
+    },
+    {
+     "inicio": 210.1,
+     "fin": 210.34,
+     "palabra": "meta",
+     "prob": 0.99
+    },
+    {
+     "inicio": 210.34,
+     "fin": 210.76,
+     "palabra": "con",
+     "prob": 0.97
+    },
+    {
+     "inicio": 210.76,
+     "fin": 211.3,
+     "palabra": "montos",
+     "prob": 0.84
+    },
+    {
+     "inicio": 211.3,
+     "fin": 211.48,
+     "palabra": "y",
+     "prob": 0.99
+    },
+    {
+     "inicio": 211.48,
+     "fin": 211.8,
+     "palabra": "plazo.",
+     "prob": 0.92
+    },
+    {
+     "inicio": 212.24,
+     "fin": 212.52,
+     "palabra": "La",
+     "prob": 0.89
+    },
+    {
+     "inicio": 212.52,
+     "fin": 212.68,
+     "palabra": "app",
+     "prob": 0.01
+    },
+    {
+     "inicio": 212.68,
+     "fin": 213.02,
+     "palabra": "calcula",
+     "prob": 0.91
+    },
+    {
+     "inicio": 213.02,
+     "fin": 213.38,
+     "palabra": "cuánto",
+     "prob": 0.84
+    },
+    {
+     "inicio": 213.38,
+     "fin": 213.72,
+     "palabra": "debes",
+     "prob": 0.79
+    },
+    {
+     "inicio": 213.72,
+     "fin": 214.22,
+     "palabra": "ahorrar",
+     "prob": 0.98
+    },
+    {
+     "inicio": 214.22,
+     "fin": 214.76,
+     "palabra": "cada",
+     "prob": 0.99
+    },
+    {
+     "inicio": 214.76,
+     "fin": 215.08,
+     "palabra": "mes.",
+     "prob": 1.0
+    }
+   ]
+  },
+  {
+   "inicio": 219.94,
+   "fin": 228.62,
+   "texto": "Y si tengo alguna deuda, aquí llevas el control de quién te debe y a quién le debes, con fechas y abonos, para que nada se te olvide.",
+   "palabras": [
+    {
+     "inicio": 219.94,
+     "fin": 220.5,
+     "palabra": "Y",
+     "prob": 0.64
+    },
+    {
+     "inicio": 220.5,
+     "fin": 220.96,
+     "palabra": "si",
+     "prob": 0.93
+    },
+    {
+     "inicio": 220.96,
+     "fin": 221.3,
+     "palabra": "tengo",
+     "prob": 0.8
+    },
+    {
+     "inicio": 221.3,
+     "fin": 221.58,
+     "palabra": "alguna",
+     "prob": 0.99
+    },
+    {
+     "inicio": 221.58,
+     "fin": 221.94,
+     "palabra": "deuda,",
+     "prob": 0.83
+    },
+    {
+     "inicio": 222.54,
+     "fin": 222.58,
+     "palabra": "aquí",
+     "prob": 0.9
+    },
+    {
+     "inicio": 222.58,
+     "fin": 222.86,
+     "palabra": "llevas",
+     "prob": 0.82
+    },
+    {
+     "inicio": 222.86,
+     "fin": 223.02,
+     "palabra": "el",
+     "prob": 0.98
+    },
+    {
+     "inicio": 223.02,
+     "fin": 223.4,
+     "palabra": "control",
+     "prob": 0.99
+    },
+    {
+     "inicio": 223.4,
+     "fin": 223.62,
+     "palabra": "de",
+     "prob": 0.99
+    },
+    {
+     "inicio": 223.62,
+     "fin": 223.8,
+     "palabra": "quién",
+     "prob": 0.79
+    },
+    {
+     "inicio": 223.8,
+     "fin": 224.02,
+     "palabra": "te",
+     "prob": 0.96
+    },
+    {
+     "inicio": 224.02,
+     "fin": 224.22,
+     "palabra": "debe",
+     "prob": 0.85
+    },
+    {
+     "inicio": 224.22,
+     "fin": 224.46,
+     "palabra": "y",
+     "prob": 0.94
+    },
+    {
+     "inicio": 224.46,
+     "fin": 224.56,
+     "palabra": "a",
+     "prob": 0.78
+    },
+    {
+     "inicio": 224.56,
+     "fin": 224.66,
+     "palabra": "quién",
+     "prob": 0.94
+    },
+    {
+     "inicio": 224.66,
+     "fin": 224.86,
+     "palabra": "le",
+     "prob": 0.97
+    },
+    {
+     "inicio": 224.86,
+     "fin": 225.18,
+     "palabra": "debes,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 225.44,
+     "fin": 225.72,
+     "palabra": "con",
+     "prob": 0.99
+    },
+    {
+     "inicio": 225.72,
+     "fin": 226.2,
+     "palabra": "fechas",
+     "prob": 0.99
+    },
+    {
+     "inicio": 226.2,
+     "fin": 226.52,
+     "palabra": "y",
+     "prob": 0.98
+    },
+    {
+     "inicio": 226.52,
+     "fin": 226.84,
+     "palabra": "abonos,",
+     "prob": 0.48
+    },
+    {
+     "inicio": 227.34,
+     "fin": 227.64,
+     "palabra": "para",
+     "prob": 0.99
+    },
+    {
+     "inicio": 227.64,
+     "fin": 227.8,
+     "palabra": "que",
+     "prob": 1.0
+    },
+    {
+     "inicio": 227.8,
+     "fin": 227.98,
+     "palabra": "nada",
+     "prob": 0.98
+    },
+    {
+     "inicio": 227.98,
+     "fin": 228.22,
+     "palabra": "se",
+     "prob": 0.96
+    },
+    {
+     "inicio": 228.22,
+     "fin": 228.34,
+     "palabra": "te",
+     "prob": 0.99
+    },
+    {
+     "inicio": 228.34,
+     "fin": 228.62,
+     "palabra": "olvide.",
+     "prob": 0.94
+    }
+   ]
+  },
+  {
+   "inicio": 238.0,
+   "fin": 246.18,
+   "texto": "Además, la aplicación te recuerda tus suscripciones, como puede ser Netflix, que estas quedan registradas con su día de cobro.",
+   "palabras": [
+    {
+     "inicio": 238.0,
+     "fin": 238.56,
+     "palabra": "Además,",
+     "prob": 0.65
+    },
+    {
+     "inicio": 238.84,
+     "fin": 238.92,
+     "palabra": "la",
+     "prob": 0.98
+    },
+    {
+     "inicio": 238.92,
+     "fin": 239.48,
+     "palabra": "aplicación",
+     "prob": 0.99
+    },
+    {
+     "inicio": 239.48,
+     "fin": 239.7,
+     "palabra": "te",
+     "prob": 0.99
+    },
+    {
+     "inicio": 239.7,
+     "fin": 240.04,
+     "palabra": "recuerda",
+     "prob": 0.96
+    },
+    {
+     "inicio": 240.04,
+     "fin": 240.2,
+     "palabra": "tus",
+     "prob": 0.29
+    },
+    {
+     "inicio": 240.2,
+     "fin": 240.82,
+     "palabra": "suscripciones,",
+     "prob": 0.93
+    },
+    {
+     "inicio": 241.38,
+     "fin": 241.62,
+     "palabra": "como",
+     "prob": 0.99
+    },
+    {
+     "inicio": 241.62,
+     "fin": 241.94,
+     "palabra": "puede",
+     "prob": 0.89
+    },
+    {
+     "inicio": 241.94,
+     "fin": 242.34,
+     "palabra": "ser",
+     "prob": 0.99
+    },
+    {
+     "inicio": 242.34,
+     "fin": 242.96,
+     "palabra": "Netflix,",
+     "prob": 0.96
+    },
+    {
+     "inicio": 243.56,
+     "fin": 243.66,
+     "palabra": "que",
+     "prob": 0.93
+    },
+    {
+     "inicio": 243.66,
+     "fin": 244.16,
+     "palabra": "estas",
+     "prob": 0.58
+    },
+    {
+     "inicio": 244.16,
+     "fin": 244.58,
+     "palabra": "quedan",
+     "prob": 0.98
+    },
+    {
+     "inicio": 244.58,
+     "fin": 245.12,
+     "palabra": "registradas",
+     "prob": 1.0
+    },
+    {
+     "inicio": 245.12,
+     "fin": 245.44,
+     "palabra": "con",
+     "prob": 0.97
+    },
+    {
+     "inicio": 245.44,
+     "fin": 245.6,
+     "palabra": "su",
+     "prob": 1.0
+    },
+    {
+     "inicio": 245.6,
+     "fin": 245.78,
+     "palabra": "día",
+     "prob": 0.97
+    },
+    {
+     "inicio": 245.78,
+     "fin": 245.88,
+     "palabra": "de",
+     "prob": 1.0
+    },
+    {
+     "inicio": 245.88,
+     "fin": 246.18,
+     "palabra": "cobro.",
+     "prob": 0.89
+    }
+   ]
+  },
+  {
+   "inicio": 246.68,
+   "fin": 249.6,
+   "texto": "Y la app te ayuda a recordarte antes de que te cobre.",
+   "palabras": [
+    {
+     "inicio": 246.68,
+     "fin": 246.86,
+     "palabra": "Y",
+     "prob": 0.8
+    },
+    {
+     "inicio": 246.86,
+     "fin": 247.0,
+     "palabra": "la",
+     "prob": 0.7
+    },
+    {
+     "inicio": 247.0,
+     "fin": 247.16,
+     "palabra": "app",
+     "prob": 0.7
+    },
+    {
+     "inicio": 247.16,
+     "fin": 247.48,
+     "palabra": "te",
+     "prob": 0.95
+    },
+    {
+     "inicio": 247.48,
+     "fin": 247.62,
+     "palabra": "ayuda",
+     "prob": 0.99
+    },
+    {
+     "inicio": 247.62,
+     "fin": 247.78,
+     "palabra": "a",
+     "prob": 0.88
+    },
+    {
+     "inicio": 247.78,
+     "fin": 248.38,
+     "palabra": "recordarte",
+     "prob": 0.99
+    },
+    {
+     "inicio": 248.38,
+     "fin": 248.86,
+     "palabra": "antes",
+     "prob": 0.97
+    },
+    {
+     "inicio": 248.86,
+     "fin": 249.04,
+     "palabra": "de",
+     "prob": 0.97
+    },
+    {
+     "inicio": 249.04,
+     "fin": 249.14,
+     "palabra": "que",
+     "prob": 1.0
+    },
+    {
+     "inicio": 249.14,
+     "fin": 249.26,
+     "palabra": "te",
+     "prob": 1.0
+    },
+    {
+     "inicio": 249.26,
+     "fin": 249.6,
+     "palabra": "cobre.",
+     "prob": 0.74
+    }
+   ]
+  },
+  {
+   "inicio": 254.1,
+   "fin": 261.32,
+   "texto": "Y si quiero crear alertas, las alertas avisan cuando el saldo baja, cuando el gasto del mes supera el valor o cuando una meta avanza.",
+   "palabras": [
+    {
+     "inicio": 254.1,
+     "fin": 254.66,
+     "palabra": "Y",
+     "prob": 0.8
+    },
+    {
+     "inicio": 254.66,
+     "fin": 254.84,
+     "palabra": "si",
+     "prob": 0.93
+    },
+    {
+     "inicio": 254.84,
+     "fin": 255.06,
+     "palabra": "quiero",
+     "prob": 0.99
+    },
+    {
+     "inicio": 255.06,
+     "fin": 255.3,
+     "palabra": "crear",
+     "prob": 1.0
+    },
+    {
+     "inicio": 255.3,
+     "fin": 255.82,
+     "palabra": "alertas,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 256.14,
+     "fin": 256.24,
+     "palabra": "las",
+     "prob": 0.99
+    },
+    {
+     "inicio": 256.24,
+     "fin": 256.72,
+     "palabra": "alertas",
+     "prob": 0.99
+    },
+    {
+     "inicio": 256.72,
+     "fin": 257.06,
+     "palabra": "avisan",
+     "prob": 0.67
+    },
+    {
+     "inicio": 257.06,
+     "fin": 257.28,
+     "palabra": "cuando",
+     "prob": 0.91
+    },
+    {
+     "inicio": 257.28,
+     "fin": 257.52,
+     "palabra": "el",
+     "prob": 0.99
+    },
+    {
+     "inicio": 257.52,
+     "fin": 257.76,
+     "palabra": "saldo",
+     "prob": 1.0
+    },
+    {
+     "inicio": 257.76,
+     "fin": 258.12,
+     "palabra": "baja,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 258.44,
+     "fin": 258.56,
+     "palabra": "cuando",
+     "prob": 0.97
+    },
+    {
+     "inicio": 258.56,
+     "fin": 258.72,
+     "palabra": "el",
+     "prob": 1.0
+    },
+    {
+     "inicio": 258.72,
+     "fin": 258.98,
+     "palabra": "gasto",
+     "prob": 0.99
+    },
+    {
+     "inicio": 258.98,
+     "fin": 259.08,
+     "palabra": "del",
+     "prob": 0.81
+    },
+    {
+     "inicio": 259.08,
+     "fin": 259.18,
+     "palabra": "mes",
+     "prob": 0.94
+    },
+    {
+     "inicio": 259.18,
+     "fin": 259.54,
+     "palabra": "supera",
+     "prob": 0.84
+    },
+    {
+     "inicio": 259.54,
+     "fin": 259.58,
+     "palabra": "el",
+     "prob": 0.99
+    },
+    {
+     "inicio": 259.58,
+     "fin": 259.88,
+     "palabra": "valor",
+     "prob": 1.0
+    },
+    {
+     "inicio": 259.88,
+     "fin": 260.44,
+     "palabra": "o",
+     "prob": 0.5
+    },
+    {
+     "inicio": 260.44,
+     "fin": 260.64,
+     "palabra": "cuando",
+     "prob": 0.98
+    },
+    {
+     "inicio": 260.64,
+     "fin": 260.86,
+     "palabra": "una",
+     "prob": 0.99
+    },
+    {
+     "inicio": 260.86,
+     "fin": 261.04,
+     "palabra": "meta",
+     "prob": 0.96
+    },
+    {
+     "inicio": 261.04,
+     "fin": 261.32,
+     "palabra": "avanza.",
+     "prob": 0.92
+    }
+   ]
+  },
+  {
+   "inicio": 269.46,
+   "fin": 281.4,
+   "texto": "Y en nuestro apartado de reportes, este compara con el mes anterior, ves en qué gastas más, en qué gastas menos y además de eso te permite exportar en formato PDF o en formato Excel.",
+   "palabras": [
+    {
+     "inicio": 269.46,
+     "fin": 270.1,
+     "palabra": "Y",
+     "prob": 0.2
+    },
+    {
+     "inicio": 270.1,
+     "fin": 270.2,
+     "palabra": "en",
+     "prob": 0.94
+    },
+    {
+     "inicio": 270.2,
+     "fin": 270.4,
+     "palabra": "nuestro",
+     "prob": 0.99
+    },
+    {
+     "inicio": 270.4,
+     "fin": 270.82,
+     "palabra": "apartado",
+     "prob": 0.99
+    },
+    {
+     "inicio": 270.82,
+     "fin": 271.0,
+     "palabra": "de",
+     "prob": 0.98
+    },
+    {
+     "inicio": 271.0,
+     "fin": 271.62,
+     "palabra": "reportes,",
+     "prob": 0.95
+    },
+    {
+     "inicio": 271.7,
+     "fin": 272.1,
+     "palabra": "este",
+     "prob": 0.48
+    },
+    {
+     "inicio": 272.1,
+     "fin": 272.66,
+     "palabra": "compara",
+     "prob": 0.75
+    },
+    {
+     "inicio": 272.66,
+     "fin": 272.94,
+     "palabra": "con",
+     "prob": 0.98
+    },
+    {
+     "inicio": 272.94,
+     "fin": 273.06,
+     "palabra": "el",
+     "prob": 0.99
+    },
+    {
+     "inicio": 273.06,
+     "fin": 273.18,
+     "palabra": "mes",
+     "prob": 0.73
+    },
+    {
+     "inicio": 273.18,
+     "fin": 273.56,
+     "palabra": "anterior,",
+     "prob": 1.0
+    },
+    {
+     "inicio": 274.1,
+     "fin": 274.36,
+     "palabra": "ves",
+     "prob": 0.57
+    },
+    {
+     "inicio": 274.36,
+     "fin": 274.54,
+     "palabra": "en",
+     "prob": 0.97
+    },
+    {
+     "inicio": 274.54,
+     "fin": 274.62,
+     "palabra": "qué",
+     "prob": 0.61
+    },
+    {
+     "inicio": 274.62,
+     "fin": 274.96,
+     "palabra": "gastas",
+     "prob": 0.99
+    },
+    {
+     "inicio": 274.96,
+     "fin": 275.2,
+     "palabra": "más,",
+     "prob": 0.97
+    },
+    {
+     "inicio": 275.5,
+     "fin": 275.52,
+     "palabra": "en",
+     "prob": 0.98
+    },
+    {
+     "inicio": 275.52,
+     "fin": 275.64,
+     "palabra": "qué",
+     "prob": 0.87
+    },
+    {
+     "inicio": 275.64,
+     "fin": 275.96,
+     "palabra": "gastas",
+     "prob": 1.0
+    },
+    {
+     "inicio": 275.96,
+     "fin": 276.34,
+     "palabra": "menos",
+     "prob": 1.0
+    },
+    {
+     "inicio": 276.34,
+     "fin": 276.8,
+     "palabra": "y",
+     "prob": 0.58
+    },
+    {
+     "inicio": 276.8,
+     "fin": 277.14,
+     "palabra": "además",
+     "prob": 0.94
+    },
+    {
+     "inicio": 277.14,
+     "fin": 277.38,
+     "palabra": "de",
+     "prob": 0.99
+    },
+    {
+     "inicio": 277.38,
+     "fin": 277.54,
+     "palabra": "eso",
+     "prob": 0.98
+    },
+    {
+     "inicio": 277.54,
+     "fin": 277.68,
+     "palabra": "te",
+     "prob": 0.74
+    },
+    {
+     "inicio": 277.68,
+     "fin": 278.0,
+     "palabra": "permite",
+     "prob": 0.99
+    },
+    {
+     "inicio": 278.0,
+     "fin": 278.6,
+     "palabra": "exportar",
+     "prob": 0.99
+    },
+    {
+     "inicio": 278.6,
+     "fin": 278.82,
+     "palabra": "en",
+     "prob": 0.95
+    },
+    {
+     "inicio": 278.82,
+     "fin": 279.2,
+     "palabra": "formato",
+     "prob": 0.99
+    },
+    {
+     "inicio": 279.2,
+     "fin": 279.52,
+     "palabra": "PDF",
+     "prob": 0.78
+    },
+    {
+     "inicio": 279.52,
+     "fin": 280.58,
+     "palabra": "o",
+     "prob": 0.91
+    },
+    {
+     "inicio": 280.58,
+     "fin": 280.84,
+     "palabra": "en",
+     "prob": 0.94
+    },
+    {
+     "inicio": 280.84,
+     "fin": 281.14,
+     "palabra": "formato",
+     "prob": 0.99
+    },
+    {
+     "inicio": 281.14,
+     "fin": 281.4,
+     "palabra": "Excel.",
+     "prob": 0.94
+    }
+   ]
+  },
+  {
+   "inicio": 284.66,
+   "fin": 294.7,
+   "texto": "Ahora, tenemos un inicio actualizado, en donde si damos vuelta, todo es al día, saldo, ingresos, gastos y tu gráfica de patrimonio.",
+   "palabras": [
+    {
+     "inicio": 284.66,
+     "fin": 285.3,
+     "palabra": "Ahora,",
+     "prob": 0.96
+    },
+    {
+     "inicio": 285.56,
+     "fin": 285.96,
+     "palabra": "tenemos",
+     "prob": 0.99
+    },
+    {
+     "inicio": 285.96,
+     "fin": 286.32,
+     "palabra": "un",
+     "prob": 1.0
+    },
+    {
+     "inicio": 286.32,
+     "fin": 286.58,
+     "palabra": "inicio",
+     "prob": 0.98
+    },
+    {
+     "inicio": 286.58,
+     "fin": 287.18,
+     "palabra": "actualizado,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 287.74,
+     "fin": 287.96,
+     "palabra": "en",
+     "prob": 0.99
+    },
+    {
+     "inicio": 287.96,
+     "fin": 288.16,
+     "palabra": "donde",
+     "prob": 0.98
+    },
+    {
+     "inicio": 288.16,
+     "fin": 288.6,
+     "palabra": "si",
+     "prob": 0.77
+    },
+    {
+     "inicio": 288.6,
+     "fin": 288.8,
+     "palabra": "damos",
+     "prob": 0.93
+    },
+    {
+     "inicio": 288.8,
+     "fin": 289.2,
+     "palabra": "vuelta,",
+     "prob": 0.97
+    },
+    {
+     "inicio": 289.66,
+     "fin": 289.78,
+     "palabra": "todo",
+     "prob": 0.99
+    },
+    {
+     "inicio": 289.78,
+     "fin": 290.0,
+     "palabra": "es",
+     "prob": 0.74
+    },
+    {
+     "inicio": 290.0,
+     "fin": 290.14,
+     "palabra": "al",
+     "prob": 0.82
+    },
+    {
+     "inicio": 290.14,
+     "fin": 290.32,
+     "palabra": "día,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 290.72,
+     "fin": 291.32,
+     "palabra": "saldo,",
+     "prob": 0.98
+    },
+    {
+     "inicio": 291.48,
+     "fin": 292.06,
+     "palabra": "ingresos,",
+     "prob": 1.0
+    },
+    {
+     "inicio": 292.34,
+     "fin": 292.82,
+     "palabra": "gastos",
+     "prob": 1.0
+    },
+    {
+     "inicio": 292.82,
+     "fin": 293.24,
+     "palabra": "y",
+     "prob": 0.95
+    },
+    {
+     "inicio": 293.24,
+     "fin": 293.64,
+     "palabra": "tu",
+     "prob": 0.98
+    },
+    {
+     "inicio": 293.64,
+     "fin": 294.04,
+     "palabra": "gráfica",
+     "prob": 0.99
+    },
+    {
+     "inicio": 294.04,
+     "fin": 294.16,
+     "palabra": "de",
+     "prob": 1.0
+    },
+    {
+     "inicio": 294.16,
+     "fin": 294.7,
+     "palabra": "patrimonio.",
+     "prob": 1.0
+    }
+   ]
+  },
+  {
+   "inicio": 297.08,
+   "fin": 304.66,
+   "texto": "Además, contamos con voz y Siri, solo basta con decir, gaste 25.000 pesos en un almuerzo y queda registrado.",
+   "palabras": [
+    {
+     "inicio": 297.08,
+     "fin": 297.68,
+     "palabra": "Además,",
+     "prob": 0.6
+    },
+    {
+     "inicio": 298.0,
+     "fin": 298.36,
+     "palabra": "contamos",
+     "prob": 0.99
+    },
+    {
+     "inicio": 298.36,
+     "fin": 298.6,
+     "palabra": "con",
+     "prob": 0.99
+    },
+    {
+     "inicio": 298.6,
+     "fin": 298.8,
+     "palabra": "voz",
+     "prob": 0.36
+    },
+    {
+     "inicio": 298.8,
+     "fin": 299.18,
+     "palabra": "y",
+     "prob": 0.97
+    },
+    {
+     "inicio": 299.18,
+     "fin": 299.38,
+     "palabra": "Siri,",
+     "prob": 0.93
+    },
+    {
+     "inicio": 299.8,
+     "fin": 300.14,
+     "palabra": "solo",
+     "prob": 0.84
+    },
+    {
+     "inicio": 300.14,
+     "fin": 300.4,
+     "palabra": "basta",
+     "prob": 0.86
+    },
+    {
+     "inicio": 300.4,
+     "fin": 300.64,
+     "palabra": "con",
+     "prob": 0.99
+    },
+    {
+     "inicio": 300.64,
+     "fin": 300.94,
+     "palabra": "decir,",
+     "prob": 0.97
+    },
+    {
+     "inicio": 301.2,
+     "fin": 301.74,
+     "palabra": "gaste",
+     "prob": 0.52
+    },
+    {
+     "inicio": 301.74,
+     "fin": 302.1,
+     "palabra": "25",
+     "prob": 0.76
+    },
+    {
+     "inicio": 302.1,
+     "fin": 302.52,
+     "palabra": ".000",
+     "prob": 0.63
+    },
+    {
+     "inicio": 302.52,
+     "fin": 302.68,
+     "palabra": "pesos",
+     "prob": 0.93
+    },
+    {
+     "inicio": 302.68,
+     "fin": 302.9,
+     "palabra": "en",
+     "prob": 0.96
+    },
+    {
+     "inicio": 302.9,
+     "fin": 303.0,
+     "palabra": "un",
+     "prob": 0.65
+    },
+    {
+     "inicio": 303.0,
+     "fin": 303.34,
+     "palabra": "almuerzo",
+     "prob": 1.0
+    },
+    {
+     "inicio": 303.34,
+     "fin": 303.76,
+     "palabra": "y",
+     "prob": 0.87
+    },
+    {
+     "inicio": 303.76,
+     "fin": 304.0,
+     "palabra": "queda",
+     "prob": 0.95
+    },
+    {
+     "inicio": 304.0,
+     "fin": 304.66,
+     "palabra": "registrado.",
+     "prob": 1.0
+    }
+   ]
+  },
+  {
+   "inicio": 306.68,
+   "fin": 316.06,
+   "texto": "El perfil y el respaldo, en este perfil se maneja el PIN, los perfiles separados y la tasa real del cambio, y se hace con respaldo de datos cuando tú quieras.",
+   "palabras": [
+    {
+     "inicio": 306.68,
+     "fin": 307.28,
+     "palabra": "El",
+     "prob": 0.94
+    },
+    {
+     "inicio": 307.28,
+     "fin": 307.72,
+     "palabra": "perfil",
+     "prob": 0.99
+    },
+    {
+     "inicio": 307.72,
+     "fin": 307.9,
+     "palabra": "y",
+     "prob": 0.99
+    },
+    {
+     "inicio": 307.9,
+     "fin": 308.0,
+     "palabra": "el",
+     "prob": 0.99
+    },
+    {
+     "inicio": 308.0,
+     "fin": 308.42,
+     "palabra": "respaldo,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 308.92,
+     "fin": 309.02,
+     "palabra": "en",
+     "prob": 0.97
+    },
+    {
+     "inicio": 309.02,
+     "fin": 309.2,
+     "palabra": "este",
+     "prob": 0.98
+    },
+    {
+     "inicio": 309.2,
+     "fin": 309.66,
+     "palabra": "perfil",
+     "prob": 0.99
+    },
+    {
+     "inicio": 309.66,
+     "fin": 309.84,
+     "palabra": "se",
+     "prob": 0.99
+    },
+    {
+     "inicio": 309.84,
+     "fin": 310.14,
+     "palabra": "maneja",
+     "prob": 0.98
+    },
+    {
+     "inicio": 310.14,
+     "fin": 310.26,
+     "palabra": "el",
+     "prob": 0.93
+    },
+    {
+     "inicio": 310.26,
+     "fin": 310.54,
+     "palabra": "PIN,",
+     "prob": 0.62
+    },
+    {
+     "inicio": 310.74,
+     "fin": 310.8,
+     "palabra": "los",
+     "prob": 0.99
+    },
+    {
+     "inicio": 310.8,
+     "fin": 311.14,
+     "palabra": "perfiles",
+     "prob": 0.99
+    },
+    {
+     "inicio": 311.14,
+     "fin": 311.68,
+     "palabra": "separados",
+     "prob": 0.99
+    },
+    {
+     "inicio": 311.68,
+     "fin": 312.0,
+     "palabra": "y",
+     "prob": 0.87
+    },
+    {
+     "inicio": 312.0,
+     "fin": 312.12,
+     "palabra": "la",
+     "prob": 0.99
+    },
+    {
+     "inicio": 312.12,
+     "fin": 312.48,
+     "palabra": "tasa",
+     "prob": 0.95
+    },
+    {
+     "inicio": 312.48,
+     "fin": 312.76,
+     "palabra": "real",
+     "prob": 0.97
+    },
+    {
+     "inicio": 312.76,
+     "fin": 312.94,
+     "palabra": "del",
+     "prob": 0.98
+    },
+    {
+     "inicio": 312.94,
+     "fin": 313.26,
+     "palabra": "cambio,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 313.92,
+     "fin": 314.0,
+     "palabra": "y",
+     "prob": 0.97
+    },
+    {
+     "inicio": 314.0,
+     "fin": 314.06,
+     "palabra": "se",
+     "prob": 1.0
+    },
+    {
+     "inicio": 314.06,
+     "fin": 314.22,
+     "palabra": "hace",
+     "prob": 0.98
+    },
+    {
+     "inicio": 314.22,
+     "fin": 314.42,
+     "palabra": "con",
+     "prob": 0.99
+    },
+    {
+     "inicio": 314.42,
+     "fin": 314.78,
+     "palabra": "respaldo",
+     "prob": 0.95
+    },
+    {
+     "inicio": 314.78,
+     "fin": 314.92,
+     "palabra": "de",
+     "prob": 0.99
+    },
+    {
+     "inicio": 314.92,
+     "fin": 315.12,
+     "palabra": "datos",
+     "prob": 1.0
+    },
+    {
+     "inicio": 315.12,
+     "fin": 315.46,
+     "palabra": "cuando",
+     "prob": 0.95
+    },
+    {
+     "inicio": 315.46,
+     "fin": 315.68,
+     "palabra": "tú",
+     "prob": 0.9
+    },
+    {
+     "inicio": 315.68,
+     "fin": 316.06,
+     "palabra": "quieras.",
+     "prob": 1.0
+    }
+   ]
+  },
+  {
+   "inicio": 325.28,
+   "fin": 333.08,
+   "texto": "Además, puedes tener todos los módulos, donde verás todas nuestras funciones, y como no, nuestro asistente de día será tu mejor amigo.",
+   "palabras": [
+    {
+     "inicio": 325.28,
+     "fin": 325.82,
+     "palabra": "Además,",
+     "prob": 0.44
+    },
+    {
+     "inicio": 326.12,
+     "fin": 326.2,
+     "palabra": "puedes",
+     "prob": 0.95
+    },
+    {
+     "inicio": 326.2,
+     "fin": 326.46,
+     "palabra": "tener",
+     "prob": 0.99
+    },
+    {
+     "inicio": 326.46,
+     "fin": 326.68,
+     "palabra": "todos",
+     "prob": 0.96
+    },
+    {
+     "inicio": 326.68,
+     "fin": 326.86,
+     "palabra": "los",
+     "prob": 0.99
+    },
+    {
+     "inicio": 326.86,
+     "fin": 327.22,
+     "palabra": "módulos,",
+     "prob": 0.85
+    },
+    {
+     "inicio": 327.42,
+     "fin": 327.72,
+     "palabra": "donde",
+     "prob": 0.96
+    },
+    {
+     "inicio": 327.72,
+     "fin": 328.24,
+     "palabra": "verás",
+     "prob": 0.95
+    },
+    {
+     "inicio": 328.24,
+     "fin": 328.5,
+     "palabra": "todas",
+     "prob": 0.98
+    },
+    {
+     "inicio": 328.5,
+     "fin": 328.78,
+     "palabra": "nuestras",
+     "prob": 0.97
+    },
+    {
+     "inicio": 328.78,
+     "fin": 329.34,
+     "palabra": "funciones,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 329.94,
+     "fin": 330.18,
+     "palabra": "y",
+     "prob": 0.86
+    },
+    {
+     "inicio": 330.18,
+     "fin": 330.38,
+     "palabra": "como",
+     "prob": 0.67
+    },
+    {
+     "inicio": 330.38,
+     "fin": 330.58,
+     "palabra": "no,",
+     "prob": 0.97
+    },
+    {
+     "inicio": 330.9,
+     "fin": 331.24,
+     "palabra": "nuestro",
+     "prob": 0.98
+    },
+    {
+     "inicio": 331.24,
+     "fin": 331.72,
+     "palabra": "asistente",
+     "prob": 0.98
+    },
+    {
+     "inicio": 331.72,
+     "fin": 331.96,
+     "palabra": "de",
+     "prob": 0.4
+    },
+    {
+     "inicio": 331.96,
+     "fin": 332.1,
+     "palabra": "día",
+     "prob": 0.93
+    },
+    {
+     "inicio": 332.1,
+     "fin": 332.4,
+     "palabra": "será",
+     "prob": 0.97
+    },
+    {
+     "inicio": 332.4,
+     "fin": 332.6,
+     "palabra": "tu",
+     "prob": 0.99
+    },
+    {
+     "inicio": 332.6,
+     "fin": 332.82,
+     "palabra": "mejor",
+     "prob": 0.99
+    },
+    {
+     "inicio": 332.82,
+     "fin": 333.08,
+     "palabra": "amigo.",
+     "prob": 0.99
+    }
+   ]
+  },
+  {
+   "inicio": 333.72,
+   "fin": 339.12,
+   "texto": "Este responde preguntas sobre tu dinero usando tus datos reales, por ejemplo, en qué gastes más este mes.",
+   "palabras": [
+    {
+     "inicio": 333.72,
+     "fin": 333.92,
+     "palabra": "Este",
+     "prob": 0.62
+    },
+    {
+     "inicio": 333.92,
+     "fin": 334.42,
+     "palabra": "responde",
+     "prob": 0.98
+    },
+    {
+     "inicio": 334.42,
+     "fin": 334.8,
+     "palabra": "preguntas",
+     "prob": 0.72
+    },
+    {
+     "inicio": 334.8,
+     "fin": 335.02,
+     "palabra": "sobre",
+     "prob": 0.99
+    },
+    {
+     "inicio": 335.02,
+     "fin": 335.18,
+     "palabra": "tu",
+     "prob": 0.97
+    },
+    {
+     "inicio": 335.18,
+     "fin": 335.48,
+     "palabra": "dinero",
+     "prob": 0.99
+    },
+    {
+     "inicio": 335.48,
+     "fin": 336.04,
+     "palabra": "usando",
+     "prob": 0.75
+    },
+    {
+     "inicio": 336.04,
+     "fin": 336.26,
+     "palabra": "tus",
+     "prob": 0.94
+    },
+    {
+     "inicio": 336.26,
+     "fin": 336.46,
+     "palabra": "datos",
+     "prob": 1.0
+    },
+    {
+     "inicio": 336.46,
+     "fin": 336.98,
+     "palabra": "reales,",
+     "prob": 1.0
+    },
+    {
+     "inicio": 337.1,
+     "fin": 337.18,
+     "palabra": "por",
+     "prob": 0.98
+    },
+    {
+     "inicio": 337.18,
+     "fin": 337.5,
+     "palabra": "ejemplo,",
+     "prob": 1.0
+    },
+    {
+     "inicio": 337.96,
+     "fin": 338.06,
+     "palabra": "en",
+     "prob": 0.26
+    },
+    {
+     "inicio": 338.06,
+     "fin": 338.16,
+     "palabra": "qué",
+     "prob": 0.73
+    },
+    {
+     "inicio": 338.16,
+     "fin": 338.48,
+     "palabra": "gastes",
+     "prob": 0.79
+    },
+    {
+     "inicio": 338.48,
+     "fin": 338.64,
+     "palabra": "más",
+     "prob": 0.98
+    },
+    {
+     "inicio": 338.64,
+     "fin": 338.9,
+     "palabra": "este",
+     "prob": 0.96
+    },
+    {
+     "inicio": 338.9,
+     "fin": 339.12,
+     "palabra": "mes.",
+     "prob": 0.99
+    }
+   ]
+  },
+  {
+   "inicio": 340.7,
+   "fin": 349.7,
+   "texto": "Además de eso, te permitiría poder ayudar en qué puedes comprar, simplemente la apteices y cabe tu saldo, tu presupuesto y en tus metas.",
+   "palabras": [
+    {
+     "inicio": 340.7,
+     "fin": 341.24,
+     "palabra": "Además",
+     "prob": 0.99
+    },
+    {
+     "inicio": 341.24,
+     "fin": 341.5,
+     "palabra": "de",
+     "prob": 0.97
+    },
+    {
+     "inicio": 341.5,
+     "fin": 341.76,
+     "palabra": "eso,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 341.92,
+     "fin": 342.04,
+     "palabra": "te",
+     "prob": 0.99
+    },
+    {
+     "inicio": 342.04,
+     "fin": 342.74,
+     "palabra": "permitiría",
+     "prob": 0.97
+    },
+    {
+     "inicio": 342.74,
+     "fin": 343.4,
+     "palabra": "poder",
+     "prob": 0.96
+    },
+    {
+     "inicio": 343.4,
+     "fin": 343.76,
+     "palabra": "ayudar",
+     "prob": 0.99
+    },
+    {
+     "inicio": 343.76,
+     "fin": 344.18,
+     "palabra": "en",
+     "prob": 0.98
+    },
+    {
+     "inicio": 344.18,
+     "fin": 344.3,
+     "palabra": "qué",
+     "prob": 0.6
+    },
+    {
+     "inicio": 344.3,
+     "fin": 344.6,
+     "palabra": "puedes",
+     "prob": 0.99
+    },
+    {
+     "inicio": 344.6,
+     "fin": 344.96,
+     "palabra": "comprar,",
+     "prob": 1.0
+    },
+    {
+     "inicio": 345.5,
+     "fin": 345.9,
+     "palabra": "simplemente",
+     "prob": 1.0
+    },
+    {
+     "inicio": 345.9,
+     "fin": 346.44,
+     "palabra": "la",
+     "prob": 0.79
+    },
+    {
+     "inicio": 346.44,
+     "fin": 346.94,
+     "palabra": "apteices",
+     "prob": 0.42
+    },
+    {
+     "inicio": 346.94,
+     "fin": 347.16,
+     "palabra": "y",
+     "prob": 0.85
+    },
+    {
+     "inicio": 347.16,
+     "fin": 347.28,
+     "palabra": "cabe",
+     "prob": 0.59
+    },
+    {
+     "inicio": 347.28,
+     "fin": 347.48,
+     "palabra": "tu",
+     "prob": 0.87
+    },
+    {
+     "inicio": 347.48,
+     "fin": 347.88,
+     "palabra": "saldo,",
+     "prob": 1.0
+    },
+    {
+     "inicio": 348.08,
+     "fin": 348.12,
+     "palabra": "tu",
+     "prob": 0.99
+    },
+    {
+     "inicio": 348.12,
+     "fin": 348.76,
+     "palabra": "presupuesto",
+     "prob": 1.0
+    },
+    {
+     "inicio": 348.76,
+     "fin": 349.08,
+     "palabra": "y",
+     "prob": 0.88
+    },
+    {
+     "inicio": 349.08,
+     "fin": 349.2,
+     "palabra": "en",
+     "prob": 0.74
+    },
+    {
+     "inicio": 349.2,
+     "fin": 349.32,
+     "palabra": "tus",
+     "prob": 0.99
+    },
+    {
+     "inicio": 349.32,
+     "fin": 349.7,
+     "palabra": "metas.",
+     "prob": 1.0
+    }
+   ]
+  },
+  {
+   "inicio": 352.58,
+   "fin": 364.14,
+   "texto": "Y finalmente, tenemos el apartado de historial, aquí es donde se muestra tu tranquilidad y el historial de actividad anota qué cambio hubo y cuándo no, nadie lo puede evitar ni borrar.",
+   "palabras": [
+    {
+     "inicio": 352.58,
+     "fin": 353.26,
+     "palabra": "Y",
+     "prob": 0.37
+    },
+    {
+     "inicio": 353.26,
+     "fin": 353.6,
+     "palabra": "finalmente,",
+     "prob": 0.91
+    },
+    {
+     "inicio": 354.08,
+     "fin": 354.32,
+     "palabra": "tenemos",
+     "prob": 0.95
+    },
+    {
+     "inicio": 354.32,
+     "fin": 354.52,
+     "palabra": "el",
+     "prob": 0.99
+    },
+    {
+     "inicio": 354.52,
+     "fin": 354.96,
+     "palabra": "apartado",
+     "prob": 0.99
+    },
+    {
+     "inicio": 354.96,
+     "fin": 355.1,
+     "palabra": "de",
+     "prob": 0.83
+    },
+    {
+     "inicio": 355.1,
+     "fin": 355.48,
+     "palabra": "historial,",
+     "prob": 0.68
+    },
+    {
+     "inicio": 356.02,
+     "fin": 356.34,
+     "palabra": "aquí",
+     "prob": 0.9
+    },
+    {
+     "inicio": 356.34,
+     "fin": 357.04,
+     "palabra": "es",
+     "prob": 0.97
+    },
+    {
+     "inicio": 357.04,
+     "fin": 357.36,
+     "palabra": "donde",
+     "prob": 0.99
+    },
+    {
+     "inicio": 357.36,
+     "fin": 357.6,
+     "palabra": "se",
+     "prob": 0.99
+    },
+    {
+     "inicio": 357.6,
+     "fin": 357.94,
+     "palabra": "muestra",
+     "prob": 0.99
+    },
+    {
+     "inicio": 357.94,
+     "fin": 358.12,
+     "palabra": "tu",
+     "prob": 0.96
+    },
+    {
+     "inicio": 358.12,
+     "fin": 358.74,
+     "palabra": "tranquilidad",
+     "prob": 1.0
+    },
+    {
+     "inicio": 358.74,
+     "fin": 358.98,
+     "palabra": "y",
+     "prob": 0.98
+    },
+    {
+     "inicio": 358.98,
+     "fin": 359.08,
+     "palabra": "el",
+     "prob": 0.95
+    },
+    {
+     "inicio": 359.08,
+     "fin": 359.38,
+     "palabra": "historial",
+     "prob": 0.97
+    },
+    {
+     "inicio": 359.38,
+     "fin": 359.5,
+     "palabra": "de",
+     "prob": 1.0
+    },
+    {
+     "inicio": 359.5,
+     "fin": 359.86,
+     "palabra": "actividad",
+     "prob": 0.97
+    },
+    {
+     "inicio": 359.86,
+     "fin": 360.22,
+     "palabra": "anota",
+     "prob": 0.65
+    },
+    {
+     "inicio": 360.22,
+     "fin": 360.48,
+     "palabra": "qué",
+     "prob": 0.16
+    },
+    {
+     "inicio": 360.48,
+     "fin": 360.82,
+     "palabra": "cambio",
+     "prob": 0.93
+    },
+    {
+     "inicio": 360.82,
+     "fin": 361.18,
+     "palabra": "hubo",
+     "prob": 0.99
+    },
+    {
+     "inicio": 361.18,
+     "fin": 361.32,
+     "palabra": "y",
+     "prob": 0.95
+    },
+    {
+     "inicio": 361.32,
+     "fin": 361.7,
+     "palabra": "cuándo",
+     "prob": 0.91
+    },
+    {
+     "inicio": 361.7,
+     "fin": 361.88,
+     "palabra": "no,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 362.32,
+     "fin": 362.72,
+     "palabra": "nadie",
+     "prob": 0.99
+    },
+    {
+     "inicio": 362.72,
+     "fin": 362.9,
+     "palabra": "lo",
+     "prob": 0.98
+    },
+    {
+     "inicio": 362.9,
+     "fin": 363.1,
+     "palabra": "puede",
+     "prob": 0.99
+    },
+    {
+     "inicio": 363.1,
+     "fin": 363.4,
+     "palabra": "evitar",
+     "prob": 0.98
+    },
+    {
+     "inicio": 363.4,
+     "fin": 363.82,
+     "palabra": "ni",
+     "prob": 0.91
+    },
+    {
+     "inicio": 363.82,
+     "fin": 364.14,
+     "palabra": "borrar.",
+     "prob": 0.99
+    }
+   ]
+  },
+  {
+   "inicio": 365.44,
+   "fin": 374.16,
+   "texto": "Finalmente lo hemos logrado, 464 pruebas, con un 92,9% de cobertura y con una increíble velocidad de movimiento.",
+   "palabras": [
+    {
+     "inicio": 365.44,
+     "fin": 366.12,
+     "palabra": "Finalmente",
+     "prob": 0.96
+    },
+    {
+     "inicio": 366.12,
+     "fin": 366.38,
+     "palabra": "lo",
+     "prob": 0.79
+    },
+    {
+     "inicio": 366.38,
+     "fin": 366.5,
+     "palabra": "hemos",
+     "prob": 0.99
+    },
+    {
+     "inicio": 366.5,
+     "fin": 366.92,
+     "palabra": "logrado,",
+     "prob": 0.99
+    },
+    {
+     "inicio": 367.42,
+     "fin": 368.78,
+     "palabra": "464",
+     "prob": 0.96
+    },
+    {
+     "inicio": 368.78,
+     "fin": 369.32,
+     "palabra": "pruebas,",
+     "prob": 1.0
+    },
+    {
+     "inicio": 369.46,
+     "fin": 369.58,
+     "palabra": "con",
+     "prob": 0.99
+    },
+    {
+     "inicio": 369.58,
+     "fin": 369.74,
+     "palabra": "un",
+     "prob": 0.7
+    },
+    {
+     "inicio": 369.74,
+     "fin": 370.16,
+     "palabra": "92",
+     "prob": 1.0
+    },
+    {
+     "inicio": 370.16,
+     "fin": 370.88,
+     "palabra": ",9",
+     "prob": 0.87
+    },
+    {
+     "inicio": 370.88,
+     "fin": 371.22,
+     "palabra": "%",
+     "prob": 0.8
+    },
+    {
+     "inicio": 371.22,
+     "fin": 371.48,
+     "palabra": "de",
+     "prob": 0.99
+    },
+    {
+     "inicio": 371.48,
+     "fin": 371.98,
+     "palabra": "cobertura",
+     "prob": 1.0
+    },
+    {
+     "inicio": 371.98,
+     "fin": 372.6,
+     "palabra": "y",
+     "prob": 0.96
+    },
+    {
+     "inicio": 372.6,
+     "fin": 372.76,
+     "palabra": "con",
+     "prob": 0.95
+    },
+    {
+     "inicio": 372.76,
+     "fin": 372.92,
+     "palabra": "una",
+     "prob": 0.99
+    },
+    {
+     "inicio": 372.92,
+     "fin": 373.36,
+     "palabra": "increíble",
+     "prob": 0.97
+    },
+    {
+     "inicio": 373.36,
+     "fin": 373.68,
+     "palabra": "velocidad",
+     "prob": 1.0
+    },
+    {
+     "inicio": 373.68,
+     "fin": 373.84,
+     "palabra": "de",
+     "prob": 0.99
+    },
+    {
+     "inicio": 373.84,
+     "fin": 374.16,
+     "palabra": "movimiento.",
+     "prob": 0.98
+    }
+   ]
+  }
+ ]
+}
